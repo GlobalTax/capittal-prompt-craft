@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, TrendingUp, Users, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SaveValuationModal from "@/components/SaveValuationModal";
+import SavedValuationsModal from "@/components/SavedValuationsModal";
+import { useValuations, FinancialData as SavedFinancialData, ValuationResult as SavedValuationResult, SavedValuation } from "@/hooks/useValuations";
 
 interface FinancialData {
   totalRevenue2023: number;
@@ -119,6 +122,25 @@ const ValuationCalculator = () => {
     }));
   };
 
+  // Load valuation data
+  const handleLoadValuation = (valuation: SavedValuation) => {
+    // Convert saved data to current format
+    const savedData = valuation.financialData as any;
+    setData({
+      totalRevenue2023: savedData.revenue || savedData.totalRevenue2023 || 0,
+      totalRevenue2024: savedData.revenue || savedData.totalRevenue2024 || 0,
+      fiscalRecurring: savedData.fiscalRecurring || 0,
+      accountingRecurring: savedData.accountingRecurring || 0,
+      laborRecurring: savedData.laborRecurring || 0,
+      otherRevenue: savedData.otherRevenue || 0,
+      totalCosts: savedData.totalExpenses || savedData.totalCosts || 0,
+      personnelCosts: savedData.personalCosts || savedData.personnelCosts || 0,
+      otherCosts: savedData.otherCosts || 0,
+      ownerSalary: savedData.ownerSalary || 0,
+      numberOfEmployees: savedData.employees || savedData.numberOfEmployees || 0,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -132,6 +154,35 @@ const ValuationCalculator = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Herramienta profesional para la valoración de empresas de asesoría basada en múltiplos del sector
         </p>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2 justify-center pt-4">
+          <SavedValuationsModal onLoadValuation={handleLoadValuation} />
+          <SaveValuationModal 
+            financialData={{
+              revenue: data.totalRevenue2024,
+              ebitda: data.totalRevenue2024 - data.totalCosts,
+              netIncome: data.totalRevenue2024 - data.totalCosts,
+              employees: data.numberOfEmployees,
+              partners: 1,
+              totalExpenses: data.totalCosts,
+              personalCosts: data.personnelCosts,
+              yearFounded: new Date().getFullYear() - 5,
+            }}
+            results={{
+              netMargin: calculateMetrics().netMargin,
+              contributionMargin: calculateMetrics().contributionMargin,
+              ebitdaMargin: ((data.totalRevenue2024 - data.totalCosts) / data.totalRevenue2024) * 100,
+              revenuePerEmployee: data.totalRevenue2024 / data.numberOfEmployees,
+              revenuePerPartner: data.totalRevenue2024,
+              conservativeValuation: valuations[0]?.valuationAmount || 0,
+              moderateValuation: valuations[1]?.valuationAmount || 0,
+              optimisticValuation: valuations[2]?.valuationAmount || 0,
+              premiumValuation: valuations[3]?.valuationAmount || 0,
+              weightedAverage: valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length || 0,
+            }}
+          />
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
