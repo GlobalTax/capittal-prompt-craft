@@ -124,7 +124,7 @@ export function AppSidebar() {
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild className="h-12">
-            <NavLink to={item.url} className={getNavCls}>
+            <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
               <item.icon className="h-5 w-5 shrink-0" />
               {!collapsed && (
                 <div className="flex flex-col items-start overflow-hidden">
@@ -140,7 +140,7 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-72"} shrink-0 border-r border-sidebar-border`} collapsible="icon">
+    <Sidebar className="shrink-0 border-r border-sidebar-border" collapsible="icon" style={{ "--sidebar-width": "18rem" } as React.CSSProperties}>
       <SidebarContent className="py-4 overflow-y-auto">
         {/* Main Navigation */}
         <SidebarGroup>
