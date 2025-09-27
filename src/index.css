@@ -85,6 +85,13 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Chart color variables */
+    --chart-1: 220 91% 45%;
+    --chart-2: 142 76% 45%;
+    --chart-3: 48 96% 60%;
+    --chart-4: 280 91% 45%;
+    --chart-5: 340 91% 45%;
   }
 
   .dark {
@@ -134,6 +141,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Chart color variables */
+    --chart-1: 220 91% 45%;
+    --chart-2: 142 76% 45%;
+    --chart-3: 48 96% 60%;
+    --chart-4: 280 91% 45%;
+    --chart-5: 340 91% 45%;
   }
 }
 

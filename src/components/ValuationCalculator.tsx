@@ -180,7 +180,7 @@ const ValuationCalculator = () => {
     { name: "Contable", value: data.accountingRecurring, fill: "hsl(var(--chart-2))" },
     { name: "Laboral", value: data.laborRecurring, fill: "hsl(var(--chart-3))" },
     { name: "Otros", value: data.otherRevenue, fill: "hsl(var(--chart-4))" },
-  ];
+  ].filter(item => item.value > 0);
 
   const yearComparisonData = [
     { year: "2023", revenue: data.totalRevenue2023 },
@@ -615,7 +615,7 @@ const ValuationCalculator = () => {
               
               <Separator className="my-4" />
               
-              <div className="text-center p-4 bg-primary-light rounded-lg">
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <div className="text-sm text-muted-foreground mb-1">Valoración Media Ponderada</div>
                 <div className="text-2xl font-bold text-primary">
                   {(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length).toLocaleString('es-ES')}€
