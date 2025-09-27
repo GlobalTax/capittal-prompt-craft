@@ -111,8 +111,20 @@ const ValuationCalculator = () => {
     }
   };
 
+  // Función para formatear números con separadores de miles
+  const formatNumber = (value: number): string => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
+  // Función para parsear números con separadores de miles
+  const parseNumber = (value: string): number => {
+    return parseFloat(value.replace(/\./g, '')) || 0;
+  };
+
   const handleInputChange = (field: keyof FinancialData, value: string) => {
-    const numValue = parseFloat(value) || 0;
+    // Solo permitir números y puntos
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    const numValue = parseNumber(cleanValue);
     setData(prev => ({
       ...prev,
       [field]: numValue
@@ -153,8 +165,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="revenue2024">Facturación 2024 (€)</Label>
                   <Input
                     id="revenue2024"
-                    type="number"
-                    value={data.totalRevenue2024}
+                    type="text"
+                    value={formatNumber(data.totalRevenue2024)}
                     onChange={(e) => handleInputChange('totalRevenue2024', e.target.value)}
                     className="font-mono"
                   />
@@ -163,8 +175,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="revenue2023">Facturación 2023 (€)</Label>
                   <Input
                     id="revenue2023"
-                    type="number"
-                    value={data.totalRevenue2023}
+                    type="text"
+                    value={formatNumber(data.totalRevenue2023)}
                     onChange={(e) => handleInputChange('totalRevenue2023', e.target.value)}
                     className="font-mono"
                   />
@@ -180,8 +192,8 @@ const ValuationCalculator = () => {
                     <Label htmlFor="fiscal">Fiscal (€)</Label>
                     <Input
                       id="fiscal"
-                      type="number"
-                      value={data.fiscalRecurring}
+                      type="text"
+                      value={formatNumber(data.fiscalRecurring)}
                       onChange={(e) => handleInputChange('fiscalRecurring', e.target.value)}
                       className="font-mono text-sm"
                     />
@@ -190,8 +202,8 @@ const ValuationCalculator = () => {
                     <Label htmlFor="accounting">Contable (€)</Label>
                     <Input
                       id="accounting"
-                      type="number"
-                      value={data.accountingRecurring}
+                      type="text"
+                      value={formatNumber(data.accountingRecurring)}
                       onChange={(e) => handleInputChange('accountingRecurring', e.target.value)}
                       className="font-mono text-sm"
                     />
@@ -200,8 +212,8 @@ const ValuationCalculator = () => {
                     <Label htmlFor="labor">Laboral (€)</Label>
                     <Input
                       id="labor"
-                      type="number"
-                      value={data.laborRecurring}
+                      type="text"
+                      value={formatNumber(data.laborRecurring)}
                       onChange={(e) => handleInputChange('laborRecurring', e.target.value)}
                       className="font-mono text-sm"
                     />
@@ -216,8 +228,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="personnelCosts">Costes Personal (€)</Label>
                   <Input
                     id="personnelCosts"
-                    type="number"
-                    value={data.personnelCosts}
+                    type="text"
+                    value={formatNumber(data.personnelCosts)}
                     onChange={(e) => handleInputChange('personnelCosts', e.target.value)}
                     className="font-mono"
                   />
@@ -226,8 +238,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="otherCosts">Otros Costes (€)</Label>
                   <Input
                     id="otherCosts"
-                    type="number"
-                    value={data.otherCosts}
+                    type="text"
+                    value={formatNumber(data.otherCosts)}
                     onChange={(e) => handleInputChange('otherCosts', e.target.value)}
                     className="font-mono"
                   />
@@ -239,8 +251,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="ownerSalary">Sueldo Propiedad (€)</Label>
                   <Input
                     id="ownerSalary"
-                    type="number"
-                    value={data.ownerSalary}
+                    type="text"
+                    value={formatNumber(data.ownerSalary)}
                     onChange={(e) => handleInputChange('ownerSalary', e.target.value)}
                     className="font-mono"
                   />
@@ -249,8 +261,8 @@ const ValuationCalculator = () => {
                   <Label htmlFor="employees">Nº Trabajadores</Label>
                   <Input
                     id="employees"
-                    type="number"
-                    value={data.numberOfEmployees}
+                    type="text"
+                    value={formatNumber(data.numberOfEmployees)}
                     onChange={(e) => handleInputChange('numberOfEmployees', e.target.value)}
                     className="font-mono"
                   />
