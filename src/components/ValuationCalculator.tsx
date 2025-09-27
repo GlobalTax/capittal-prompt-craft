@@ -542,9 +542,9 @@ const ValuationCalculator = () => {
                 <div className="space-y-4">
                   <h4 className="font-medium text-center">Composición de Ingresos Recurrentes</h4>
                   <div className="flex justify-center">
-                    <ChartContainer config={chartConfig} className="h-[250px] w-full max-w-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <div className="w-full h-[250px]">
+                      <ChartContainer config={chartConfig}>
+                        <RechartsPieChart width={400} height={250} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                           <ChartTooltip 
                             content={<ChartTooltipContent 
                               formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, '']}
@@ -570,8 +570,8 @@ const ValuationCalculator = () => {
                             ))}
                           </Pie>
                         </RechartsPieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                      </ChartContainer>
+                    </div>
                   </div>
                 </div>
 
@@ -579,9 +579,9 @@ const ValuationCalculator = () => {
                 <div className="space-y-4">
                   <h4 className="font-medium text-center">Comparativa Anual</h4>
                   <div className="flex justify-center">
-                    <ChartContainer config={{}} className="h-[250px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={yearComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <div className="w-full h-[250px]">
+                      <ChartContainer config={{ revenue: { label: "Facturación", color: "hsl(var(--primary))" } }}>
+                        <BarChart data={yearComparisonData} width={400} height={250} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
                           <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                           <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
@@ -599,8 +599,8 @@ const ValuationCalculator = () => {
                           />
                           <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                      </ChartContainer>
+                    </div>
                   </div>
                 </div>
               </div>

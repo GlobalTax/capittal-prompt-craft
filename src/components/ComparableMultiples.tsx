@@ -156,8 +156,8 @@ const ComparableMultiples = () => {
 
   const getBenchmarkColor = (benchmark: string) => {
     switch (benchmark) {
-      case "min": return "text-red-600";
-      case "avg": return "text-blue-600";
+      case "min": return "text-destructive";
+      case "avg": return "text-primary";
       case "max": return "text-green-600";
       default: return "text-muted-foreground";
     }
@@ -342,11 +342,11 @@ const ComparableMultiples = () => {
             {/* Gráfico de valoraciones */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Comparación de Valoraciones</h3>
-              <ChartContainer config={{
-                value: { label: "Valoración", color: "hsl(var(--chart-1))" },
-              }} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} layout="horizontal">
+              <div className="w-full h-[300px]">
+                <ChartContainer config={{
+                  value: { label: "Valoración", color: "hsl(var(--chart-1))" },
+                }}>
+                  <BarChart data={chartData} layout="horizontal" width={800} height={300}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
                     <YAxis dataKey="method" type="category" width={100} />
@@ -356,20 +356,20 @@ const ComparableMultiples = () => {
                     />
                     <Bar dataKey="value" fill="hsl(var(--chart-1))" />
                   </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+                </ChartContainer>
+              </div>
             </div>
 
             {/* Comparación entre sectores */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Múltiplos por Sector</h3>
-              <ChartContainer config={{
-                revenue: { label: "Múltiplo Ingresos", color: "hsl(var(--chart-2))" },
-                ebitda: { label: "Múltiplo EBITDA", color: "hsl(var(--chart-3))" },
-                pe: { label: "P/E Ratio", color: "hsl(var(--chart-4))" },
-              }} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={sectorComparison}>
+              <div className="w-full h-[300px]">
+                <ChartContainer config={{
+                  revenue: { label: "Múltiplo Ingresos", color: "hsl(var(--chart-2))" },
+                  ebitda: { label: "Múltiplo EBITDA", color: "hsl(var(--chart-3))" },
+                  pe: { label: "P/E Ratio", color: "hsl(var(--chart-4))" },
+                }}>
+                  <BarChart data={sectorComparison} width={800} height={300}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="sector" angle={-45} textAnchor="end" height={80} />
                     <YAxis />
@@ -378,8 +378,8 @@ const ComparableMultiples = () => {
                     <Bar dataKey="ebitda" fill="hsl(var(--chart-3))" />
                     <Bar dataKey="pe" fill="hsl(var(--chart-4))" />
                   </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+                </ChartContainer>
+              </div>
             </div>
 
             {/* Resumen valoración promedio */}

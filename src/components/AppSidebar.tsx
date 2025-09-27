@@ -127,9 +127,9 @@ export function AppSidebar() {
             <NavLink to={item.url} className={getNavCls}>
               <item.icon className="h-5 w-5 shrink-0" />
               {!collapsed && (
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">{item.title}</span>
-                  <span className="text-xs text-muted-foreground">{item.description}</span>
+                <div className="flex flex-col items-start overflow-hidden">
+                  <span className="text-sm font-medium truncate w-full">{item.title}</span>
+                  <span className="text-xs text-muted-foreground truncate w-full">{item.description}</span>
                 </div>
               )}
             </NavLink>
@@ -141,10 +141,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={collapsed ? "w-16" : "w-72"} collapsible="icon">
-      <SidebarContent className="py-4">
+      <SidebarContent className="py-4 overflow-y-auto">
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Análisis Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -154,7 +154,7 @@ export function AppSidebar() {
 
         {/* Integrations */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Integraciones
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -164,7 +164,7 @@ export function AppSidebar() {
 
         {/* Advanced Features */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Funciones Avanzadas
           </SidebarGroupLabel>
           <SidebarGroupContent>
