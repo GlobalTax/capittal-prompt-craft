@@ -6,10 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart, BarChart3, ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import DCFCalculator from "./DCFCalculator";
+import ComparableMultiples from "./ComparableMultiples";
+import DueDiligenceChecklist from "./DueDiligenceChecklist";
 
 interface FinancialData {
   totalRevenue2023: number;
@@ -188,22 +192,37 @@ const ValuationCalculator = () => {
   ];
 
   return (
-    <TooltipProvider>
-    <div className="space-y-8 max-w-7xl mx-auto px-4">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Calculator className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Valoración de Despachos de Asesoría
-          </h1>
-        </div>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Herramienta profesional para la valoración de empresas de asesoría basada en múltiplos del sector
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <TooltipProvider>
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-foreground">Calculadora de Valoración Empresarial</h1>
+            <p className="text-muted-foreground">Herramienta especializada para valoración de consultorías</p>
+          </div>
 
-      {/* Validation Alerts */}
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="basic" className="flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Valoración Básica
+              </TabsTrigger>
+              <TabsTrigger value="dcf" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                DCF Avanzado
+              </TabsTrigger>
+              <TabsTrigger value="multiples" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Múltiplos Sector
+              </TabsTrigger>
+              <TabsTrigger value="duediligence" className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4" />
+                Due Diligence
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-6">
+              <div className="space-y-8 max-w-7xl mx-auto px-4">
+                {/* Validation Alerts */}
       {validateData().length > 0 && (
         <Alert className="border-warning">
           <AlertTriangle className="h-4 w-4" />
@@ -623,10 +642,25 @@ const ValuationCalculator = () => {
               </div>
             </CardContent>
           </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="dcf">
+              <DCFCalculator />
+            </TabsContent>
+
+            <TabsContent value="multiples">
+              <ComparableMultiples />
+            </TabsContent>
+
+            <TabsContent value="duediligence">
+              <DueDiligenceChecklist />
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
+      </TooltipProvider>
     </div>
-    </TooltipProvider>
   );
 };
 
