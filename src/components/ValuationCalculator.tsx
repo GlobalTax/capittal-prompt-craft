@@ -187,7 +187,7 @@ const ValuationCalculator = () => {
 
               <div className="space-y-3">
                 <h4 className="font-medium">Facturación Recurrente</h4>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="fiscal">Fiscal (€)</Label>
                     <Input
@@ -215,6 +215,16 @@ const ValuationCalculator = () => {
                       type="text"
                       value={formatNumber(data.laborRecurring)}
                       onChange={(e) => handleInputChange('laborRecurring', e.target.value)}
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="other">Otros (€)</Label>
+                    <Input
+                      id="other"
+                      type="text"
+                      value={formatNumber(data.otherRevenue)}
+                      onChange={(e) => handleInputChange('otherRevenue', e.target.value)}
                       className="font-mono text-sm"
                     />
                   </div>
