@@ -346,16 +346,18 @@ const ComparableMultiples = () => {
                 <ChartContainer config={{
                   value: { label: "Valoración", color: "hsl(var(--chart-1))" },
                 }}>
-                  <BarChart data={chartData} layout="horizontal" width={800} height={300}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                    <YAxis dataKey="method" type="category" width={100} />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent />}
-                      formatter={(value: number) => [`${formatNumber(value)}€`, "Valoración"]}
-                    />
-                    <Bar dataKey="value" fill="hsl(var(--chart-1))" />
-                  </BarChart>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
+                      <YAxis dataKey="method" type="category" width={100} />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent />}
+                        formatter={(value: number) => [`${formatNumber(value)}€`, "Valoración"]}
+                      />
+                      <Bar dataKey="value" fill="hsl(var(--chart-1))" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </ChartContainer>
               </div>
             </div>
@@ -369,15 +371,17 @@ const ComparableMultiples = () => {
                   ebitda: { label: "Múltiplo EBITDA", color: "hsl(var(--chart-3))" },
                   pe: { label: "P/E Ratio", color: "hsl(var(--chart-4))" },
                 }}>
-                  <BarChart data={sectorComparison} width={800} height={300}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="sector" angle={-45} textAnchor="end" height={80} />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="revenue" fill="hsl(var(--chart-2))" />
-                    <Bar dataKey="ebitda" fill="hsl(var(--chart-3))" />
-                    <Bar dataKey="pe" fill="hsl(var(--chart-4))" />
-                  </BarChart>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={sectorComparison}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="sector" angle={-45} textAnchor="end" height={80} />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="revenue" fill="hsl(var(--chart-2))" />
+                      <Bar dataKey="ebitda" fill="hsl(var(--chart-3))" />
+                      <Bar dataKey="pe" fill="hsl(var(--chart-4))" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </ChartContainer>
               </div>
             </div>
