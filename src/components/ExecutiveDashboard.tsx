@@ -146,13 +146,15 @@ const ExecutiveDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="w-full h-[300px]">
-                  <BarChart width={400} height={300} data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="valor" fill="hsl(var(--primary))" name="Valor (€K)" />
-                  </BarChart>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="valor" fill="hsl(var(--primary))" name="Valor (€K)" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
@@ -166,24 +168,26 @@ const ExecutiveDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="w-full h-[300px] flex justify-center">
-                  <PieChart width={400} height={300}>
-                    <Pie
-                      data={sectorData}
-                      cx={200}
-                      cy={150}
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {sectorData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <div className="w-full h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={sectorData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {sectorData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
@@ -200,26 +204,28 @@ const ExecutiveDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full h-[400px]">
-                <LineChart width={600} height={400} data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="valoraciones" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Nº Valoraciones"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="valor" 
-                    stroke="hsl(var(--secondary))" 
-                    strokeWidth={2}
-                    name="Valor Promedio (€K)"
-                  />
-                </LineChart>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="valoraciones" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      name="Nº Valoraciones"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="valor" 
+                      stroke="hsl(var(--secondary))" 
+                      strokeWidth={2}
+                      name="Valor Promedio (€K)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>

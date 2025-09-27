@@ -140,7 +140,7 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-72"} collapsible="icon">
+    <Sidebar className={`${collapsed ? "w-16" : "w-72"} shrink-0 border-r border-sidebar-border`} collapsible="icon">
       <SidebarContent className="py-4 overflow-y-auto">
         {/* Main Navigation */}
         <SidebarGroup>
