@@ -4,8 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calculator, TrendingUp, Users, Euro } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface FinancialData {
   totalRevenue2023: number;
@@ -45,18 +49,28 @@ const ValuationCalculator = () => {
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
 
   const calculateMetrics = () => {
+    const totalRecurring = data.fiscalRecurring + data.accountingRecurring + data.laborRecurring + data.otherRevenue;
     const netMargin = ((data.totalRevenue2024 - data.totalCosts) / data.totalRevenue2024) * 100;
     const contributionMargin = ((data.totalRevenue2024 - data.personnelCosts) / data.totalRevenue2024) * 100;
     const ownerMargin = (data.ownerSalary / data.totalRevenue2024) * 100;
     const revenuePerEmployee = data.totalRevenue2024 / data.numberOfEmployees;
     const profitBeforeTaxes = data.totalRevenue2024 - data.totalCosts;
+    const revenueGrowth = ((data.totalRevenue2024 - data.totalRevenue2023) / data.totalRevenue2023) * 100;
+    const ebitda = profitBeforeTaxes + data.ownerSalary; // Simplified EBITDA approximation
+    const recurringPercentage = (totalRecurring / data.totalRevenue2024) * 100;
+    const costEfficiency = (data.totalCosts / data.totalRevenue2024) * 100;
 
     return {
       netMargin,
       contributionMargin,
       ownerMargin,
       revenuePerEmployee,
-      profitBeforeTaxes
+      profitBeforeTaxes,
+      revenueGrowth,
+      ebitda,
+      recurringPercentage,
+      totalRecurring,
+      costEfficiency
     };
   };
 
@@ -131,7 +145,50 @@ const ValuationCalculator = () => {
     }));
   };
 
+  // Data validation
+  const validateData = () => {
+    const issues = [];
+    const totalRecurring = data.fiscalRecurring + data.accountingRecurring + data.laborRecurring + data.otherRevenue;
+    const metrics = calculateMetrics();
+    
+    if (data.totalCosts >= data.totalRevenue2024) {
+      issues.push("Los costes superan los ingresos - revisar datos");
+    }
+    if (totalRecurring > data.totalRevenue2024) {
+      issues.push("La facturación recurrente supera el total anual");
+    }
+    if (metrics.revenueGrowth < -20) {
+      issues.push("Decrecimiento muy alto - revisar cifras");
+    }
+    if (data.numberOfEmployees === 0) {
+      issues.push("Número de empleados no puede ser cero");
+    }
+    
+    return issues;
+  };
+
+  // Chart data
+  const chartConfig = {
+    fiscal: { label: "Fiscal", color: "hsl(var(--chart-1))" },
+    accounting: { label: "Contable", color: "hsl(var(--chart-2))" },
+    labor: { label: "Laboral", color: "hsl(var(--chart-3))" },
+    other: { label: "Otros", color: "hsl(var(--chart-4))" },
+  };
+
+  const revenueCompositionData = [
+    { name: "Fiscal", value: data.fiscalRecurring, fill: "hsl(var(--chart-1))" },
+    { name: "Contable", value: data.accountingRecurring, fill: "hsl(var(--chart-2))" },
+    { name: "Laboral", value: data.laborRecurring, fill: "hsl(var(--chart-3))" },
+    { name: "Otros", value: data.otherRevenue, fill: "hsl(var(--chart-4))" },
+  ];
+
+  const yearComparisonData = [
+    { year: "2023", revenue: data.totalRevenue2023 },
+    { year: "2024", revenue: data.totalRevenue2024 },
+  ];
+
   return (
+    <TooltipProvider>
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
@@ -145,6 +202,21 @@ const ValuationCalculator = () => {
           Herramienta profesional para la valoración de empresas de asesoría basada en múltiplos del sector
         </p>
       </div>
+
+      {/* Validation Alerts */}
+      {validateData().length > 0 && (
+        <Alert className="border-warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Advertencias detectadas:</strong>
+            <ul className="mt-1 list-disc list-inside">
+              {validateData().map((issue, index) => (
+                <li key={index}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Input Panel */}
@@ -162,7 +234,16 @@ const ValuationCalculator = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="revenue2024">Facturación 2024 (€)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="revenue2024" className="flex items-center gap-1">
+                        Facturación 2024 (€) <Info className="h-3 w-3" />
+                      </Label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Ingresos totales del año 2024, incluyendo todos los servicios</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <Input
                     id="revenue2024"
                     type="text"
@@ -172,7 +253,16 @@ const ValuationCalculator = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="revenue2023">Facturación 2023 (€)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="revenue2023" className="flex items-center gap-1">
+                        Facturación 2023 (€) <Info className="h-3 w-3" />
+                      </Label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Ingresos del año anterior para calcular el crecimiento</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <Input
                     id="revenue2023"
                     type="text"
@@ -293,43 +383,172 @@ const ValuationCalculator = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Margen Neto</span>
-                    <Badge className={getMarginStatus(metrics.netMargin, 'net').color}>
-                      {getMarginStatus(metrics.netMargin, 'net').label}
-                    </Badge>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          Margen Neto <Info className="h-3 w-3" />
+                        </span>
+                        <Badge className={getMarginStatus(metrics.netMargin, 'net').color}>
+                          {getMarginStatus(metrics.netMargin, 'net').label}
+                        </Badge>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Beneficio después de todos los gastos (&gt;20% es óptimo)</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <div className="text-2xl font-bold text-primary">
                     {metrics.netMargin.toFixed(1)}%
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Margen Socio</span>
-                    <Badge className={getMarginStatus(metrics.ownerMargin, 'owner').color}>
-                      {getMarginStatus(metrics.ownerMargin, 'owner').label}
-                    </Badge>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          Margen Socio <Info className="h-3 w-3" />
+                        </span>
+                        <Badge className={getMarginStatus(metrics.ownerMargin, 'owner').color}>
+                          {getMarginStatus(metrics.ownerMargin, 'owner').label}
+                        </Badge>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Porcentaje de los ingresos destinado al sueldo del socio</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <div className="text-2xl font-bold text-primary">
                     {metrics.ownerMargin.toFixed(1)}%
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-sm font-medium">Facturación por Empleado</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm font-medium flex items-center gap-1">
+                        Crecimiento <Info className="h-3 w-3" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Crecimiento interanual de la facturación (2023 vs 2024)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className={`text-2xl font-bold ${metrics.revenueGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {metrics.revenueGrowth > 0 ? '+' : ''}{metrics.revenueGrowth.toFixed(1)}%
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm font-medium flex items-center gap-1">
+                        EBITDA <Info className="h-3 w-3" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Beneficio antes de impuestos + sueldo del socio</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="text-xl font-bold text-success">
+                    {metrics.ebitda.toLocaleString('es-ES')}€
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm font-medium flex items-center gap-1">
+                        Facturación/Empleado <Info className="h-3 w-3" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Productividad por empleado (&gt;100k€ es excelente)</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <div className="text-xl font-bold">
                     {metrics.revenuePerEmployee.toLocaleString('es-ES')}€
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-sm font-medium">Beneficio antes Impuestos</span>
-                  <div className="text-xl font-bold text-success">
-                    {metrics.profitBeforeTaxes.toLocaleString('es-ES')}€
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-sm font-medium flex items-center gap-1">
+                        Recurrencia <Info className="h-3 w-3" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Porcentaje de ingresos recurrentes vs totales</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="text-xl font-bold text-primary">
+                    {metrics.recurringPercentage.toFixed(1)}%
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Charts */}
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="h-5 w-5" />
+                Análisis Visual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Revenue Composition */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-center">Composición de Ingresos Recurrentes</h4>
+                  <ChartContainer config={chartConfig} className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, '']}
+                          />} 
+                        />
+                        <Pie
+                          data={revenueCompositionData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={80}
+                          dataKey="value"
+                        >
+                          {revenueCompositionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </div>
+
+                {/* Year Comparison */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-center">Comparativa Anual</h4>
+                  <ChartContainer config={{}} className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={yearComparisonData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, 'Facturación']}
+                          />} 
+                        />
+                        <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </div>
               </div>
             </CardContent>
@@ -381,6 +600,7 @@ const ValuationCalculator = () => {
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 };
 
