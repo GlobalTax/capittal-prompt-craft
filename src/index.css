@@ -160,3 +160,13 @@
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
+
+/* Ensure floating menus are opaque and above charts */
+@layer base {
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
+  [data-radix-popper-content-wrapper] *[class*="bg-popover"] {
+    background-color: hsl(var(--popover)) !important;
+  }
+}

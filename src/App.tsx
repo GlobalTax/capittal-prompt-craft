@@ -36,21 +36,23 @@ const App = () => {
               <div className="flex-1 min-w-0 flex flex-col">
                 <Header />
                 <main className="flex-1 p-6 overflow-x-hidden">
-                  <Routes>
-                    <Route path="/" element={<ExecutiveDashboard />} />
-                    <Route path="/valuation" element={<ValuationCalculator />} />
-                    <Route path="/analytics" element={<PredictiveAnalytics />} />
-                    <Route path="/reports" element={<ReportGenerator />} />
-                    <Route path="/collaboration" element={<CollaborationHub />} />
-                    <Route path="/integrations/financial" element={<FinancialDataIntegrator />} />
-                    <Route path="/integrations/importer" element={<DataImporter />} />
-                    <Route path="/integrations/alerts" element={<AlertSystem />} />
-                    <Route path="/integrations/zapier" element={<ZapierIntegration />} />
-                    <Route path="/advanced/due-diligence" element={<DueDiligenceChecklist />} />
-                    <Route path="/advanced/multiples" element={<ComparableMultiples />} />
-                    <Route path="/settings" element={<AdvancedSettings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <div className="container mx-auto max-w-7xl">
+                    <Routes>
+                      <Route path="/" element={<ExecutiveDashboard />} />
+                      <Route path="/valuation" element={<ValuationCalculator />} />
+                      <Route path="/analytics" element={<PredictiveAnalytics />} />
+                      <Route path="/reports" element={<ReportGenerator />} />
+                      <Route path="/collaboration" element={<CollaborationHub />} />
+                      <Route path="/integrations/financial" element={<FinancialDataIntegrator />} />
+                      <Route path="/integrations/importer" element={<DataImporter />} />
+                      <Route path="/integrations/alerts" element={<AlertSystem />} />
+                      <Route path="/integrations/zapier" element={<ZapierIntegration />} />
+                      <Route path="/advanced/due-diligence" element={<DueDiligenceChecklist />} />
+                      <Route path="/advanced/multiples" element={<ComparableMultiples />} />
+                      <Route path="/settings" element={<AdvancedSettings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </div>
                 </main>
               </div>
             </div>
