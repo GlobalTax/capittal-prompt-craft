@@ -189,7 +189,7 @@ const ValuationCalculator = () => {
 
   return (
     <TooltipProvider>
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto px-4">
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2 mb-4">
@@ -218,7 +218,7 @@ const ValuationCalculator = () => {
         </Alert>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
         {/* Input Panel */}
         <div className="space-y-6">
           <Card className="shadow-md">
@@ -384,56 +384,58 @@ const ValuationCalculator = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-center gap-1">
                         <span className="text-sm font-medium flex items-center gap-1">
                           Margen Neto <Info className="h-3 w-3" />
                         </span>
-                        <Badge className={getMarginStatus(metrics.netMargin, 'net').color}>
-                          {getMarginStatus(metrics.netMargin, 'net').label}
-                        </Badge>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Beneficio después de todos los gastos (&gt;20% es óptimo)</p>
                     </TooltipContent>
                   </Tooltip>
                   <div className="text-2xl font-bold text-primary">
                     {metrics.netMargin.toFixed(1)}%
                   </div>
+                  <Badge className={`${getMarginStatus(metrics.netMargin, 'net').color} justify-center`}>
+                    {getMarginStatus(metrics.netMargin, 'net').label}
+                  </Badge>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-center gap-1">
                         <span className="text-sm font-medium flex items-center gap-1">
                           Margen Socio <Info className="h-3 w-3" />
                         </span>
-                        <Badge className={getMarginStatus(metrics.ownerMargin, 'owner').color}>
-                          {getMarginStatus(metrics.ownerMargin, 'owner').label}
-                        </Badge>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Porcentaje de los ingresos destinado al sueldo del socio</p>
                     </TooltipContent>
                   </Tooltip>
                   <div className="text-2xl font-bold text-primary">
                     {metrics.ownerMargin.toFixed(1)}%
                   </div>
+                  <Badge className={`${getMarginStatus(metrics.ownerMargin, 'owner').color} justify-center`}>
+                    {getMarginStatus(metrics.ownerMargin, 'owner').label}
+                  </Badge>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-sm font-medium flex items-center gap-1">
-                        Crecimiento <Info className="h-3 w-3" />
-                      </span>
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          Crecimiento <Info className="h-3 w-3" />
+                        </span>
+                      </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Crecimiento interanual de la facturación (2023 vs 2024)</p>
                     </TooltipContent>
                   </Tooltip>
@@ -442,14 +444,16 @@ const ValuationCalculator = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-sm font-medium flex items-center gap-1">
-                        EBITDA <Info className="h-3 w-3" />
-                      </span>
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          EBITDA <Info className="h-3 w-3" />
+                        </span>
+                      </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Beneficio antes de impuestos + sueldo del socio</p>
                     </TooltipContent>
                   </Tooltip>
@@ -458,14 +462,16 @@ const ValuationCalculator = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-sm font-medium flex items-center gap-1">
-                        Facturación/Empleado <Info className="h-3 w-3" />
-                      </span>
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          Facturación/Empleado <Info className="h-3 w-3" />
+                        </span>
+                      </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Productividad por empleado (&gt;100k€ es excelente)</p>
                     </TooltipContent>
                   </Tooltip>
@@ -474,14 +480,16 @@ const ValuationCalculator = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-sm font-medium flex items-center gap-1">
-                        Recurrencia <Info className="h-3 w-3" />
-                      </span>
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          Recurrencia <Info className="h-3 w-3" />
+                        </span>
+                      </div>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent side="top" className="max-w-xs">
                       <p>Porcentaje de ingresos recurrentes vs totales</p>
                     </TooltipContent>
                   </Tooltip>
@@ -496,59 +504,77 @@ const ValuationCalculator = () => {
           {/* Charts */}
           <Card className="shadow-md">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center justify-center gap-2">
                 <PieChart className="h-5 w-5" />
                 Análisis Visual
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid lg:grid-cols-2 gap-6">
+            <CardContent className="space-y-6">
+              <div className="grid lg:grid-cols-2 gap-8">
                 {/* Revenue Composition */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="font-medium text-center">Composición de Ingresos Recurrentes</h4>
-                  <ChartContainer config={chartConfig} className="h-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsPieChart>
-                        <ChartTooltip 
-                          content={<ChartTooltipContent 
-                            formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, '']}
-                          />} 
-                        />
-                        <Pie
-                          data={revenueCompositionData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
-                          dataKey="value"
-                        >
-                          {revenueCompositionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                          ))}
-                        </Pie>
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                  <div className="flex justify-center">
+                    <ChartContainer config={chartConfig} className="h-[250px] w-full max-w-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                          <ChartTooltip 
+                            content={<ChartTooltipContent 
+                              formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, '']}
+                            />}
+                            wrapperStyle={{ 
+                              zIndex: 1000,
+                              backgroundColor: 'hsl(var(--popover))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '6px',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            }}
+                          />
+                          <Pie
+                            data={revenueCompositionData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={100}
+                            dataKey="value"
+                          >
+                            {revenueCompositionData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                        </RechartsPieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
                 </div>
 
                 {/* Year Comparison */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="font-medium text-center">Comparativa Anual</h4>
-                  <ChartContainer config={{}} className="h-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={yearComparisonData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="year" />
-                        <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
-                        <ChartTooltip 
-                          content={<ChartTooltipContent 
-                            formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, 'Facturación']}
-                          />} 
-                        />
-                        <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                  <div className="flex justify-center">
+                    <ChartContainer config={{}} className="h-[250px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={yearComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
+                          <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+                          <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                          <ChartTooltip 
+                            content={<ChartTooltipContent 
+                              formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, 'Facturación']}
+                            />}
+                            wrapperStyle={{ 
+                              zIndex: 1000,
+                              backgroundColor: 'hsl(var(--popover))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '6px',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                            }}
+                          />
+                          <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
                 </div>
               </div>
             </CardContent>
