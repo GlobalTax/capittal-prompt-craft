@@ -1,11 +1,11 @@
 import Header from "@/components/Header";
-import BusinessValuationWizard from "@/components/BusinessValuationWizard";
+import ValuationCalculator from "@/components/ValuationCalculator";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <BusinessValuationWizard />
+      <ValuationCalculator />
     </div>
   );
 };
