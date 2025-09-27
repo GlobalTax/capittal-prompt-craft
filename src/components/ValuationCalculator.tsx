@@ -642,7 +642,8 @@ const ValuationCalculator = () => {
               </div>
             </CardContent>
           </Card>
-                </div>
+        </div>
+      </div>
               </div>
             </TabsContent>
 
