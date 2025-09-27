@@ -14,6 +14,10 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart,
 import DCFCalculator from "./DCFCalculator";
 import ComparableMultiples from "./ComparableMultiples";
 import DueDiligenceChecklist from "./DueDiligenceChecklist";
+import FinancialDataIntegrator from "./FinancialDataIntegrator";
+import DataImporter from "./DataImporter";
+import AlertSystem from "./AlertSystem";
+import ZapierIntegration from "./ZapierIntegration";
 
 interface FinancialData {
   totalRevenue2023: number;
@@ -201,7 +205,7 @@ const ValuationCalculator = () => {
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
                 Valoración Básica
@@ -217,6 +221,10 @@ const ValuationCalculator = () => {
               <TabsTrigger value="duediligence" className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4" />
                 Due Diligence
+              </TabsTrigger>
+              <TabsTrigger value="integrations" className="flex items-center gap-2">
+                <PieChart className="h-4 w-4" />
+                Integraciones
               </TabsTrigger>
             </TabsList>
 
@@ -657,6 +665,33 @@ const ValuationCalculator = () => {
 
             <TabsContent value="duediligence">
               <DueDiligenceChecklist />
+            </TabsContent>
+
+            <TabsContent value="integrations">
+              <Tabs defaultValue="data-integrator" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="data-integrator">APIs Financieras</TabsTrigger>
+                  <TabsTrigger value="data-importer">Importar Datos</TabsTrigger>
+                  <TabsTrigger value="alerts">Alertas</TabsTrigger>
+                  <TabsTrigger value="zapier">Zapier</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="data-integrator">
+                  <FinancialDataIntegrator />
+                </TabsContent>
+
+                <TabsContent value="data-importer">
+                  <DataImporter />
+                </TabsContent>
+
+                <TabsContent value="alerts">
+                  <AlertSystem />
+                </TabsContent>
+
+                <TabsContent value="zapier">
+                  <ZapierIntegration />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
           </Tabs>
         </div>
