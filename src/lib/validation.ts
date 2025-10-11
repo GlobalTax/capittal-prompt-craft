@@ -99,11 +99,11 @@ type ValidationResult<T> = { success: true; data: T } | { success: false; errors
  * Valida datos financieros y retorna errores formateados
  */
 export function validateFinancialData(data: unknown): string[] {
-  const result = validateData(financialDataSchema, data) as ValidationResult<any>;
-  return result.success ? [] : result.errors;
+  const result = validateData(financialDataSchema, data);
+  return result.success ? [] : (result as { success: false; errors: string[] }).errors;
 }
 
 export function validateValuation(data: unknown): string[] {
-  const result = validateData(valuationSchema, data) as ValidationResult<any>;
-  return result.success ? [] : result.errors;
+  const result = validateData(valuationSchema, data);
+  return result.success ? [] : (result as { success: false; errors: string[] }).errors;
 }

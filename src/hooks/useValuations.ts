@@ -53,6 +53,12 @@ export interface Valuation {
   completed: boolean;
   created_at: string;
   updated_at: string;
+  
+  // Campos para calculadoras
+  dcf_results?: any;
+  comparable_multiples_results?: any;
+  last_dcf_calculation?: string;
+  last_multiples_calculation?: string;
 }
 
 export function useValuations() {
