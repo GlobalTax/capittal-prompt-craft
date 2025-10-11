@@ -9,12 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Download, Eye, Settings, Palette, BarChart3, PieChart, TrendingUp } from "lucide-react";
+import { FileText, Download, Eye, Settings, Palette, BarChart3, PieChart, TrendingUp, Trash2, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useReports } from "@/hooks/useReports";
+import { useValuations } from "@/hooks/useValuations";
+import { useAdvisorProfile } from "@/hooks/useAdvisorProfile";
+import { generateValuationPDF } from "@/components/reports/ValuationPDFExporter";
+import { format } from "date-fns";
 
 const ReportGenerator = () => {
   const { toast } = useToast();
-  const [reportType, setReportType] = useState("ejecutivo");
+  const { user } = useAuth();
+  const { reports, loading: reportsLoading, createReport, deleteReport } = useReports();
+  const { valuations, loading: valuationsLoading } = useValuations();
+  const { profile } = useAdvisorProfile();
+  
+  const [reportType, setReportType] = useState<"ejecutivo" | "due-diligence" | "comparativo" | "valoracion-rapida">("ejecutivo");
+  const [selectedValuationId, setSelectedValuationId] = useState<string>("");
+  const [reportTitle, setReportTitle] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -77,35 +92,86 @@ const ReportGenerator = () => {
   };
 
   const generateReport = async () => {
+    if (!selectedValuationId) {
+      toast({
+        title: "Error",
+        description: "Selecciona una valoración primero",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!profile) {
+      toast({
+        title: "Error",
+        description: "Configura tu perfil de asesor primero",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setProgress(0);
 
-    // Simulate report generation process
-    const steps = [
-      "Recopilando datos financieros...",
-      "Generando gráficos y visualizaciones...", 
-      "Calculando múltiplos y benchmarks...",
-      "Redactando análisis ejecutivo...",
-      "Aplicando formato y branding...",
-      "Compilando documento final..."
-    ];
+    try {
+      const valuation = valuations.find(v => v.id === selectedValuationId);
+      if (!valuation) throw new Error("Valoración no encontrada");
 
-    for (let i = 0; i < steps.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProgress((i + 1) / steps.length * 100);
-      
-      toast({
-        title: "Generando Reporte",
-        description: steps[i],
+      // Simulate report generation steps
+      const steps = [
+        "Recopilando datos financieros...",
+        "Generando gráficos y visualizaciones...", 
+        "Calculando múltiplos y benchmarks...",
+        "Redactando análisis ejecutivo...",
+        "Aplicando formato y branding...",
+        "Compilando documento final..."
+      ];
+
+      for (let i = 0; i < steps.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setProgress((i + 1) / steps.length * 100);
+        
+        toast({
+          title: "Generando Reporte",
+          description: steps[i],
+        });
+      }
+
+      // Generate PDF
+      await generateValuationPDF(valuation, profile);
+
+      // Save report to database
+      await createReport({
+        valuation_id: selectedValuationId,
+        report_type: reportType,
+        title: reportTitle || valuation.title,
+        client_name: clientName,
+        content: {
+          sections: selectedSections.filter(s => s.checked).map(s => s.id),
+          notes: additionalNotes,
+        },
+        branding: {
+          company_name: profile.business_name,
+          primary_color: profile.brand_color || '#3b82f6',
+          footer: profile.footer_disclaimer || '',
+          logo_url: profile.logo_url,
+        },
       });
-    }
 
-    setIsGenerating(false);
-    
-    toast({
-      title: "¡Reporte Generado!",
-      description: "El reporte ha sido generado exitosamente y está listo para descargar.",
-    });
+      toast({
+        title: "¡Reporte Generado!",
+        description: "El reporte se ha descargado y guardado exitosamente.",
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el reporte",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const previewReport = () => {
@@ -143,8 +209,30 @@ const ReportGenerator = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
+                <Label>Valoración</Label>
+                <Select value={selectedValuationId} onValueChange={setSelectedValuationId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una valoración" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {valuationsLoading ? (
+                      <SelectItem value="loading" disabled>Cargando...</SelectItem>
+                    ) : valuations.length === 0 ? (
+                      <SelectItem value="none" disabled>No hay valoraciones</SelectItem>
+                    ) : (
+                      valuations.map(valuation => (
+                        <SelectItem key={valuation.id} value={valuation.id}>
+                          {valuation.title}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Tipo de Reporte</Label>
-                <Select value={reportType} onValueChange={setReportType}>
+                <Select value={reportType} onValueChange={(value) => setReportType(value as typeof reportType)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -160,12 +248,20 @@ const ReportGenerator = () => {
 
               <div className="space-y-2">
                 <Label>Título del Reporte</Label>
-                <Input placeholder="Valoración Empresa XYZ" />
+                <Input 
+                  placeholder="Valoración Empresa XYZ" 
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Cliente</Label>
-                <Input placeholder="Nombre del cliente" />
+                <Input 
+                  placeholder="Nombre del cliente"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">
@@ -173,6 +269,8 @@ const ReportGenerator = () => {
                 <Textarea 
                   placeholder="Notas especiales para incluir en el reporte..."
                   rows={3}
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
                 />
               </div>
             </CardContent>
@@ -216,7 +314,7 @@ const ReportGenerator = () => {
             <TabsList>
               <TabsTrigger value="template">Template</TabsTrigger>
               <TabsTrigger value="sections">Secciones</TabsTrigger>
-              <TabsTrigger value="preview">Vista Previa</TabsTrigger>
+              <TabsTrigger value="history">Historial</TabsTrigger>
             </TabsList>
 
             <TabsContent value="template" className="space-y-4">
@@ -227,7 +325,7 @@ const ReportGenerator = () => {
                     className={`cursor-pointer transition-colors ${
                       reportType === template.id ? 'border-primary bg-primary/5' : ''
                     }`}
-                    onClick={() => setReportType(template.id)}
+                    onClick={() => setReportType(template.id as typeof reportType)}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -281,53 +379,78 @@ const ReportGenerator = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="preview" className="space-y-4">
+            <TabsContent value="history" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Vista Previa del Reporte</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <History className="h-4 w-4" />
+                    <span>Reportes Generados</span>
+                  </CardTitle>
                   <CardDescription>
-                    Muestra cómo se verá el reporte final
+                    Historial de reportes generados previamente
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border rounded-lg p-6 bg-white text-black min-h-[400px]">
-                    <div className="text-center mb-6">
-                      <h1 className="text-2xl font-bold mb-2">Valoración Empresa XYZ</h1>
-                      <p className="text-gray-600">{brandingOptions.companyName}</p>
-                      <p className="text-sm text-gray-500">Fecha: {new Date().toLocaleDateString()}</p>
+                  {reportsLoading ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Cargando reportes...
                     </div>
-                    
-                    <div className="space-y-4">
-                      <section>
-                        <h2 className="text-lg font-semibold mb-2">Resumen Ejecutivo</h2>
-                        <p className="text-sm text-gray-700">
-                          Esta valoración presenta un análisis integral de la empresa XYZ...
-                        </p>
-                      </section>
-                      
-                      <section>
-                        <h2 className="text-lg font-semibold mb-2">Datos Financieros Clave</h2>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>Ingresos: €400.000</div>
-                          <div>EBITDA: €120.000</div>
-                          <div>Margen EBITDA: 30%</div>
-                          <div>Empleados: 8</div>
+                  ) : reports.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No hay reportes generados aún
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {reports.map(report => (
+                        <div 
+                          key={report.id} 
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium">{report.title}</h4>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {reportTemplates.find(t => t.id === report.report_type)?.name || report.report_type}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(report.generated_at), 'dd/MM/yyyy HH:mm')}
+                              </span>
+                            </div>
+                            {report.client_name && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Cliente: {report.client_name}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                const valuation = valuations.find(v => v.id === report.valuation_id);
+                                if (valuation && profile) {
+                                  await generateValuationPDF(valuation, profile);
+                                  toast({
+                                    title: "Reporte descargado",
+                                    description: "El PDF se ha descargado correctamente",
+                                  });
+                                }
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteReport(report.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
-                      </section>
-                      
-                      <section>
-                        <h2 className="text-lg font-semibold mb-2">Valoración Final</h2>
-                        <div className="bg-blue-50 p-4 rounded">
-                          <p className="font-semibold">Valoración Estimada: €1.68M</p>
-                          <p className="text-sm">Múltiplo EBITDA: 4.2x</p>
-                        </div>
-                      </section>
+                      ))}
                     </div>
-                    
-                    <div className="mt-8 pt-4 border-t text-center text-xs text-gray-500">
-                      {brandingOptions.footer}
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

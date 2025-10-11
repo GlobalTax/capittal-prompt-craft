@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
 import { reportRepository, ValuationReport } from '@/repositories/ReportRepository';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
-export function useReports(userId: string | undefined, valuationId?: string) {
+export function useReports() {
   const [reports, setReports] = useState<ValuationReport[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (userId) {
+    if (user?.id) {
       fetchReports();
     }
-  }, [userId, valuationId]);
+  }, [user?.id]);
 
   const fetchReports = async () => {
-    if (!userId) return;
+    if (!user?.id) return;
     
     try {
       setLoading(true);
-      const data = valuationId 
-        ? await reportRepository.getReportsByValuation(valuationId)
-        : await reportRepository.getReports(userId);
+      const data = await reportRepository.getReports(user.id);
       setReports(data);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -35,12 +35,12 @@ export function useReports(userId: string | undefined, valuationId?: string) {
   };
 
   const createReport = async (reportData: Partial<ValuationReport>) => {
-    if (!userId) return;
+    if (!user?.id) return;
 
     try {
       const newReport = await reportRepository.createReport({
         ...reportData,
-        generated_by: userId,
+        generated_by: user.id,
         generated_at: new Date().toISOString()
       });
       

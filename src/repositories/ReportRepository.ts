@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+type ReportRow = Database['public']['Tables']['valuation_reports']['Row'];
 
 export interface ValuationReport {
   id: string;
@@ -26,7 +29,7 @@ export class ReportRepository {
       .order('generated_at', { ascending: false });
     
     if (error) throw new Error(error.message);
-    return data as ValuationReport[];
+    return data as unknown as ValuationReport[];
   }
 
   async getReportsByValuation(valuationId: string): Promise<ValuationReport[]> {
@@ -37,7 +40,7 @@ export class ReportRepository {
       .order('generated_at', { ascending: false });
     
     if (error) throw new Error(error.message);
-    return data as ValuationReport[];
+    return data as unknown as ValuationReport[];
   }
 
   async createReport(report: Partial<ValuationReport>): Promise<ValuationReport> {
@@ -48,7 +51,7 @@ export class ReportRepository {
       .single();
     
     if (error) throw new Error(error.message);
-    return data as ValuationReport;
+    return data as unknown as ValuationReport;
   }
 
   async deleteReport(reportId: string): Promise<void> {
