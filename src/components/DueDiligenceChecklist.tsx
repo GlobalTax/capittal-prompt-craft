@@ -20,18 +20,10 @@ import {
   Info,
   Star
 } from "lucide-react";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
-
-interface DueDiligenceItem {
-  id: string;
-  category: string;
-  title: string;
-  description: string;
-  impact: "high" | "medium" | "low";
-  checked: boolean;
-  notes?: string;
-}
+import { useDueDiligence } from "@/hooks/useDueDiligence";
+import { DueDiligenceItem } from "@/repositories/DueDiligenceRepository";
 
 interface DueDiligenceCategory {
   name: string;
@@ -47,215 +39,65 @@ interface RiskAssessment {
   riskLevel: "low" | "medium" | "high";
 }
 
-const DueDiligenceChecklist = () => {
+interface DueDiligenceChecklistProps {
+  valuationId?: string;
+}
+
+const DueDiligenceChecklist = ({ valuationId }: DueDiligenceChecklistProps) => {
+  const { items, loading, toggleCheck, updateNotes } = useDueDiligence(valuationId);
   const [categories, setCategories] = useState<DueDiligenceCategory[]>([
     {
       name: "Financiero",
       icon: TrendingUp,
       color: "hsl(var(--chart-1))",
-      items: [
-        {
-          id: "fin-1",
-          category: "financial",
-          title: "Estados financieros auditados últimos 3 años",
-          description: "Verificar la precisión y consistencia de los reportes financieros",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "fin-2",
-          category: "financial",
-          title: "Análisis de flujo de caja",
-          description: "Evaluar la capacidad de generación de efectivo",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "fin-3",
-          category: "financial",
-          title: "Cartera de clientes y concentración",
-          description: "Analizar dependencia de clientes principales",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "fin-4",
-          category: "financial",
-          title: "Contratos recurrentes validados",
-          description: "Verificar la estabilidad de ingresos recurrentes",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "fin-5",
-          category: "financial",
-          title: "Análisis de márgenes por servicio",
-          description: "Evaluar rentabilidad por línea de negocio",
-          impact: "medium",
-          checked: false
-        }
-      ]
+      items: []
     },
     {
       name: "Legal",
       icon: Shield,
       color: "hsl(var(--chart-2))",
-      items: [
-        {
-          id: "leg-1",
-          category: "legal",
-          title: "Constitución y estatutos actualizados",
-          description: "Verificar estructura legal y governance",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "leg-2",
-          category: "legal",
-          title: "Licencias y permisos vigentes",
-          description: "Confirmar cumplimiento regulatorio",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "leg-3",
-          category: "legal",
-          title: "Contratos con empleados clave",
-          description: "Revisar términos y cláusulas de retención",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "leg-4",
-          category: "legal",
-          title: "Seguros y coberturas",
-          description: "Evaluar protección contra riesgos operacionales",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "leg-5",
-          category: "legal",
-          title: "Litigios pendientes",
-          description: "Identificar exposición legal actual",
-          impact: "high",
-          checked: false
-        }
-      ]
+      items: []
     },
     {
       name: "Operacional",
       icon: Users,
       color: "hsl(var(--chart-3))",
-      items: [
-        {
-          id: "op-1",
-          category: "operational",
-          title: "Estructura organizacional definida",
-          description: "Evaluar roles, responsabilidades y jerarquías",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "op-2",
-          category: "operational",
-          title: "Procesos documentados",
-          description: "Verificar estandarización de metodologías",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "op-3",
-          category: "operational",
-          title: "Sistemas IT y tecnología",
-          description: "Analizar infraestructura tecnológica",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "op-4",
-          category: "operational",
-          title: "Plan de sucesión ejecutiva",
-          description: "Evaluar continuidad del liderazgo",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "op-5",
-          category: "operational",
-          title: "Métricas de calidad y satisfacción",
-          description: "Revisar KPIs de performance operacional",
-          impact: "medium",
-          checked: false
-        }
-      ]
+      items: []
     },
     {
       name: "Mercado",
       icon: FileText,
       color: "hsl(var(--chart-4))",
-      items: [
-        {
-          id: "mkt-1",
-          category: "market",
-          title: "Análisis competitivo actualizado",
-          description: "Posicionamiento vs competencia directa",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "mkt-2",
-          category: "market",
-          title: "Tendencias del sector",
-          description: "Evaluar crecimiento y outlook del mercado",
-          impact: "medium",
-          checked: false
-        },
-        {
-          id: "mkt-3",
-          category: "market",
-          title: "Propuesta de valor diferenciada",
-          description: "Identificar ventajas competitivas sostenibles",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "mkt-4",
-          category: "market",
-          title: "Pipeline comercial documentado",
-          description: "Verificar oportunidades futuras",
-          impact: "high",
-          checked: false
-        },
-        {
-          id: "mkt-5",
-          category: "market",
-          title: "Estrategia de marketing y ventas",
-          description: "Evaluar capacidad de generación de demanda",
-          impact: "medium",
-          checked: false
-        }
-      ]
+      items: []
     }
   ]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [overallNotes, setOverallNotes] = useState<string>("");
+  
+  // Update categories when items load
+  useEffect(() => {
+    if (items.length > 0) {
+      setCategories(prev => prev.map(cat => ({
+        ...cat,
+        items: items.filter(item => {
+          const catMap: Record<string, string> = {
+            'Financiero': 'financial',
+            'Legal': 'legal',
+            'Operacional': 'operational',
+            'Mercado': 'market'
+          };
+          return item.category === catMap[cat.name];
+        })
+      })));
+    }
+  }, [items]);
 
-  const handleItemCheck = (categoryIndex: number, itemIndex: number, checked: boolean) => {
-    setCategories(prev => {
-      const newCategories = [...prev];
-      newCategories[categoryIndex].items[itemIndex].checked = checked;
-      return newCategories;
-    });
+  const handleItemCheck = (itemId: string, checked: boolean) => {
+    toggleCheck(itemId, checked);
   };
 
-  const handleItemNotes = (categoryIndex: number, itemIndex: number, notes: string) => {
-    setCategories(prev => {
-      const newCategories = [...prev];
-      newCategories[categoryIndex].items[itemIndex].notes = notes;
-      return newCategories;
-    });
+  const handleItemNotes = (itemId: string, notes: string) => {
+    updateNotes(itemId, notes);
   };
 
   const calculateCategoryScore = (category: DueDiligenceCategory) => {
@@ -317,6 +159,31 @@ const DueDiligenceChecklist = () => {
     : categories.filter(cat => cat.name.toLowerCase() === selectedCategory);
 
   const overallRisk = getOverallRisk();
+
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <div className="text-center text-muted-foreground">Cargando checklist...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!valuationId) {
+    return (
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Selecciona una valoración para ver el checklist de due diligence
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">
@@ -440,14 +307,14 @@ const DueDiligenceChecklist = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {category.items.map((item, itemIndex) => (
+                {category.items.map((item) => (
                   <div key={item.id} className="space-y-3 p-4 border border-border rounded-lg">
                     <div className="flex items-start gap-3">
                       <Checkbox
                         id={item.id}
                         checked={item.checked}
                         onCheckedChange={(checked) => 
-                          handleItemCheck(categoryIndex, itemIndex, checked as boolean)
+                          handleItemCheck(item.id, checked as boolean)
                         }
                       />
                       <div className="flex-1 space-y-2">
@@ -470,7 +337,7 @@ const DueDiligenceChecklist = () => {
                         <Textarea
                           placeholder="Notas adicionales..."
                           value={item.notes || ""}
-                          onChange={(e) => handleItemNotes(categoryIndex, itemIndex, e.target.value)}
+                          onChange={(e) => handleItemNotes(item.id, e.target.value)}
                           className="mt-2"
                           rows={2}
                         />
@@ -520,20 +387,6 @@ const DueDiligenceChecklist = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Notas generales */}
-        <div className="space-y-3">
-          <Label htmlFor="overallNotes" className="text-base font-semibold">
-            Observaciones Generales
-          </Label>
-          <Textarea
-            id="overallNotes"
-            placeholder="Incluye aquí cualquier observación adicional sobre el proceso de due diligence..."
-            value={overallNotes}
-            onChange={(e) => setOverallNotes(e.target.value)}
-            rows={4}
-          />
-        </div>
 
         {/* Resumen ejecutivo */}
         <Card className="bg-primary/5">

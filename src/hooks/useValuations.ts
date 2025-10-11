@@ -98,6 +98,10 @@ export function useValuations() {
         year_2: (currentYear + 1).toString(),
       });
 
+      // Initialize default due diligence items
+      const { dueDiligenceRepository } = await import('@/repositories/DueDiligenceRepository');
+      await dueDiligenceRepository.initializeDefaultItems(newValuation.id);
+
       setValuations([newValuation, ...valuations]);
       toast({
         title: 'Valoración creada',

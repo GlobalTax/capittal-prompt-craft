@@ -37,6 +37,23 @@ export class DueDiligenceRepository {
     return data as DueDiligenceItem;
   }
 
+  async initializeDefaultItems(valuationId: string): Promise<void> {
+    const { defaultDDItems } = await import('@/utils/dueDiligenceDefaults');
+    
+    const items = defaultDDItems.map(item => ({
+      ...item,
+      valuation_id: valuationId,
+      checked: false,
+      notes: null
+    }));
+
+    const { error } = await supabase
+      .from('due_diligence_items')
+      .insert(items as any);
+    
+    if (error) throw new Error(error.message);
+  }
+
   async updateItem(id: string, updates: Partial<DueDiligenceItem>): Promise<void> {
     const { error } = await supabase
       .from('due_diligence_items')
