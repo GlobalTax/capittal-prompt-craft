@@ -193,9 +193,9 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
         <table className="w-full border-collapse">
           <thead className="sticky top-0 z-20">
             <tr className="bg-muted border-b-2">
-              <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[30%] sticky left-0 bg-muted z-10">Concepto</th>
+              <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-muted z-10">Concepto</th>
               {years.map((year, index) => (
-              <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[250px]">
+              <th key={year} className="text-right p-3 font-medium text-sm border-r w-[250px]">
                 <div className="flex items-center justify-end gap-2">
                   {years.length > 2 && (
                     <Button
@@ -262,7 +262,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                 {section.rows.map((row) => (
                   <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
                     {/* Row Label */}
-                    <td className={`p-3 text-sm border-r min-w-[300px] w-[30%] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
+                    <td className={`p-3 text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                       <div className="flex items-center gap-2">
                         <Input
                           value={row.label}
@@ -285,7 +285,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
                     {/* Year Values */}
                     {years.map((year) => (
-                      <td key={year} className="p-3 text-right border-r min-w-[250px]">
+                      <td key={year} className="p-3 text-right border-r w-[250px]">
                         {row.type === 'input' ? (
                           <Input
                             type="text"
