@@ -251,6 +251,24 @@ const ValuationCalculator = () => {
             }
           },
           {
+            id: 'net-profit',
+            label: 'Resultado Neto (después de Impuestos 25%)',
+            type: 'calculated' as const,
+            category: 'result' as const,
+            indented: true,
+            values: {},
+            formula: (yearData: Record<string, number>) => {
+              const totalRevenue = yearData['total-revenue'] || 0;
+              const personnelCosts = yearData['personnel-costs'] || 0;
+              const otherCosts = yearData['other-costs'] || 0;
+              const ownerSalary = yearData['owner-salary'] || 0;
+              const bai = totalRevenue - personnelCosts - otherCosts - ownerSalary;
+              // Aplicar 25% de impuesto de sociedades
+              const tax = bai * 0.25;
+              return bai - tax;
+            }
+          },
+          {
             id: 'ebitda',
             label: 'EBITDA',
             type: 'calculated' as const,
