@@ -36,6 +36,27 @@ interface ValuationResult {
   method: string;
 }
 
+interface ValuationMethod {
+  id: string;
+  name: string;
+  type: 'ebitda' | 'revenue';
+  enabled: boolean;
+  multipliers: MultiplierScenario[];
+}
+
+interface MultiplierScenario {
+  id: string;
+  label: string;
+  value: number;
+  suggested: boolean;
+  editable: boolean;
+}
+
+interface ValuationConfig {
+  methods: ValuationMethod[];
+  showSuggestions: boolean;
+}
+
 const ValuationCalculator = () => {
   const [data, setData] = useState<FinancialData>({
     years: [
@@ -67,6 +88,39 @@ const ValuationCalculator = () => {
   });
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
+  
+  // Valuation configuration state
+  const [valuationConfig, setValuationConfig] = useState<ValuationConfig>({
+    methods: [
+      {
+        id: 'revenue-method',
+        name: 'Múltiplo por Facturación',
+        type: 'revenue',
+        enabled: true,
+        multipliers: [
+          { id: 'r1', label: 'Conservador', value: 0.7, suggested: true, editable: true },
+          { id: 'r2', label: 'Moderado', value: 0.8, suggested: true, editable: true },
+          { id: 'r3', label: 'Optimista', value: 0.9, suggested: true, editable: true },
+          { id: 'r4', label: 'Agresivo', value: 1.0, suggested: true, editable: true },
+          { id: 'r5', label: 'Premium', value: 1.1, suggested: true, editable: true },
+        ]
+      },
+      {
+        id: 'ebitda-method',
+        name: 'Múltiplo por EBITDA',
+        type: 'ebitda',
+        enabled: false,
+        multipliers: [
+          { id: 'e1', label: 'Conservador', value: 3.5, suggested: true, editable: true },
+          { id: 'e2', label: 'Moderado', value: 4.5, suggested: true, editable: true },
+          { id: 'e3', label: 'Optimista', value: 5.5, suggested: true, editable: true },
+          { id: 'e4', label: 'Agresivo', value: 6.5, suggested: true, editable: true },
+          { id: 'e5', label: 'Premium', value: 7.5, suggested: true, editable: true },
+        ]
+      }
+    ],
+    showSuggestions: true,
+  });
   
   // Dynamic table state
   const [dynamicSections, setDynamicSections] = useState<TableSection[]>(() => {
@@ -224,38 +278,56 @@ const ValuationCalculator = () => {
     const metrics = calculateMetrics();
     const latestYear = data.years[data.years.length - 1];
     
-    // Valoración por múltiplos basada en los datos del Excel
-    const valuationsByRevenue: ValuationResult[] = [
-      { valuationAmount: latestYear.totalRevenue * 0.7, multiplier: 0.7, method: "Conservador" },
-      { valuationAmount: latestYear.totalRevenue * 0.8, multiplier: 0.8, method: "Moderado" },
-      { valuationAmount: latestYear.totalRevenue * 0.9, multiplier: 0.9, method: "Optimista" },
-      { valuationAmount: latestYear.totalRevenue * 1.0, multiplier: 1.0, method: "Agresivo" },
-      { valuationAmount: latestYear.totalRevenue * 1.1, multiplier: 1.1, method: "Premium" },
-    ];
-
-    // Ajustes basados en márgenes
-    const adjustedValuations = valuationsByRevenue.map(valuation => {
-      let adjustment = 1;
+    const allValuations: ValuationResult[] = [];
+    
+    // Procesar cada método habilitado
+    valuationConfig.methods.forEach(method => {
+      if (!method.enabled) return;
       
-      // Ajuste por margen neto
-      if (metrics.netMargin > 30) adjustment += 0.1;
-      else if (metrics.netMargin < 10) adjustment -= 0.1;
+      const baseValue = method.type === 'ebitda' 
+        ? metrics.ebitda 
+        : latestYear.totalRevenue;
       
-      // Ajuste por tamaño
-      if (latestYear.totalRevenue >= 1000000) adjustment += 0.05;
-      
-      return {
-        ...valuation,
-        valuationAmount: valuation.valuationAmount * adjustment
-      };
+      // Calcular valoraciones por cada multiplicador
+      method.multipliers.forEach(multiplier => {
+        let valuationAmount = baseValue * multiplier.value;
+        
+        // Aplicar ajustes automáticos si las sugerencias están activas
+        if (valuationConfig.showSuggestions) {
+          let adjustment = 1;
+          
+          // Ajuste por margen neto
+          if (metrics.netMargin > 30) adjustment += 0.1;
+          else if (metrics.netMargin < 10) adjustment -= 0.1;
+          
+          // Ajuste por recurrencia
+          if (metrics.recurringPercentage > 70) adjustment += 0.05;
+          else if (metrics.recurringPercentage < 40) adjustment -= 0.05;
+          
+          // Ajuste por tamaño
+          if (latestYear.totalRevenue >= 1000000) adjustment += 0.05;
+          
+          // Ajuste por crecimiento
+          if (metrics.revenueGrowth > 20) adjustment += 0.1;
+          else if (metrics.revenueGrowth < 0) adjustment -= 0.15;
+          
+          valuationAmount *= adjustment;
+        }
+        
+        allValuations.push({
+          valuationAmount,
+          multiplier: multiplier.value,
+          method: `${method.name} - ${multiplier.label}`
+        });
+      });
     });
-
-    setValuations(adjustedValuations);
+    
+    setValuations(allValuations);
   };
 
   useEffect(() => {
     calculateValuations();
-  }, [data]);
+  }, [data, valuationConfig]);
 
   const metrics = calculateMetrics();
 
@@ -672,47 +744,222 @@ const ValuationCalculator = () => {
                   </Card>
                 </div>
 
+                {/* Valuation Configuration Panel */}
+                <Card className="shadow-md">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calculator className="h-5 w-5" />
+                      Configuración de Valoración
+                    </CardTitle>
+                    <CardDescription>
+                      Personaliza los métodos y multiplicadores según tu criterio
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    
+                    {/* Toggle de sugerencias automáticas */}
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">Mostrar ajustes sugeridos</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={valuationConfig.showSuggestions}
+                          onChange={(e) => setValuationConfig(prev => ({
+                            ...prev,
+                            showSuggestions: e.target.checked
+                          }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                      </label>
+                    </div>
+
+                    {/* Métodos de valoración */}
+                    {valuationConfig.methods.map((method, methodIndex) => (
+                      <div key={method.id} className="space-y-3 p-4 border rounded-lg">
+                        
+                        {/* Header del método */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={method.enabled}
+                              onChange={(e) => {
+                                const newMethods = [...valuationConfig.methods];
+                                newMethods[methodIndex].enabled = e.target.checked;
+                                setValuationConfig(prev => ({ ...prev, methods: newMethods }));
+                              }}
+                              className="w-4 h-4 rounded border-input"
+                            />
+                            <Label className="text-base font-semibold cursor-pointer">{method.name}</Label>
+                          </div>
+                          <Badge variant={method.enabled ? "default" : "secondary"}>
+                            {method.enabled ? "Activo" : "Inactivo"}
+                          </Badge>
+                        </div>
+
+                        {/* Multiplicadores */}
+                        {method.enabled && (
+                          <div className="space-y-2 pl-6">
+                            {method.multipliers.map((mult, multIndex) => (
+                              <div key={mult.id} className="flex items-center gap-3">
+                                <Label className="w-28 text-sm">{mult.label}</Label>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  value={mult.value}
+                                  onChange={(e) => {
+                                    const newMethods = [...valuationConfig.methods];
+                                    newMethods[methodIndex].multipliers[multIndex].value = parseFloat(e.target.value) || 0;
+                                    newMethods[methodIndex].multipliers[multIndex].suggested = false;
+                                    setValuationConfig(prev => ({ ...prev, methods: newMethods }));
+                                  }}
+                                  className="w-24 h-8"
+                                />
+                                <span className="text-sm text-muted-foreground">x</span>
+                                {mult.suggested && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Sugerido
+                                  </Badge>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newMethods = [...valuationConfig.methods];
+                                    newMethods[methodIndex].multipliers.splice(multIndex, 1);
+                                    setValuationConfig(prev => ({ ...prev, methods: newMethods }));
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                            
+                            {/* Botón para añadir multiplicador personalizado */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newMethods = [...valuationConfig.methods];
+                                const newMult: MultiplierScenario = {
+                                  id: crypto.randomUUID(),
+                                  label: 'Personalizado',
+                                  value: 1.0,
+                                  suggested: false,
+                                  editable: true
+                                };
+                                newMethods[methodIndex].multipliers.push(newMult);
+                                setValuationConfig(prev => ({ ...prev, methods: newMethods }));
+                              }}
+                              className="mt-2"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Añadir escenario
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Info sobre el valor base */}
+                        {method.enabled && (
+                          <Alert className="mt-2">
+                            <AlertDescription className="text-xs">
+                              {method.type === 'ebitda' 
+                                ? `EBITDA actual: ${formatNumber(metrics.ebitda)}€`
+                                : `Facturación actual: ${formatNumber(latestYear.totalRevenue)}€`
+                              }
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Botón para recalcular */}
+                    <Button 
+                      onClick={calculateValuations}
+                      className="w-full"
+                      variant="default"
+                    >
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Recalcular Valoraciones
+                    </Button>
+                  </CardContent>
+                </Card>
+
                 {/* Valuation Results */}
                 <Card className="shadow-md">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Valoraciones por Múltiplos
+                      <TrendingUp className="h-5 w-5" />
+                      Resultados de Valoración
                     </CardTitle>
                     <CardDescription>
-                      Diferentes escenarios de valoración basados en múltiplos del sector
+                      Escenarios calculados según tu configuración
+                      {valuationConfig.showSuggestions && (
+                        <span className="text-primary ml-1">(con ajustes automáticos)</span>
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      {valuations.map((valuation, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 rounded-lg bg-gradient-card border"
-                        >
-                          <div>
-                            <div className="font-medium">{valuation.method}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Múltiplo: {valuation.multiplier}x
+                    {valuations.length === 0 ? (
+                      <Alert>
+                        <AlertDescription>
+                          Activa al menos un método de valoración para ver resultados
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <>
+                        <div className="space-y-3">
+                          {valuations.map((valuation, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 rounded-lg bg-gradient-card border"
+                            >
+                              <div className="flex-1">
+                                <div className="font-medium">{valuation.method}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Múltiplo: {valuation.multiplier.toFixed(2)}x
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-primary">
+                                  {formatNumber(valuation.valuationAmount)}€
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <Separator className="my-4" />
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="text-center p-3 bg-muted/30 rounded-lg">
+                            <div className="text-xs text-muted-foreground mb-1">Mínima</div>
+                            <div className="text-lg font-bold">
+                              {formatNumber(Math.min(...valuations.map(v => v.valuationAmount)))}€
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-primary">
-                              {formatNumber(valuation.valuationAmount)}€
+                          
+                          <div className="text-center p-3 bg-primary/10 rounded-lg">
+                            <div className="text-xs text-muted-foreground mb-1">Media</div>
+                            <div className="text-xl font-bold text-primary">
+                              {formatNumber(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length)}€
+                            </div>
+                          </div>
+                          
+                          <div className="text-center p-3 bg-muted/30 rounded-lg">
+                            <div className="text-xs text-muted-foreground mb-1">Máxima</div>
+                            <div className="text-lg font-bold">
+                              {formatNumber(Math.max(...valuations.map(v => v.valuationAmount)))}€
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                    
-                    <Separator className="my-4" />
-                    
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Valoración Media Ponderada</div>
-                      <div className="text-2xl font-bold text-primary">
-                        {formatNumber(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length)}€
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </div>
