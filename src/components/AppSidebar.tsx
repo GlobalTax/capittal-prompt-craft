@@ -114,7 +114,7 @@ export function AppSidebar() {
             <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
               <item.icon className="h-4 w-4 shrink-0" />
               {!collapsed && (
-                <span className="text-sm font-normal truncate">{item.title}</span>
+                <span className="text-base font-normal truncate">{item.title}</span>
               )}
             </NavLink>
           </SidebarMenuButton>
