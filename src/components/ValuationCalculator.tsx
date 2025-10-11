@@ -6,14 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, BarChart3, ClipboardCheck, Plus, Trash2 } from "lucide-react";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
-import ComparableMultiples from "./ComparableMultiples";
-import DueDiligenceChecklist from "./DueDiligenceChecklist";
 
 interface YearData {
   year: string;
@@ -301,23 +298,7 @@ const ValuationCalculator = () => {
             <p className="text-muted-foreground">Herramienta especializada para valoración de consultorías</p>
           </div>
 
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic" className="flex items-center gap-2">
-                <Calculator className="h-4 w-4" />
-                Valoración Básica
-              </TabsTrigger>
-              <TabsTrigger value="multiples" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Múltiplos Sector
-              </TabsTrigger>
-              <TabsTrigger value="duediligence" className="flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4" />
-                Due Diligence
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="basic" className="space-y-6">
+          <div className="space-y-6">
               <div className="space-y-6 max-w-[95vw] mx-auto px-4">
                 {/* Validation Alerts */}
                 {validateData().length > 0 && (
@@ -878,18 +859,7 @@ const ValuationCalculator = () => {
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-
-
-            <TabsContent value="multiples">
-              <ComparableMultiples />
-            </TabsContent>
-
-            <TabsContent value="duediligence">
-              <DueDiligenceChecklist />
-            </TabsContent>
-
-          </Tabs>
+            </div>
         </div>
       </TooltipProvider>
     </div>
