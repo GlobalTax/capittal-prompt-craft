@@ -14,9 +14,6 @@ import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
 import AdvancedSettings from "@/components/AdvancedSettings";
 import FinancialDataIntegrator from "@/components/FinancialDataIntegrator";
-import DataImporter from "@/components/DataImporter";
-import AlertSystem from "@/components/AlertSystem";
-import ZapierIntegration from "@/components/ZapierIntegration";
 import DueDiligenceChecklist from "@/components/DueDiligenceChecklist";
 import ComparableMultiples from "@/components/ComparableMultiples";
 import Login from "./pages/Login";
@@ -46,10 +43,7 @@ const App = () => {
                   <Route path="valuation" element={<ValuationList />} />
                   <Route path="valuation/:id" element={<ValuationEditor />} />
                   <Route path="reports" element={<ReportGenerator />} />
-                  <Route path="integrations/financial" element={<FinancialDataIntegrator />} />
-                  <Route path="integrations/importer" element={<DataImporter />} />
-                  <Route path="integrations/alerts" element={<AlertSystem />} />
-                  <Route path="integrations/zapier" element={<ZapierIntegration />} />
+                  <Route path="advanced/budget" element={<FinancialDataIntegrator />} />
                   <Route path="advanced/due-diligence" element={<DueDiligenceChecklist />} />
                   <Route path="advanced/multiples" element={<ComparableMultiples />} />
                   <Route path="settings" element={<AdvancedSettings />} />

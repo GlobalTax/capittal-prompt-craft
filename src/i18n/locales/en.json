@@ -7,12 +7,8 @@
     "dashboard": "Dashboard",
     "valuations": "Valuations",
     "reports": "Reports",
-    "integrations": "Integrations",
-    "financialData": "Financial Data",
-    "importer": "Importer",
-    "alerts": "Alerts",
-    "zapier": "Zapier",
     "advancedFeatures": "Advanced Features",
+    "budget": "Monthly Budget",
     "dueDiligence": "Due Diligence",
     "multiplesComparables": "Comparable Multiples",
     "settings": "Settings"
