@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart, BarChart3, ClipboardCheck } from "lucide-react";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart, BarChart3, ClipboardCheck, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -19,18 +19,21 @@ import DataImporter from "./DataImporter";
 import AlertSystem from "./AlertSystem";
 import ZapierIntegration from "./ZapierIntegration";
 
-interface FinancialData {
-  totalRevenue2023: number;
-  totalRevenue2024: number;
+interface YearData {
+  year: string;
+  totalRevenue: number;
   fiscalRecurringPercent: number;
   accountingRecurringPercent: number;
   laborRecurringPercent: number;
   otherRevenuePercent: number;
-  totalCosts: number;
   personnelCosts: number;
   otherCosts: number;
   ownerSalary: number;
   numberOfEmployees: number;
+}
+
+interface FinancialData {
+  years: YearData[];
 }
 
 interface ValuationResult {
@@ -41,61 +44,95 @@ interface ValuationResult {
 
 const ValuationCalculator = () => {
   const [data, setData] = useState<FinancialData>({
-    totalRevenue2023: 625000,
-    totalRevenue2024: 1040000,
-    fiscalRecurringPercent: 28.85,
-    accountingRecurringPercent: 19.23,
-    laborRecurringPercent: 11.54,
-    otherRevenuePercent: 0.48,
-    totalCosts: 512500,
-    personnelCosts: 450000,
-    otherCosts: 62500,
-    ownerSalary: 50000,
-    numberOfEmployees: 9,
+    years: [
+      {
+        year: "2023",
+        totalRevenue: 625000,
+        fiscalRecurringPercent: 28.85,
+        accountingRecurringPercent: 19.23,
+        laborRecurringPercent: 11.54,
+        otherRevenuePercent: 0.48,
+        personnelCosts: 400000,
+        otherCosts: 50000,
+        ownerSalary: 45000,
+        numberOfEmployees: 8,
+      },
+      {
+        year: "2024",
+        totalRevenue: 1040000,
+        fiscalRecurringPercent: 28.85,
+        accountingRecurringPercent: 19.23,
+        laborRecurringPercent: 11.54,
+        otherRevenuePercent: 0.48,
+        personnelCosts: 450000,
+        otherCosts: 62500,
+        ownerSalary: 50000,
+        numberOfEmployees: 9,
+      }
+    ]
   });
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
 
-  const calculateMetrics = () => {
-    const fiscalRecurring = (data.totalRevenue2024 * data.fiscalRecurringPercent) / 100;
-    const accountingRecurring = (data.totalRevenue2024 * data.accountingRecurringPercent) / 100;
-    const laborRecurring = (data.totalRevenue2024 * data.laborRecurringPercent) / 100;
-    const otherRevenue = (data.totalRevenue2024 * data.otherRevenuePercent) / 100;
+  const calculateMetricsForYear = (yearData: YearData) => {
+    const fiscalRecurring = (yearData.totalRevenue * yearData.fiscalRecurringPercent) / 100;
+    const accountingRecurring = (yearData.totalRevenue * yearData.accountingRecurringPercent) / 100;
+    const laborRecurring = (yearData.totalRevenue * yearData.laborRecurringPercent) / 100;
+    const otherRevenue = (yearData.totalRevenue * yearData.otherRevenuePercent) / 100;
     const totalRecurring = fiscalRecurring + accountingRecurring + laborRecurring + otherRevenue;
-    const netMargin = ((data.totalRevenue2024 - data.totalCosts) / data.totalRevenue2024) * 100;
-    const contributionMargin = ((data.totalRevenue2024 - data.personnelCosts) / data.totalRevenue2024) * 100;
-    const ownerMargin = (data.ownerSalary / data.totalRevenue2024) * 100;
-    const revenuePerEmployee = data.totalRevenue2024 / data.numberOfEmployees;
-    const profitBeforeTaxes = data.totalRevenue2024 - data.totalCosts;
-    const revenueGrowth = ((data.totalRevenue2024 - data.totalRevenue2023) / data.totalRevenue2023) * 100;
-    const ebitda = profitBeforeTaxes + data.ownerSalary; // Simplified EBITDA approximation
-    const recurringPercentage = (totalRecurring / data.totalRevenue2024) * 100;
-    const costEfficiency = (data.totalCosts / data.totalRevenue2024) * 100;
+    const totalCosts = yearData.personnelCosts + yearData.otherCosts + yearData.ownerSalary;
+    const netMargin = ((yearData.totalRevenue - totalCosts) / yearData.totalRevenue) * 100;
+    const contributionMargin = ((yearData.totalRevenue - yearData.personnelCosts) / yearData.totalRevenue) * 100;
+    const ownerMargin = (yearData.ownerSalary / yearData.totalRevenue) * 100;
+    const revenuePerEmployee = yearData.totalRevenue / yearData.numberOfEmployees;
+    const profitBeforeTaxes = yearData.totalRevenue - totalCosts;
+    const ebitda = profitBeforeTaxes + yearData.ownerSalary;
+    const recurringPercentage = (totalRecurring / yearData.totalRevenue) * 100;
+    const costEfficiency = (totalCosts / yearData.totalRevenue) * 100;
+    const otherIncome = yearData.totalRevenue - totalRecurring;
 
     return {
+      fiscalRecurring,
+      accountingRecurring,
+      laborRecurring,
+      otherRevenue,
+      totalRecurring,
+      otherIncome,
+      totalCosts,
       netMargin,
       contributionMargin,
       ownerMargin,
       revenuePerEmployee,
       profitBeforeTaxes,
-      revenueGrowth,
       ebitda,
       recurringPercentage,
-      totalRecurring,
       costEfficiency
+    };
+  };
+
+  const calculateMetrics = () => {
+    const latestYear = data.years[data.years.length - 1];
+    const previousYear = data.years[data.years.length - 2];
+    const latestMetrics = calculateMetricsForYear(latestYear);
+    const revenueGrowth = previousYear ? ((latestYear.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100 : 0;
+
+    return {
+      ...latestMetrics,
+      revenueGrowth
     };
   };
 
   const calculateValuations = () => {
     const metrics = calculateMetrics();
+    const latestYear = data.years[data.years.length - 1];
     
     // Valoración por múltiplos basada en los datos del Excel
     const valuationsByRevenue: ValuationResult[] = [
-      { valuationAmount: data.totalRevenue2024 * 0.7, multiplier: 0.7, method: "Conservador" },
-      { valuationAmount: data.totalRevenue2024 * 0.8, multiplier: 0.8, method: "Moderado" },
-      { valuationAmount: data.totalRevenue2024 * 0.9, multiplier: 0.9, method: "Optimista" },
-      { valuationAmount: data.totalRevenue2024 * 1.0, multiplier: 1.0, method: "Agresivo" },
-      { valuationAmount: data.totalRevenue2024 * 1.1, multiplier: 1.1, method: "Premium" },
+      { valuationAmount: latestYear.totalRevenue * 0.7, multiplier: 0.7, method: "Conservador" },
+      { valuationAmount: latestYear.totalRevenue * 0.8, multiplier: 0.8, method: "Moderado" },
+      { valuationAmount: latestYear.totalRevenue * 0.9, multiplier: 0.9, method: "Optimista" },
+      { valuationAmount: latestYear.totalRevenue * 1.0, multiplier: 1.0, method: "Agresivo" },
+      { valuationAmount: latestYear.totalRevenue * 1.1, multiplier: 1.1, method: "Premium" },
     ];
 
     // Ajustes basados en márgenes
@@ -107,7 +144,7 @@ const ValuationCalculator = () => {
       else if (metrics.netMargin < 10) adjustment -= 0.1;
       
       // Ajuste por tamaño
-      if (data.totalRevenue2024 >= 1000000) adjustment += 0.05;
+      if (latestYear.totalRevenue >= 1000000) adjustment += 0.05;
       
       return {
         ...valuation,
@@ -147,53 +184,82 @@ const ValuationCalculator = () => {
     return parseFloat(value.replace(/\./g, '')) || 0;
   };
 
-  const handleInputChange = (field: keyof FinancialData, value: string) => {
-    // Solo permitir números y puntos
-    const cleanValue = value.replace(/[^\d.]/g, '');
-    const numValue = parseNumber(cleanValue);
+  const updateYearData = (yearIndex: number, field: keyof YearData, value: number) => {
     setData(prev => ({
-      ...prev,
-      [field]: numValue
+      years: prev.years.map((year, index) =>
+        index === yearIndex ? { ...year, [field]: value } : year
+      )
     }));
   };
 
-  const handlePercentageChange = (field: keyof FinancialData, value: string) => {
-    // Permitir campo vacío
+  const handleInputChange = (yearIndex: number, field: keyof YearData, value: string) => {
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    const numValue = parseNumber(cleanValue);
+    updateYearData(yearIndex, field, numValue);
+  };
+
+  const handlePercentageChange = (yearIndex: number, field: keyof YearData, value: string) => {
     if (value === '') {
-      setData(prev => ({ ...prev, [field]: 0 }));
+      updateYearData(yearIndex, field, 0);
       return;
     }
     
-    // Limpiar entrada y validar
     const cleanValue = value.replace(/[^\d.,]/g, '').replace(',', '.');
     const numValue = parseFloat(cleanValue);
     
     if (!isNaN(numValue)) {
-      // Limitar entre 0-100
       const cappedValue = Math.min(Math.max(numValue, 0), 100);
-      setData(prev => ({ ...prev, [field]: cappedValue }));
+      updateYearData(yearIndex, field, cappedValue);
     }
   };
 
-  // Data validation
+  const addYear = () => {
+    const latestYear = data.years[data.years.length - 1];
+    const newYear = (parseInt(latestYear.year) + 1).toString();
+    setData(prev => ({
+      years: [...prev.years, { ...latestYear, year: newYear }]
+    }));
+  };
+
+  const removeYear = (yearIndex: number) => {
+    if (data.years.length > 2) {
+      setData(prev => ({
+        years: prev.years.filter((_, index) => index !== yearIndex)
+      }));
+    }
+  };
+
+  const calculateVariation = (currentValue: number, previousValue: number) => {
+    if (previousValue === 0) return 0;
+    return ((currentValue - previousValue) / previousValue) * 100;
+  };
+
   const validateData = () => {
-    const issues = [];
-    const totalRecurringPercent = data.fiscalRecurringPercent + data.accountingRecurringPercent + 
-                                   data.laborRecurringPercent + data.otherRevenuePercent;
-    const metrics = calculateMetrics();
+    const issues: string[] = [];
     
-    if (data.totalCosts >= data.totalRevenue2024) {
-      issues.push("Los costes superan los ingresos - revisar datos");
-    }
-    if (totalRecurringPercent > 100) {
-      issues.push("Los porcentajes de facturación recurrente superan el 100%");
-    }
-    if (metrics.revenueGrowth < -20) {
-      issues.push("Decrecimiento muy alto - revisar cifras");
-    }
-    if (data.numberOfEmployees === 0) {
-      issues.push("Número de empleados no puede ser cero");
-    }
+    data.years.forEach((yearData, index) => {
+      const totalRecurringPercent = yearData.fiscalRecurringPercent + yearData.accountingRecurringPercent + 
+                                     yearData.laborRecurringPercent + yearData.otherRevenuePercent;
+      const yearMetrics = calculateMetricsForYear(yearData);
+      
+      if (yearMetrics.totalCosts >= yearData.totalRevenue) {
+        issues.push(`${yearData.year}: Los costes superan los ingresos`);
+      }
+      if (totalRecurringPercent > 100) {
+        issues.push(`${yearData.year}: Los porcentajes de facturación recurrente superan el 100%`);
+      }
+      if (yearData.numberOfEmployees === 0) {
+        issues.push(`${yearData.year}: Número de empleados no puede ser cero`);
+      }
+
+      if (index > 0) {
+        const previousYear = data.years[index - 1];
+        const growth = ((yearData.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
+        if (growth < -20) {
+          issues.push(`${yearData.year}: Decrecimiento muy alto (-${Math.abs(growth).toFixed(1)}%)`);
+        }
+      }
+    });
     
     return issues;
   };
@@ -206,17 +272,19 @@ const ValuationCalculator = () => {
     other: { label: "Otros", color: "hsl(var(--chart-4))" },
   };
 
+  const latestYear = data.years[data.years.length - 1];
+  
   const revenueCompositionData = [
-    { name: "Fiscal", value: (data.totalRevenue2024 * data.fiscalRecurringPercent) / 100, fill: "hsl(var(--chart-1))" },
-    { name: "Contable", value: (data.totalRevenue2024 * data.accountingRecurringPercent) / 100, fill: "hsl(var(--chart-2))" },
-    { name: "Laboral", value: (data.totalRevenue2024 * data.laborRecurringPercent) / 100, fill: "hsl(var(--chart-3))" },
-    { name: "Otros", value: (data.totalRevenue2024 * data.otherRevenuePercent) / 100, fill: "hsl(var(--chart-4))" },
+    { name: "Fiscal", value: (latestYear.totalRevenue * latestYear.fiscalRecurringPercent) / 100, fill: "hsl(var(--chart-1))" },
+    { name: "Contable", value: (latestYear.totalRevenue * latestYear.accountingRecurringPercent) / 100, fill: "hsl(var(--chart-2))" },
+    { name: "Laboral", value: (latestYear.totalRevenue * latestYear.laborRecurringPercent) / 100, fill: "hsl(var(--chart-3))" },
+    { name: "Otros", value: (latestYear.totalRevenue * latestYear.otherRevenuePercent) / 100, fill: "hsl(var(--chart-4))" },
   ].filter(item => item.value > 0);
 
-  const yearComparisonData = [
-    { year: "2023", revenue: data.totalRevenue2023 },
-    { year: "2024", revenue: data.totalRevenue2024 },
-  ];
+  const yearComparisonData = data.years.map(year => ({
+    year: year.year,
+    revenue: year.totalRevenue
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
