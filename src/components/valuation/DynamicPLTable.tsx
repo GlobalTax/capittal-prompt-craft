@@ -195,21 +195,21 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
             <tr className="bg-muted border-b-2">
               <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[30%] sticky left-0 bg-muted z-10">Concepto</th>
               {years.map((year, index) => (
-                <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[250px]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span>{year}</span>
-                    {years.length > 2 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onYearRemove(index)}
-                        className="h-7 w-7 p-0 hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                </th>
+              <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[250px]">
+                <div className="flex items-center justify-end gap-2">
+                  {years.length > 2 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onYearRemove(index)}
+                      className="h-7 w-7 p-0 hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <span>{year}</span>
+                </div>
+              </th>
               ))}
               {years.length > 1 && (
                 <th className="text-right p-3 font-medium text-sm min-w-[120px]">Var %</th>
