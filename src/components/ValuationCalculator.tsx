@@ -7,17 +7,13 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart, BarChart3, ClipboardCheck, Plus, Trash2 } from "lucide-react";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, BarChart3, ClipboardCheck, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 import ComparableMultiples from "./ComparableMultiples";
 import DueDiligenceChecklist from "./DueDiligenceChecklist";
-import FinancialDataIntegrator from "./FinancialDataIntegrator";
-import DataImporter from "./DataImporter";
-import AlertSystem from "./AlertSystem";
-import ZapierIntegration from "./ZapierIntegration";
 
 interface YearData {
   year: string;
@@ -306,7 +302,7 @@ const ValuationCalculator = () => {
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
                 Valoración Básica
@@ -318,10 +314,6 @@ const ValuationCalculator = () => {
               <TabsTrigger value="duediligence" className="flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4" />
                 Due Diligence
-              </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center gap-2">
-                <PieChart className="h-4 w-4" />
-                Integraciones
               </TabsTrigger>
             </TabsList>
 
@@ -897,32 +889,6 @@ const ValuationCalculator = () => {
               <DueDiligenceChecklist />
             </TabsContent>
 
-            <TabsContent value="integrations">
-              <Tabs defaultValue="data-integrator" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="data-integrator">APIs Financieras</TabsTrigger>
-                  <TabsTrigger value="data-importer">Importar Datos</TabsTrigger>
-                  <TabsTrigger value="alerts">Alertas</TabsTrigger>
-                  <TabsTrigger value="zapier">Zapier</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="data-integrator">
-                  <FinancialDataIntegrator />
-                </TabsContent>
-
-                <TabsContent value="data-importer">
-                  <DataImporter />
-                </TabsContent>
-
-                <TabsContent value="alerts">
-                  <AlertSystem />
-                </TabsContent>
-
-                <TabsContent value="zapier">
-                  <ZapierIntegration />
-                </TabsContent>
-              </Tabs>
-            </TabsContent>
           </Tabs>
         </div>
       </TooltipProvider>
