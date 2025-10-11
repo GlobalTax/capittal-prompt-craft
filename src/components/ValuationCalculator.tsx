@@ -174,8 +174,8 @@ const ValuationCalculator = () => {
     }
   };
 
-  // Función para formatear números con separadores de miles
-  const formatNumber = (value: number): string => {
+  const formatNumber = (value: number | undefined): string => {
+    if (value === undefined || value === null || isNaN(value)) return '0';
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
@@ -320,516 +320,565 @@ const ValuationCalculator = () => {
             </TabsList>
 
             <TabsContent value="basic" className="space-y-6">
-              <div className="space-y-8 max-w-7xl mx-auto px-4">
+              <div className="space-y-6 max-w-[95vw] mx-auto px-4">
                 {/* Validation Alerts */}
-      {validateData().length > 0 && (
-        <Alert className="border-warning">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Advertencias detectadas:</strong>
-            <ul className="mt-1 list-disc list-inside">
-              {validateData().map((issue, index) => (
-                <li key={index}>{issue}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
+                {validateData().length > 0 && (
+                  <Alert className="border-warning">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>Advertencias detectadas:</strong>
+                      <ul className="mt-1 list-disc list-inside">
+                        {validateData().map((issue, index) => (
+                          <li key={index}>{issue}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-      <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        {/* Input Panel */}
-        <div className="space-y-6">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Euro className="h-5 w-5" />
-                Datos Financieros
-              </CardTitle>
-              <CardDescription>
-                Introduce los datos financieros del despacho para calcular la valoración
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Label htmlFor="revenue2024" className="flex items-center gap-1">
-                        Facturación 2024 (€) <Info className="h-3 w-3" />
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Ingresos totales del año 2024, incluyendo todos los servicios</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Input
-                    id="revenue2024"
-                    type="text"
-                    value={formatNumber(data.totalRevenue2024)}
-                    onChange={(e) => handleInputChange('totalRevenue2024', e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Label htmlFor="revenue2023" className="flex items-center gap-1">
-                        Facturación 2023 (€) <Info className="h-3 w-3" />
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Ingresos del año anterior para calcular el crecimiento</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Input
-                    id="revenue2023"
-                    type="text"
-                    value={formatNumber(data.totalRevenue2023)}
-                    onChange={(e) => handleInputChange('totalRevenue2023', e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-3">
-                <h4 className="font-medium">Composición Facturación Recurrente</h4>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="text-left p-3 font-medium text-sm">Concepto</th>
-                        <th className="text-right p-3 font-medium text-sm">%</th>
-                        <th className="text-right p-3 font-medium text-sm">Importe (€)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      <tr>
-                        <td className="p-3 text-sm">Servicios Fiscales</td>
-                        <td className="p-3 text-right">
-                          <div className="relative inline-block w-24">
-                            <Input
-                              id="fiscal"
-                              type="text"
-                              value={data.fiscalRecurringPercent || ''}
-                              onChange={(e) => handlePercentageChange('fiscalRecurringPercent', e.target.value)}
-                              placeholder="0"
-                              className="font-mono text-sm pr-6 h-8 text-right"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber((data.totalRevenue2024 * data.fiscalRecurringPercent) / 100)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="p-3 text-sm">Servicios Contables</td>
-                        <td className="p-3 text-right">
-                          <div className="relative inline-block w-24">
-                            <Input
-                              id="accounting"
-                              type="text"
-                              value={data.accountingRecurringPercent || ''}
-                              onChange={(e) => handlePercentageChange('accountingRecurringPercent', e.target.value)}
-                              placeholder="0"
-                              className="font-mono text-sm pr-6 h-8 text-right"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber((data.totalRevenue2024 * data.accountingRecurringPercent) / 100)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="p-3 text-sm">Servicios Laborales</td>
-                        <td className="p-3 text-right">
-                          <div className="relative inline-block w-24">
-                            <Input
-                              id="labor"
-                              type="text"
-                              value={data.laborRecurringPercent || ''}
-                              onChange={(e) => handlePercentageChange('laborRecurringPercent', e.target.value)}
-                              placeholder="0"
-                              className="font-mono text-sm pr-6 h-8 text-right"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber((data.totalRevenue2024 * data.laborRecurringPercent) / 100)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="p-3 text-sm">Otros Servicios</td>
-                        <td className="p-3 text-right">
-                          <div className="relative inline-block w-24">
-                            <Input
-                              id="other"
-                              type="text"
-                              value={data.otherRevenuePercent || ''}
-                              onChange={(e) => handlePercentageChange('otherRevenuePercent', e.target.value)}
-                              placeholder="0"
-                              className="font-mono text-sm pr-6 h-8 text-right"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber((data.totalRevenue2024 * data.otherRevenuePercent) / 100)}
-                        </td>
-                      </tr>
-                      <tr className="bg-muted/30 font-semibold">
-                        <td className="p-3 text-sm">Total Facturación Recurrente</td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {(data.fiscalRecurringPercent + data.accountingRecurringPercent + data.laborRecurringPercent + data.otherRevenuePercent).toFixed(1)}%
-                        </td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber(
-                            (data.totalRevenue2024 * (data.fiscalRecurringPercent + data.accountingRecurringPercent + data.laborRecurringPercent + data.otherRevenuePercent)) / 100
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-3">
-                <h4 className="font-medium">Estructura de Costes</h4>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="text-left p-3 font-medium text-sm">Concepto</th>
-                        <th className="text-right p-3 font-medium text-sm">Importe (€)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      <tr>
-                        <td className="p-3 text-sm">Costes de Personal</td>
-                        <td className="p-3 text-right">
-                          <Input
-                            id="personnelCosts"
-                            type="text"
-                            value={formatNumber(data.personnelCosts)}
-                            onChange={(e) => handleInputChange('personnelCosts', e.target.value)}
-                            className="font-mono h-8 w-40 ml-auto text-right"
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="p-3 text-sm">Otros Costes Operativos</td>
-                        <td className="p-3 text-right">
-                          <Input
-                            id="otherCosts"
-                            type="text"
-                            value={formatNumber(data.otherCosts)}
-                            onChange={(e) => handleInputChange('otherCosts', e.target.value)}
-                            className="font-mono h-8 w-40 ml-auto text-right"
-                          />
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="p-3 text-sm">Sueldo Propiedad</td>
-                        <td className="p-3 text-right">
-                          <Input
-                            id="ownerSalary"
-                            type="text"
-                            value={formatNumber(data.ownerSalary)}
-                            onChange={(e) => handleInputChange('ownerSalary', e.target.value)}
-                            className="font-mono h-8 w-40 ml-auto text-right"
-                          />
-                        </td>
-                      </tr>
-                      <tr className="bg-muted/30 font-semibold">
-                        <td className="p-3 text-sm">Total Costes</td>
-                        <td className="p-3 text-right font-mono text-sm">
-                          {formatNumber(data.personnelCosts + data.otherCosts + data.ownerSalary)}
-                        </td>
-                      </tr>
-                      <tr className="bg-primary/10 font-bold">
-                        <td className="p-3 text-sm">EBITDA</td>
-                        <td className="p-3 text-right font-mono text-sm text-primary">
-                          {formatNumber(data.totalRevenue2024 - (data.personnelCosts + data.otherCosts + data.ownerSalary))}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="employees">Nº Trabajadores</Label>
-                <Input
-                  id="employees"
-                  type="text"
-                  value={formatNumber(data.numberOfEmployees)}
-                  onChange={(e) => handleInputChange('numberOfEmployees', e.target.value)}
-                  className="font-mono"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Results Panel */}
-        <div className="space-y-6">
-          {/* Key Metrics */}
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Métricas Clave
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          Margen Neto <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Beneficio después de todos los gastos (&gt;20% es óptimo)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="text-2xl font-bold text-primary">
-                    {metrics.netMargin.toFixed(1)}%
-                  </div>
-                  <Badge className={`${getMarginStatus(metrics.netMargin, 'net').color} justify-center`}>
-                    {getMarginStatus(metrics.netMargin, 'net').label}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          Margen Socio <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Porcentaje de los ingresos destinado al sueldo del socio</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="text-2xl font-bold text-primary">
-                    {metrics.ownerMargin.toFixed(1)}%
-                  </div>
-                  <Badge className={`${getMarginStatus(metrics.ownerMargin, 'owner').color} justify-center`}>
-                    {getMarginStatus(metrics.ownerMargin, 'owner').label}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          Crecimiento <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Crecimiento interanual de la facturación (2023 vs 2024)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className={`text-2xl font-bold ${metrics.revenueGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {metrics.revenueGrowth > 0 ? '+' : ''}{metrics.revenueGrowth.toFixed(1)}%
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          EBITDA <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Beneficio antes de impuestos + sueldo del socio</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="text-xl font-bold text-success">
-                    {metrics.ebitda.toLocaleString('es-ES')}€
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          Facturación/Empleado <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Productividad por empleado (&gt;100k€ es excelente)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="text-xl font-bold">
-                    {metrics.revenuePerEmployee.toLocaleString('es-ES')}€
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          Recurrencia <Info className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>Porcentaje de ingresos recurrentes vs totales</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="text-xl font-bold text-primary">
-                    {metrics.recurringPercentage.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Charts */}
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-2">
-                <PieChart className="h-5 w-5" />
-                Análisis Visual
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Revenue Composition */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-center">Composición de Ingresos Recurrentes</h4>
-                  <div className="flex justify-center">
-                    <div className="w-full h-[250px]">
-                      <ChartContainer config={chartConfig}>
-                        <RechartsPieChart width={400} height={250} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                          <ChartTooltip 
-                            content={<ChartTooltipContent 
-                              formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, '']}
-                            />}
-                            wrapperStyle={{ 
-                              zIndex: 1000,
-                              backgroundColor: 'hsl(var(--popover))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '6px',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                            }}
-                          />
-                          <Pie
-                            data={revenueCompositionData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={100}
-                            dataKey="value"
-                          >
-                            {revenueCompositionData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                {/* P&L Comparativo */}
+                <Card className="shadow-md">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Euro className="h-5 w-5" />
+                        P&L Comparativo Multi-año
+                      </CardTitle>
+                      <Button onClick={addYear} size="sm" variant="outline">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Añadir Año
+                      </Button>
+                    </div>
+                    <CardDescription>
+                      Análisis comparativo de ingresos, costes y márgenes por año
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="text-left p-3 font-medium text-sm border-r">Concepto</th>
+                            {data.years.map((year, index) => (
+                              <th key={year.year} className="text-right p-3 font-medium text-sm border-r">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span>{year.year}</span>
+                                  {data.years.length > 2 && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeYear(index)}
+                                      className="h-6 w-6 p-0"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </th>
                             ))}
-                          </Pie>
-                        </RechartsPieChart>
-                      </ChartContainer>
+                            {data.years.length > 1 && (
+                              <th className="text-right p-3 font-medium text-sm">Var %</th>
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* INGRESOS */}
+                          <tr className="bg-muted/30">
+                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
+                              INGRESOS
+                            </td>
+                          </tr>
+                          <tr className="border-t">
+                            <td className="p-3 text-sm border-r">Facturación Total</td>
+                            {data.years.map((year, index) => (
+                              <td key={year.year} className="p-2 text-right border-r">
+                                <Input
+                                  type="text"
+                                  value={formatNumber(year.totalRevenue)}
+                                  onChange={(e) => handleInputChange(index, 'totalRevenue', e.target.value)}
+                                  className="font-mono h-8 text-right"
+                                />
+                              </td>
+                            ))}
+                            {data.years.length > 1 && (
+                              <td className="p-3 text-right font-mono text-sm">
+                                {(() => {
+                                  const last = data.years[data.years.length - 1];
+                                  const prev = data.years[data.years.length - 2];
+                                  const variation = calculateVariation(last.totalRevenue, prev.totalRevenue);
+                                  return (
+                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
+                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                            )}
+                          </tr>
+
+                          {/* Servicios Recurrentes */}
+                          <tr className="border-t bg-muted/10">
+                            <td className="p-3 text-sm pl-6 border-r">Servicios Fiscales</td>
+                            {data.years.map((year, index) => {
+                              const amount = (year.totalRevenue * year.fiscalRecurringPercent) / 100;
+                              return (
+                                <td key={year.year} className="p-2 text-right border-r">
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <Input
+                                      type="text"
+                                      value={year.fiscalRecurringPercent || ''}
+                                      onChange={(e) => handlePercentageChange(index, 'fiscalRecurringPercent', e.target.value)}
+                                      className="font-mono h-8 w-16 text-right"
+                                      placeholder="0"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t bg-muted/10">
+                            <td className="p-3 text-sm pl-6 border-r">Servicios Contables</td>
+                            {data.years.map((year, index) => {
+                              const amount = (year.totalRevenue * year.accountingRecurringPercent) / 100;
+                              return (
+                                <td key={year.year} className="p-2 text-right border-r">
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <Input
+                                      type="text"
+                                      value={year.accountingRecurringPercent || ''}
+                                      onChange={(e) => handlePercentageChange(index, 'accountingRecurringPercent', e.target.value)}
+                                      className="font-mono h-8 w-16 text-right"
+                                      placeholder="0"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t bg-muted/10">
+                            <td className="p-3 text-sm pl-6 border-r">Servicios Laborales</td>
+                            {data.years.map((year, index) => {
+                              const amount = (year.totalRevenue * year.laborRecurringPercent) / 100;
+                              return (
+                                <td key={year.year} className="p-2 text-right border-r">
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <Input
+                                      type="text"
+                                      value={year.laborRecurringPercent || ''}
+                                      onChange={(e) => handlePercentageChange(index, 'laborRecurringPercent', e.target.value)}
+                                      className="font-mono h-8 w-16 text-right"
+                                      placeholder="0"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t bg-muted/10">
+                            <td className="p-3 text-sm pl-6 border-r">Otros Servicios</td>
+                            {data.years.map((year, index) => {
+                              const amount = (year.totalRevenue * year.otherRevenuePercent) / 100;
+                              return (
+                                <td key={year.year} className="p-2 text-right border-r">
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <Input
+                                      type="text"
+                                      value={year.otherRevenuePercent || ''}
+                                      onChange={(e) => handlePercentageChange(index, 'otherRevenuePercent', e.target.value)}
+                                      className="font-mono h-8 w-16 text-right"
+                                      placeholder="0"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t bg-muted/30 font-semibold">
+                            <td className="p-3 text-sm pl-6 border-r">Total Ingresos Recurrentes</td>
+                            {data.years.map((year) => {
+                              const metrics = calculateMetricsForYear(year);
+                              return (
+                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
+                                  {formatNumber(metrics.totalRecurring)}
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && (
+                              <td className="p-3 text-right font-mono text-sm">
+                                {(() => {
+                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
+                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
+                                  const variation = calculateVariation(lastMetrics.totalRecurring, prevMetrics.totalRecurring);
+                                  return (
+                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
+                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                            )}
+                          </tr>
+
+                          <tr className="border-t bg-muted/10">
+                            <td className="p-3 text-sm pl-6 border-r">Otros Ingresos</td>
+                            {data.years.map((year) => {
+                              const metrics = calculateMetricsForYear(year);
+                              return (
+                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
+                                  {formatNumber(metrics.otherIncome)}
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          {/* COSTES */}
+                          <tr className="bg-muted/30 border-t">
+                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
+                              COSTES
+                            </td>
+                          </tr>
+
+                          <tr className="border-t">
+                            <td className="p-3 text-sm pl-6 border-r">Costes de Personal</td>
+                            {data.years.map((year, index) => (
+                              <td key={year.year} className="p-2 text-right border-r">
+                                <Input
+                                  type="text"
+                                  value={formatNumber(year.personnelCosts)}
+                                  onChange={(e) => handleInputChange(index, 'personnelCosts', e.target.value)}
+                                  className="font-mono h-8 text-right"
+                                />
+                              </td>
+                            ))}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t">
+                            <td className="p-3 text-sm pl-6 border-r">Otros Costes Operativos</td>
+                            {data.years.map((year, index) => (
+                              <td key={year.year} className="p-2 text-right border-r">
+                                <Input
+                                  type="text"
+                                  value={formatNumber(year.otherCosts)}
+                                  onChange={(e) => handleInputChange(index, 'otherCosts', e.target.value)}
+                                  className="font-mono h-8 text-right"
+                                />
+                              </td>
+                            ))}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t">
+                            <td className="p-3 text-sm pl-6 border-r">Sueldo Propiedad</td>
+                            {data.years.map((year, index) => (
+                              <td key={year.year} className="p-2 text-right border-r">
+                                <Input
+                                  type="text"
+                                  value={formatNumber(year.ownerSalary)}
+                                  onChange={(e) => handleInputChange(index, 'ownerSalary', e.target.value)}
+                                  className="font-mono h-8 text-right"
+                                />
+                              </td>
+                            ))}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t bg-muted/30 font-semibold">
+                            <td className="p-3 text-sm pl-6 border-r">Total Costes</td>
+                            {data.years.map((year) => {
+                              const metrics = calculateMetricsForYear(year);
+                              return (
+                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
+                                  {formatNumber(metrics.totalCosts)}
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && (
+                              <td className="p-3 text-right font-mono text-sm">
+                                {(() => {
+                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
+                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
+                                  const variation = calculateVariation(lastMetrics.totalCosts, prevMetrics.totalCosts);
+                                  return (
+                                    <span className={variation >= 0 ? 'text-destructive' : 'text-success'}>
+                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                            )}
+                          </tr>
+
+                          {/* RESULTADOS */}
+                          <tr className="bg-muted/30 border-t">
+                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
+                              RESULTADOS
+                            </td>
+                          </tr>
+
+                          <tr className="border-t bg-primary/10 font-bold">
+                            <td className="p-3 text-sm pl-6 border-r">EBITDA</td>
+                            {data.years.map((year) => {
+                              const metrics = calculateMetricsForYear(year);
+                              return (
+                                <td key={year.year} className="p-3 text-right font-mono text-sm text-primary border-r">
+                                  {formatNumber(metrics.ebitda)}
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && (
+                              <td className="p-3 text-right font-mono text-sm">
+                                {(() => {
+                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
+                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
+                                  const variation = calculateVariation(lastMetrics.ebitda, prevMetrics.ebitda);
+                                  return (
+                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
+                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                            )}
+                          </tr>
+
+                          <tr className="border-t">
+                            <td className="p-3 text-sm pl-6 border-r">Margen EBITDA %</td>
+                            {data.years.map((year) => {
+                              const metrics = calculateMetricsForYear(year);
+                              const ebitdaMargin = (metrics.ebitda / year.totalRevenue) * 100;
+                              return (
+                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
+                                  {ebitdaMargin.toFixed(1)}%
+                                </td>
+                              );
+                            })}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+
+                          <tr className="border-t">
+                            <td className="p-3 text-sm pl-6 border-r">Nº Trabajadores</td>
+                            {data.years.map((year, index) => (
+                              <td key={year.year} className="p-2 text-right border-r">
+                                <Input
+                                  type="text"
+                                  value={formatNumber(year.numberOfEmployees)}
+                                  onChange={(e) => handleInputChange(index, 'numberOfEmployees', e.target.value)}
+                                  className="font-mono h-8 text-right"
+                                />
+                              </td>
+                            ))}
+                            {data.years.length > 1 && <td></td>}
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+
+                {/* Métricas Clave y Gráficos */}
+                <div className="grid lg:grid-cols-2 gap-6">
+                  {/* Key Metrics */}
+                  <Card className="shadow-md">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Métricas Clave ({data.years[data.years.length - 1].year})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2 text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-sm font-medium flex items-center gap-1">
+                                  Margen Neto <Info className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p>Beneficio después de todos los gastos (&gt;20% es óptimo)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <div className="text-2xl font-bold text-primary">
+                            {metrics.netMargin.toFixed(1)}%
+                          </div>
+                          <Badge className={`${getMarginStatus(metrics.netMargin, 'net').color} justify-center`}>
+                            {getMarginStatus(metrics.netMargin, 'net').label}
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-2 text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-sm font-medium flex items-center gap-1">
+                                  Crecimiento <Info className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p>Crecimiento interanual de la facturación</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <div className={`text-2xl font-bold ${metrics.revenueGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
+                            {metrics.revenueGrowth > 0 ? '+' : ''}{metrics.revenueGrowth.toFixed(1)}%
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-sm font-medium flex items-center gap-1">
+                                  EBITDA <Info className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p>Beneficio antes de impuestos + sueldo del socio</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <div className="text-xl font-bold text-success">
+                            {formatNumber(metrics.ebitda)}€
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-center">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-sm font-medium flex items-center gap-1">
+                                  Facturación/Empleado <Info className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p>Productividad por empleado (&gt;100k€ es excelente)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <div className="text-xl font-bold">
+                            {formatNumber(metrics.revenuePerEmployee)}€
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-center col-span-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-sm font-medium flex items-center gap-1">
+                                  Recurrencia <Info className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p>Porcentaje de ingresos recurrentes vs totales</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <div className="text-xl font-bold text-primary">
+                            {metrics.recurringPercentage.toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Charts */}
+                  <Card className="shadow-md">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Evolución de Facturación
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px]">
+                        <ChartContainer config={{ revenue: { label: "Facturación", color: "hsl(var(--primary))" } }}>
+                          <BarChart data={yearComparisonData} width={400} height={300} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
+                            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+                            <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                            <ChartTooltip 
+                              content={<ChartTooltipContent 
+                                formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, 'Facturación']}
+                              />}
+                              wrapperStyle={{ 
+                                zIndex: 1000,
+                                backgroundColor: 'hsl(var(--popover))',
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: '6px',
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                              }}
+                            />
+                            <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                {/* Year Comparison */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-center">Comparativa Anual</h4>
-                  <div className="flex justify-center">
-                    <div className="w-full h-[250px]">
-                      <ChartContainer config={{ revenue: { label: "Facturación", color: "hsl(var(--primary))" } }}>
-                        <BarChart data={yearComparisonData} width={400} height={250} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
-                          <XAxis dataKey="year" tick={{ fontSize: 12 }} />
-                          <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
-                          <ChartTooltip 
-                            content={<ChartTooltipContent 
-                              formatter={(value) => [`${Number(value).toLocaleString('es-ES')}€`, 'Facturación']}
-                            />}
-                            wrapperStyle={{ 
-                              zIndex: 1000,
-                              backgroundColor: 'hsl(var(--popover))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '6px',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                            }}
-                          />
-                          <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ChartContainer>
+                {/* Valuation Results */}
+                <Card className="shadow-md">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Valoraciones por Múltiplos
+                    </CardTitle>
+                    <CardDescription>
+                      Diferentes escenarios de valoración basados en múltiplos del sector
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {valuations.map((valuation, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 rounded-lg bg-gradient-card border"
+                        >
+                          <div>
+                            <div className="font-medium">{valuation.method}</div>
+                            <div className="text-sm text-muted-foreground">
+                              Múltiplo: {valuation.multiplier}x
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-primary">
+                              {formatNumber(valuation.valuationAmount)}€
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Valuation Results */}
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Valoraciones por Múltiplos
-              </CardTitle>
-              <CardDescription>
-                Diferentes escenarios de valoración basados en múltiplos del sector
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {valuations.map((valuation, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gradient-card border"
-                  >
-                    <div>
-                      <div className="font-medium">{valuation.method}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Múltiplo: {valuation.multiplier}x
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="text-center p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Valoración Media Ponderada</div>
+                      <div className="text-2xl font-bold text-primary">
+                        {formatNumber(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length)}€
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">
-                        {valuation.valuationAmount.toLocaleString('es-ES')}€
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Separator className="my-4" />
-              
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-sm text-muted-foreground mb-1">Valoración Media Ponderada</div>
-                <div className="text-2xl font-bold text-primary">
-                  {(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length).toLocaleString('es-ES')}€
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
