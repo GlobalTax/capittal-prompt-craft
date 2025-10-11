@@ -593,13 +593,15 @@ const ValuationCalculator = () => {
                 )}
 
                 {/* P&L Comparativo - Dynamic Table */}
-                <DynamicPLTable 
-                  years={data.years.map(y => y.year)}
-                  sections={dynamicSections}
-                  onDataChange={handleDynamicDataChange}
-                  onYearAdd={handleYearAdd}
-                  onYearRemove={handleYearRemove}
-                />
+                <div className="w-full">
+                  <DynamicPLTable
+                    years={data.years.map(y => y.year)}
+                    sections={dynamicSections}
+                    onDataChange={handleDynamicDataChange}
+                    onYearAdd={handleYearAdd}
+                    onYearRemove={handleYearRemove}
+                  />
+                </div>
 
                 {/* Métricas Clave y Gráficos */}
                 <div className="grid lg:grid-cols-2 gap-6">

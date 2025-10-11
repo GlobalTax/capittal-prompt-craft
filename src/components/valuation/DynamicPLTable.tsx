@@ -186,14 +186,14 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
           Análisis comparativo de ingresos, costes y márgenes por año (editable)
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full border-collapse bg-card">
+      <CardContent className="p-0">
+        <div className="overflow-x-auto border rounded-lg w-full">
+          <table className="w-full border-collapse bg-card">
             <thead className="sticky top-0 z-20">
               <tr className="bg-muted border-b-2">
-                <th className="text-left p-3 font-medium text-sm border-r min-w-[250px] sticky left-0 bg-muted z-10">Concepto</th>
+                <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[30%] sticky left-0 bg-muted z-10">Concepto</th>
                 {years.map((year, index) => (
-                  <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[150px]">
+                  <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[250px]">
                     <div className="flex items-center justify-between gap-2">
                       <span>{year}</span>
                       {years.length > 2 && (
@@ -210,7 +210,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                   </th>
                 ))}
                 {years.length > 1 && (
-                  <th className="text-right p-3 font-medium text-sm min-w-[100px]">Var %</th>
+                  <th className="text-right p-3 font-medium text-sm min-w-[120px]">Var %</th>
                 )}
               </tr>
             </thead>
@@ -260,7 +260,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                   {section.rows.map((row) => (
                     <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
                       {/* Row Label */}
-                      <td className={`p-3 text-sm border-r min-w-[250px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
+                      <td className={`p-3 text-sm border-r min-w-[300px] w-[30%] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                         <div className="flex items-center gap-2">
                           <Input
                             value={row.label}
@@ -283,21 +283,21 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
                       {/* Year Values */}
                       {years.map((year) => (
-                        <td key={year} className="p-3 text-right border-r min-w-[150px]">
+                        <td key={year} className="p-3 text-right border-r min-w-[250px]">
                           {row.type === 'input' ? (
                             <Input
                               type="text"
                               value={formatNumber(row.values[year] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                              className="font-mono h-9 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                              className="font-mono h-9 w-full text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                             />
                           ) : row.type === 'percentage' ? (
-                            <div className="flex items-center gap-1 justify-end">
+                            <div className="flex items-center gap-1 justify-end w-full">
                               <Input
                                 type="text"
                                 value={row.values[year] || ''}
                                 onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                                className="font-mono h-9 w-20 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                                className="font-mono h-9 w-24 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                               />
                               <span className="text-xs">%</span>
                               <span className="font-mono text-sm ml-2 w-20 text-right">
