@@ -40,12 +40,6 @@ const menuItems = [
     description: "Calculadora principal"
   },
   {
-    title: "Análisis Predictivo",
-    url: "/analytics",
-    icon: TrendingUp,
-    description: "Proyecciones y ML"
-  },
-  {
     title: "Generador de Reportes",
     url: "/reports",
     icon: FileText,

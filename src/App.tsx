@@ -8,7 +8,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import ValuationCalculator from "@/components/ValuationCalculator";
-import PredictiveAnalytics from "@/components/PredictiveAnalytics";
 import ReportGenerator from "@/components/ReportGenerator";
 import CollaborationHub from "@/components/CollaborationHub";
 import AdvancedSettings from "@/components/AdvancedSettings";
@@ -40,7 +39,6 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<ExecutiveDashboard />} />
                       <Route path="/valuation" element={<ValuationCalculator />} />
-                      <Route path="/analytics" element={<PredictiveAnalytics />} />
                       <Route path="/reports" element={<ReportGenerator />} />
                       <Route path="/collaboration" element={<CollaborationHub />} />
                       <Route path="/integrations/financial" element={<FinancialDataIntegrator />} />
