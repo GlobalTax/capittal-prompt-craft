@@ -13,7 +13,7 @@ import { ValuationList } from "@/components/valuation/ValuationList";
 import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
 import AdvancedSettings from "@/components/AdvancedSettings";
-import FinancialDataIntegrator from "@/components/FinancialDataIntegrator";
+import MonthlyBudget from "@/components/MonthlyBudget";
 import DueDiligenceChecklist from "@/components/DueDiligenceChecklist";
 import ComparableMultiples from "@/components/ComparableMultiples";
 import Login from "./pages/Login";
@@ -43,7 +43,7 @@ const App = () => {
                   <Route path="valuation" element={<ValuationList />} />
                   <Route path="valuation/:id" element={<ValuationEditor />} />
                   <Route path="reports" element={<ReportGenerator />} />
-                  <Route path="advanced/budget" element={<FinancialDataIntegrator />} />
+                  <Route path="advanced/budget" element={<MonthlyBudget />} />
                   <Route path="advanced/due-diligence" element={<DueDiligenceChecklist />} />
                   <Route path="advanced/multiples" element={<ComparableMultiples />} />
                   <Route path="settings" element={<AdvancedSettings />} />

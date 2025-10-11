@@ -8185,6 +8185,39 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_budgets: {
+        Row: {
+          budget_name: string
+          created_at: string
+          id: string
+          month_statuses: Json
+          sections: Json
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          budget_name: string
+          created_at?: string
+          id?: string
+          month_statuses?: Json
+          sections?: Json
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          budget_name?: string
+          created_at?: string
+          id?: string
+          month_statuses?: Json
+          sections?: Json
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       ndas: {
         Row: {
           created_at: string

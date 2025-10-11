@@ -30,7 +30,7 @@ export function useMonthlyBudgets() {
         .order('year', { ascending: false });
 
       if (error) throw error;
-      setBudgets(data as MonthlyBudget[]);
+      setBudgets(data as any);
     } catch (error) {
       console.error('Error fetching budgets:', error);
     } finally {
@@ -52,16 +52,16 @@ export function useMonthlyBudgets() {
           user_id: user.id,
           year,
           budget_name: budgetName,
-          sections: initialSections,
-          month_statuses: Array(12).fill('presupuestado')
+          sections: initialSections as any,
+          month_statuses: Array(12).fill('presupuestado') as any
         }])
         .select()
         .single();
 
       if (error) throw error;
       
-      setBudgets(prev => [data as MonthlyBudget, ...prev]);
-      return data as MonthlyBudget;
+      setBudgets(prev => [data as any, ...prev]);
+      return data as any;
     } catch (error) {
       console.error('Error creating budget:', error);
       throw error;
@@ -72,7 +72,7 @@ export function useMonthlyBudgets() {
     try {
       const { error } = await supabase
         .from('monthly_budgets')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id);
 
       if (error) throw error;
