@@ -16,7 +16,6 @@ import {
   Calculator, 
   TrendingUp, 
   FileText, 
-  Users, 
   Settings,
   BarChart3,
   Database,
@@ -44,12 +43,6 @@ const menuItems = [
     url: "/reports",
     icon: FileText,
     description: "PDFs profesionales"
-  },
-  {
-    title: "Colaboración",
-    url: "/collaboration",
-    icon: Users,
-    description: "Trabajo en equipo"
   }
 ];
 

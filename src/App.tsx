@@ -12,7 +12,6 @@ import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import { ValuationList } from "@/components/valuation/ValuationList";
 import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
-import CollaborationHub from "@/components/CollaborationHub";
 import AdvancedSettings from "@/components/AdvancedSettings";
 import FinancialDataIntegrator from "@/components/FinancialDataIntegrator";
 import DataImporter from "@/components/DataImporter";
@@ -47,7 +46,6 @@ const App = () => {
                   <Route path="valuation" element={<ValuationList />} />
                   <Route path="valuation/:id" element={<ValuationEditor />} />
                   <Route path="reports" element={<ReportGenerator />} />
-                  <Route path="collaboration" element={<CollaborationHub />} />
                   <Route path="integrations/financial" element={<FinancialDataIntegrator />} />
                   <Route path="integrations/importer" element={<DataImporter />} />
                   <Route path="integrations/alerts" element={<AlertSystem />} />
