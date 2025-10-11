@@ -12966,6 +12966,36 @@ export type Database = {
           },
         ]
       }
+      user_notification_settings: {
+        Row: {
+          alert_frequency: string | null
+          created_at: string
+          email_notifications: boolean | null
+          id: string
+          push_notifications: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_frequency?: string | null
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_frequency?: string | null
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_onboarding_progress: {
         Row: {
           completed_at: string | null
@@ -13648,6 +13678,56 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      valuation_reports: {
+        Row: {
+          branding: Json
+          client_name: string | null
+          content: Json
+          created_at: string
+          generated_at: string
+          generated_by: string
+          id: string
+          report_type: string
+          title: string
+          updated_at: string
+          valuation_id: string
+        }
+        Insert: {
+          branding?: Json
+          client_name?: string | null
+          content?: Json
+          created_at?: string
+          generated_at?: string
+          generated_by: string
+          id?: string
+          report_type: string
+          title: string
+          updated_at?: string
+          valuation_id: string
+        }
+        Update: {
+          branding?: Json
+          client_name?: string | null
+          content?: Json
+          created_at?: string
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          report_type?: string
+          title?: string
+          updated_at?: string
+          valuation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_reports_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuation_tags: {
         Row: {
