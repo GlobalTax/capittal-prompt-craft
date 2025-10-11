@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ interface DynamicPLTableProps {
   onYearStatusToggle: (yearIndex: number) => void;
 }
 
-export function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
+export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
   const formatNumber = (value: number): string => {
     if (value === undefined || value === null || isNaN(value)) return '0';
     const rounded = Math.round(value * 100) / 100;
@@ -379,4 +379,4 @@ export function DynamicPLTable({ years, yearStatuses, sections, onDataChange, on
       </div>
     </div>
   );
-}
+});

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ interface ValuationCardProps {
   style?: React.CSSProperties;
 }
 
-export function ValuationCard({ valuation, onToggleComplete, className, style }: ValuationCardProps) {
+export const ValuationCard = React.memo(function ValuationCard({ valuation, onToggleComplete, className, style }: ValuationCardProps) {
   const navigate = useNavigate();
 
   const totalRevenue = Number(valuation.revenue_1) + Number(valuation.revenue_2);
@@ -111,7 +112,7 @@ export function ValuationCard({ valuation, onToggleComplete, className, style }:
       </CardContent>
     </Card>
   );
-}
+});
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('es-ES', {

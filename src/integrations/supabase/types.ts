@@ -13805,9 +13805,11 @@ export type Database = {
           client_email: string | null
           client_name: string | null
           client_phone: string | null
+          comparable_multiples_results: Json | null
           completed: boolean | null
           contact_person: string | null
           created_at: string | null
+          dcf_results: Json | null
           employees_1: number | null
           employees_2: number | null
           fiscal_recurring_1: number | null
@@ -13815,6 +13817,8 @@ export type Database = {
           id: string
           labor_recurring_1: number | null
           labor_recurring_2: number | null
+          last_dcf_calculation: string | null
+          last_multiples_calculation: string | null
           other_costs_1: number | null
           other_costs_2: number | null
           other_revenue_1: number | null
@@ -13845,9 +13849,11 @@ export type Database = {
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          comparable_multiples_results?: Json | null
           completed?: boolean | null
           contact_person?: string | null
           created_at?: string | null
+          dcf_results?: Json | null
           employees_1?: number | null
           employees_2?: number | null
           fiscal_recurring_1?: number | null
@@ -13855,6 +13861,8 @@ export type Database = {
           id?: string
           labor_recurring_1?: number | null
           labor_recurring_2?: number | null
+          last_dcf_calculation?: string | null
+          last_multiples_calculation?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null
           other_revenue_1?: number | null
@@ -13885,9 +13893,11 @@ export type Database = {
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          comparable_multiples_results?: Json | null
           completed?: boolean | null
           contact_person?: string | null
           created_at?: string | null
+          dcf_results?: Json | null
           employees_1?: number | null
           employees_2?: number | null
           fiscal_recurring_1?: number | null
@@ -13895,6 +13905,8 @@ export type Database = {
           id?: string
           labor_recurring_1?: number | null
           labor_recurring_2?: number | null
+          last_dcf_calculation?: string | null
+          last_multiples_calculation?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null
           other_revenue_1?: number | null
