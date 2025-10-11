@@ -5,171 +5,37 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { MessageSquare, Users, Clock, CheckCircle, AlertCircle, Send, Share, Eye, Edit } from "lucide-react";
+import { MessageSquare, Users, Clock, CheckCircle, AlertCircle, Send, Share, Eye, Edit, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useValuationCollaboration } from "@/hooks/useValuationCollaboration";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useParams } from "react-router-dom";
 
 const CollaborationHub = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { id: valuationId } = useParams();
+  const { comments, tasks, loading, addComment, addTask, updateTaskStatus } = useValuationCollaboration(valuationId, user?.id);
   const [newComment, setNewComment] = useState("");
-  const [selectedTask, setSelectedTask] = useState("");
+  const [selectedSection, setSelectedSection] = useState("general");
 
-  const teamMembers = [
-    {
-      id: "1",
-      name: "Ana García",
-      role: "Senior Analyst",
-      avatar: "/api/placeholder/32/32",
-      status: "online",
-      initials: "AG"
-    },
-    {
-      id: "2", 
-      name: "Carlos Ruiz",
-      role: "Director",
-      avatar: "/api/placeholder/32/32",
-      status: "busy",
-      initials: "CR"
-    },
-    {
-      id: "3",
-      name: "María López",
-      role: "Junior Analyst", 
-      avatar: "/api/placeholder/32/32",
-      status: "offline",
-      initials: "ML"
-    }
-  ];
-
-  const comments = [
-    {
-      id: "1",
-      author: "Ana García",
-      avatar: "/api/placeholder/32/32",
-      initials: "AG",
-      content: "He revisado los múltiplos del sector y creo que deberíamos ajustar el rango a 3.8x - 4.5x basado en las últimas transacciones.",
-      timestamp: "hace 2 horas",
-      section: "Múltiplos Comparables",
-      type: "suggestion"
-    },
-    {
-      id: "2",
-      author: "Carlos Ruiz", 
-      avatar: "/api/placeholder/32/32",
-      initials: "CR",
-      content: "Aprobado. También necesitamos validar los datos de crecimiento proyectado con el cliente antes de finalizar.",
-      timestamp: "hace 1 hora",
-      section: "Valoración DCF",
-      type: "approval"
-    },
-    {
-      id: "3",
-      author: "María López",
-      avatar: "/api/placeholder/32/32", 
-      initials: "ML",
-      content: "¿Deberíamos incluir un análisis de sensibilidad adicional para las tasas de descuento?",
-      timestamp: "hace 30 min",
-      section: "Análisis de Riesgo",
-      type: "question"
-    }
-  ];
-
-  const workflowTasks = [
-    {
-      id: "1",
-      title: "Revisión de Datos Financieros",
-      assignee: "Ana García",
-      status: "completed",
-      dueDate: "2024-01-15",
-      priority: "high"
-    },
-    {
-      id: "2",
-      title: "Validación de Múltiplos",
-      assignee: "Carlos Ruiz",
-      status: "in-progress", 
-      dueDate: "2024-01-16",
-      priority: "medium"
-    },
-    {
-      id: "3",
-      title: "Preparación de Presentación",
-      assignee: "María López",
-      status: "pending",
-      dueDate: "2024-01-18",
-      priority: "low"
-    },
-    {
-      id: "4",
-      title: "Revisión Final y Aprobación",
-      assignee: "Carlos Ruiz",
-      status: "pending",
-      dueDate: "2024-01-20",
-      priority: "high"
-    }
-  ];
-
-  const changeHistory = [
-    {
-      id: "1",
-      user: "Ana García",
-      action: "Actualizó múltiplo EBITDA",
-      details: "Cambió de 4.0x a 4.2x",
-      timestamp: "2024-01-15 14:30",
-      section: "Múltiplos"
-    },
-    {
-      id: "2",
-      user: "Carlos Ruiz",
-      action: "Aprobó valoración DCF",
-      details: "Valoración de €1.68M aprobada",
-      timestamp: "2024-01-15 13:15",
-      section: "DCF"
-    },
-    {
-      id: "3",
-      user: "María López",
-      action: "Añadió comentario",
-      details: "Pregunta sobre análisis de sensibilidad",
-      timestamp: "2024-01-15 12:45",
-      section: "Riesgos"
-    }
-  ];
-
-  const sharePermissions = [
-    {
-      id: "1",
-      user: "cliente@empresa.com",
-      permission: "view",
-      sharedDate: "2024-01-14"
-    },
-    {
-      id: "2", 
-      user: "socio@despacho.com",
-      permission: "edit",
-      sharedDate: "2024-01-13"
-    }
-  ];
-
-  const addComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim()) return;
     
-    toast({
-      title: "Comentario añadido",
-      description: "Tu comentario ha sido añadido exitosamente.",
-    });
-    
+    await addComment(newComment, selectedSection);
     setNewComment("");
   };
 
-  const updateTaskStatus = (taskId: string, newStatus: string) => {
-    toast({
-      title: "Estado actualizado",
-      description: `La tarea ha sido marcada como ${newStatus}.`,
-    });
+  const handleUpdateTaskStatus = async (taskId: string, newStatus: string) => {
+    await updateTaskStatus(taskId, newStatus);
   };
+
+  // Mock data temporal para permisos de compartir (será implementado en Fase 2)
+  const sharePermissions: any[] = [];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -199,6 +65,15 @@ const CollaborationHub = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-[500px] w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -215,8 +90,8 @@ const CollaborationHub = () => {
             Compartir
           </Button>
           <Badge variant="outline" className="px-3 py-1">
-            <Users className="h-3 w-3 mr-1" />
-            {teamMembers.length} colaboradores
+            <MessageSquare className="h-3 w-3 mr-1" />
+            {comments.length} comentarios
           </Badge>
         </div>
       </div>
@@ -248,7 +123,7 @@ const CollaborationHub = () => {
                     rows={3}
                   />
                   <div className="flex justify-between items-center">
-                    <Select>
+                    <Select value={selectedSection} onValueChange={setSelectedSection}>
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Sección relacionada" />
                       </SelectTrigger>
@@ -259,7 +134,7 @@ const CollaborationHub = () => {
                         <SelectItem value="risks">Análisis de Riesgo</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button onClick={addComment}>
+                    <Button onClick={handleAddComment}>
                       <Send className="h-4 w-4 mr-2" />
                       Enviar
                     </Button>
@@ -270,24 +145,35 @@ const CollaborationHub = () => {
 
                 {/* Comments list */}
                 <div className="space-y-4">
-                  {comments.map(comment => (
-                    <div key={comment.id} className="flex space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.avatar} />
-                        <AvatarFallback>{comment.initials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-sm">{comment.author}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {comment.section}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{comment.content}</p>
-                      </div>
+                  {comments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No hay comentarios aún. Sé el primero en comentar.
                     </div>
-                  ))}
+                  ) : (
+                    comments.map(comment => (
+                      <div key={comment.id} className="flex space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>
+                            {comment.author_id.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium text-sm">Usuario</span>
+                            {comment.section && (
+                              <Badge variant="outline" className="text-xs">
+                                {comment.section}
+                              </Badge>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(comment.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{comment.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -297,29 +183,24 @@ const CollaborationHub = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Users className="h-4 w-4" />
-                  <span>Equipo</span>
+                  <span>Tareas</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {teamMembers.map(member => (
-                    <div key={member.id} className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={member.avatar} />
-                          <AvatarFallback>{member.initials}</AvatarFallback>
-                        </Avatar>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                          member.status === 'online' ? 'bg-green-500' :
-                          member.status === 'busy' ? 'bg-yellow-500' : 'bg-gray-400'
-                        }`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{member.name}</p>
-                        <p className="text-xs text-muted-foreground">{member.role}</p>
-                      </div>
+                  {tasks.slice(0, 5).map(task => (
+                    <div key={task.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{task.title}</span>
+                      <Badge variant={getStatusBadge(task.status)} className="text-xs">
+                        {task.status}
+                      </Badge>
                     </div>
                   ))}
+                  {tasks.length === 0 && (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No hay tareas pendientes
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -336,40 +217,46 @@ const CollaborationHub = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {workflowTasks.map(task => (
-                  <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      {getStatusIcon(task.status)}
-                      <div>
-                        <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Asignado a: {task.assignee} • Vence: {task.dueDate}
-                        </p>
+                {tasks.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No hay tareas creadas aún.
+                  </div>
+                ) : (
+                  tasks.map(task => (
+                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        {getStatusIcon(task.status)}
+                        <div>
+                          <p className="font-medium">{task.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {task.due_date && `Vence: ${new Date(task.due_date).toLocaleDateString()}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                          {task.priority.toUpperCase()}
+                        </span>
+                        <Badge variant={getStatusBadge(task.status)}>
+                          {task.status}
+                        </Badge>
+                        <Select 
+                          value={task.status} 
+                          onValueChange={(value) => handleUpdateTaskStatus(task.id, value)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pendiente</SelectItem>
+                            <SelectItem value="in-progress">En Progreso</SelectItem>
+                            <SelectItem value="completed">Completado</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority.toUpperCase()}
-                      </span>
-                      <Badge variant={getStatusBadge(task.status)}>
-                        {task.status}
-                      </Badge>
-                      <Select 
-                        value={task.status} 
-                        onValueChange={(value) => updateTaskStatus(task.id, value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pendiente</SelectItem>
-                          <SelectItem value="in-progress">En Progreso</SelectItem>
-                          <SelectItem value="completed">Completado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -385,20 +272,9 @@ const CollaborationHub = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {changeHistory.map(change => (
-                  <div key={change.id} className="flex items-start space-x-4 pb-4 border-b last:border-b-0">
-                    <Clock className="h-4 w-4 text-muted-foreground mt-1" />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{change.user}</span>
-                        <span className="text-sm text-muted-foreground">{change.action}</span>
-                        <Badge variant="outline" className="text-xs">{change.section}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">{change.details}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{change.timestamp}</p>
-                    </div>
-                  </div>
-                ))}
+                <div className="text-center py-8 text-muted-foreground">
+                  El historial de cambios estará disponible próximamente
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -414,25 +290,31 @@ const CollaborationHub = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {sharePermissions.map(permission => (
-                  <div key={permission.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{permission.user}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Compartido el {permission.sharedDate}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {permission.permission === 'edit' ? 
-                        <Edit className="h-4 w-4 text-green-500" /> : 
-                        <Eye className="h-4 w-4 text-blue-500" />
-                      }
-                      <Badge variant={permission.permission === 'edit' ? 'default' : 'secondary'}>
-                        {permission.permission === 'edit' ? 'Editar' : 'Ver'}
-                      </Badge>
-                    </div>
+                {sharePermissions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No se ha compartido con nadie aún
                   </div>
-                ))}
+                ) : (
+                  sharePermissions.map(permission => (
+                    <div key={permission.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{permission.user}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Compartido el {permission.sharedDate}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {permission.permission === 'edit' ? 
+                          <Edit className="h-4 w-4 text-green-500" /> : 
+                          <Eye className="h-4 w-4 text-blue-500" />
+                        }
+                        <Badge variant={permission.permission === 'edit' ? 'default' : 'secondary'}>
+                          {permission.permission === 'edit' ? 'Editar' : 'Ver'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { valuationRepository } from '@/repositories/ValuationRepository';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ValuationType = 'own_business' | 'potential_acquisition' | 'client_business';
 
@@ -61,12 +62,10 @@ export function useValuations() {
 
   const fetchValuations = async () => {
     try {
-      const { data, error } = await supabase
-        .from('valuations')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
+      const data = await valuationRepository.findAll(user.id);
       setValuations((data || []) as Valuation[]);
     } catch (error: any) {
       toast({
@@ -90,22 +89,15 @@ export function useValuations() {
 
       const currentYear = new Date().getFullYear();
 
-      const { data, error } = await supabase
-        .from('valuations')
-        .insert({ 
-          title, 
-          tags, 
-          user_id: user.id, 
-          valuation_type,
-          year_1: currentYear.toString(),
-          year_2: (currentYear + 1).toString(),
-        })
-        .select()
-        .single();
+      const newValuation = await valuationRepository.create({ 
+        title, 
+        tags, 
+        user_id: user.id, 
+        valuation_type,
+        year_1: currentYear.toString(),
+        year_2: (currentYear + 1).toString(),
+      });
 
-      if (error) throw error;
-      
-      const newValuation = data as Valuation;
       setValuations([newValuation, ...valuations]);
       toast({
         title: 'Valoración creada',
@@ -125,12 +117,7 @@ export function useValuations() {
 
   const updateValuation = async (id: string, updates: Partial<Valuation>) => {
     try {
-      const { error } = await supabase
-        .from('valuations')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
+      await valuationRepository.update(id, updates);
       
       setValuations(valuations.map(v => v.id === id ? { ...v, ...updates } : v));
     } catch (error: any) {
@@ -144,12 +131,7 @@ export function useValuations() {
 
   const deleteValuation = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('valuations')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await valuationRepository.delete(id);
       
       setValuations(valuations.filter(v => v.id !== id));
       toast({
