@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,15 +11,30 @@ import { Upload, X, Building2, Mail, Phone, Globe } from 'lucide-react';
 export function AdvisorProfileSettings() {
   const { profile, loading, updateProfile, uploadLogo, deleteLogo } = useAdvisorProfile();
   const [formData, setFormData] = useState({
-    business_name: profile?.business_name || '',
-    professional_title: profile?.professional_title || '',
-    contact_email: profile?.contact_email || '',
-    contact_phone: profile?.contact_phone || '',
-    website: profile?.website || '',
-    brand_color: profile?.brand_color || '#3b82f6',
-    footer_disclaimer: profile?.footer_disclaimer || '',
+    business_name: '',
+    professional_title: '',
+    contact_email: '',
+    contact_phone: '',
+    website: '',
+    brand_color: '#3b82f6',
+    footer_disclaimer: '',
   });
   const [uploading, setUploading] = useState(false);
+
+  // Sync form data with profile when it loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        business_name: profile.business_name || '',
+        professional_title: profile.professional_title || '',
+        contact_email: profile.contact_email || '',
+        contact_phone: profile.contact_phone || '',
+        website: profile.website || '',
+        brand_color: profile.brand_color || '#3b82f6',
+        footer_disclaimer: profile.footer_disclaimer || '',
+      });
+    }
+  }, [profile]);
 
   if (loading) {
     return (
@@ -32,7 +47,18 @@ export function AdvisorProfileSettings() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateProfile(formData);
+    const updatedProfile = await updateProfile(formData);
+    if (updatedProfile) {
+      setFormData({
+        business_name: updatedProfile.business_name || '',
+        professional_title: updatedProfile.professional_title || '',
+        contact_email: updatedProfile.contact_email || '',
+        contact_phone: updatedProfile.contact_phone || '',
+        website: updatedProfile.website || '',
+        brand_color: updatedProfile.brand_color || '#3b82f6',
+        footer_disclaimer: updatedProfile.footer_disclaimer || '',
+      });
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +66,7 @@ export function AdvisorProfileSettings() {
     if (!file) return;
 
     setUploading(true);
-    await uploadLogo(file);
+    await uploadLogo(file, formData.business_name);
     setUploading(false);
   };
 
@@ -169,19 +195,21 @@ export function AdvisorProfileSettings() {
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
-                  disabled={uploading}
+                  disabled={uploading || !formData.business_name}
                   className="hidden"
                   id="logo-upload"
                 />
                 <Label htmlFor="logo-upload" className="cursor-pointer">
-                  <Button type="button" variant="outline" disabled={uploading} asChild>
+                  <Button type="button" variant="outline" disabled={uploading || !formData.business_name} asChild>
                     <span>
                       {uploading ? 'Subiendo...' : 'Seleccionar Imagen'}
                     </span>
                   </Button>
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG hasta 2MB
+                  {!formData.business_name 
+                    ? 'Primero guarda el "Nombre del Negocio"'
+                    : 'PNG, JPG hasta 2MB'}
                 </p>
               </div>
             </div>

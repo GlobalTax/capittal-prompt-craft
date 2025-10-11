@@ -56,7 +56,12 @@ export function useAdvisorProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      // If business_name is missing, we need to ensure it's provided or fetch the existing one
+      // If business_name is missing and no existing profile, throw error
+      if (!updates.business_name && !profile?.business_name) {
+        throw new Error('Debes indicar "Nombre del Negocio"');
+      }
+
+      // Build profile data with required business_name
       const profileData: any = {
         user_id: user.id,
         ...updates,
@@ -92,10 +97,16 @@ export function useAdvisorProfile() {
     }
   };
 
-  const uploadLogo = async (file: File): Promise<string | null> => {
+  const uploadLogo = async (file: File, fallbackBusinessName?: string): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
+
+      // Check if business_name is available
+      const businessName = profile?.business_name || fallbackBusinessName;
+      if (!businessName) {
+        throw new Error('Primero guarda el "Nombre del Negocio"');
+      }
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -126,7 +137,7 @@ export function useAdvisorProfile() {
         .from('advisor-logos')
         .getPublicUrl(fileName);
 
-      await updateProfile({ logo_url: publicUrl });
+      await updateProfile({ logo_url: publicUrl, business_name: businessName });
       
       return publicUrl;
     } catch (error: any) {

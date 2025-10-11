@@ -97,7 +97,7 @@ export function ValuationEditor() {
         description: 'Configura tu perfil en Ajustes > Branding antes de generar PDFs',
         variant: 'destructive',
       });
-      navigate('/settings');
+      navigate('/settings?tab=branding');
       return;
     }
 
