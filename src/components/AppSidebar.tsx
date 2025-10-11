@@ -34,7 +34,7 @@ const menuItems = [
     description: "Resumen ejecutivo"
   },
   {
-    title: "Valoración Básica",
+    title: "Valoraciones",
     url: "/valuation",
     icon: Calculator,
     description: "Calculadora principal"
