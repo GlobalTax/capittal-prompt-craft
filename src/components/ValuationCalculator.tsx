@@ -22,10 +22,10 @@ import ZapierIntegration from "./ZapierIntegration";
 interface FinancialData {
   totalRevenue2023: number;
   totalRevenue2024: number;
-  fiscalRecurring: number;
-  accountingRecurring: number;
-  laborRecurring: number;
-  otherRevenue: number;
+  fiscalRecurringPercent: number;
+  accountingRecurringPercent: number;
+  laborRecurringPercent: number;
+  otherRevenuePercent: number;
   totalCosts: number;
   personnelCosts: number;
   otherCosts: number;
@@ -43,10 +43,10 @@ const ValuationCalculator = () => {
   const [data, setData] = useState<FinancialData>({
     totalRevenue2023: 625000,
     totalRevenue2024: 1040000,
-    fiscalRecurring: 300000,
-    accountingRecurring: 200000,
-    laborRecurring: 120000,
-    otherRevenue: 5000,
+    fiscalRecurringPercent: 28.85,
+    accountingRecurringPercent: 19.23,
+    laborRecurringPercent: 11.54,
+    otherRevenuePercent: 0.48,
     totalCosts: 512500,
     personnelCosts: 450000,
     otherCosts: 62500,
@@ -57,7 +57,11 @@ const ValuationCalculator = () => {
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
 
   const calculateMetrics = () => {
-    const totalRecurring = data.fiscalRecurring + data.accountingRecurring + data.laborRecurring + data.otherRevenue;
+    const fiscalRecurring = (data.totalRevenue2024 * data.fiscalRecurringPercent) / 100;
+    const accountingRecurring = (data.totalRevenue2024 * data.accountingRecurringPercent) / 100;
+    const laborRecurring = (data.totalRevenue2024 * data.laborRecurringPercent) / 100;
+    const otherRevenue = (data.totalRevenue2024 * data.otherRevenuePercent) / 100;
+    const totalRecurring = fiscalRecurring + accountingRecurring + laborRecurring + otherRevenue;
     const netMargin = ((data.totalRevenue2024 - data.totalCosts) / data.totalRevenue2024) * 100;
     const contributionMargin = ((data.totalRevenue2024 - data.personnelCosts) / data.totalRevenue2024) * 100;
     const ownerMargin = (data.ownerSalary / data.totalRevenue2024) * 100;
@@ -153,17 +157,30 @@ const ValuationCalculator = () => {
     }));
   };
 
+  const handlePercentageChange = (field: keyof FinancialData, value: string) => {
+    // Permitir números, puntos y comas
+    const cleanValue = value.replace(/[^\d.,]/g, '').replace(',', '.');
+    const numValue = parseFloat(cleanValue) || 0;
+    // Limitar el porcentaje entre 0 y 100
+    const cappedValue = Math.min(Math.max(numValue, 0), 100);
+    setData(prev => ({
+      ...prev,
+      [field]: cappedValue
+    }));
+  };
+
   // Data validation
   const validateData = () => {
     const issues = [];
-    const totalRecurring = data.fiscalRecurring + data.accountingRecurring + data.laborRecurring + data.otherRevenue;
+    const totalRecurringPercent = data.fiscalRecurringPercent + data.accountingRecurringPercent + 
+                                   data.laborRecurringPercent + data.otherRevenuePercent;
     const metrics = calculateMetrics();
     
     if (data.totalCosts >= data.totalRevenue2024) {
       issues.push("Los costes superan los ingresos - revisar datos");
     }
-    if (totalRecurring > data.totalRevenue2024) {
-      issues.push("La facturación recurrente supera el total anual");
+    if (totalRecurringPercent > 100) {
+      issues.push("Los porcentajes de facturación recurrente superan el 100%");
     }
     if (metrics.revenueGrowth < -20) {
       issues.push("Decrecimiento muy alto - revisar cifras");
@@ -184,10 +201,10 @@ const ValuationCalculator = () => {
   };
 
   const revenueCompositionData = [
-    { name: "Fiscal", value: data.fiscalRecurring, fill: "hsl(var(--chart-1))" },
-    { name: "Contable", value: data.accountingRecurring, fill: "hsl(var(--chart-2))" },
-    { name: "Laboral", value: data.laborRecurring, fill: "hsl(var(--chart-3))" },
-    { name: "Otros", value: data.otherRevenue, fill: "hsl(var(--chart-4))" },
+    { name: "Fiscal", value: (data.totalRevenue2024 * data.fiscalRecurringPercent) / 100, fill: "hsl(var(--chart-1))" },
+    { name: "Contable", value: (data.totalRevenue2024 * data.accountingRecurringPercent) / 100, fill: "hsl(var(--chart-2))" },
+    { name: "Laboral", value: (data.totalRevenue2024 * data.laborRecurringPercent) / 100, fill: "hsl(var(--chart-3))" },
+    { name: "Otros", value: (data.totalRevenue2024 * data.otherRevenuePercent) / 100, fill: "hsl(var(--chart-4))" },
   ].filter(item => item.value > 0);
 
   const yearComparisonData = [
@@ -303,47 +320,71 @@ const ValuationCalculator = () => {
               <Separator />
 
               <div className="space-y-3">
-                <h4 className="font-medium">Facturación Recurrente</h4>
+                <h4 className="font-medium">Facturación Recurrente (%)</h4>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="fiscal">Fiscal (€)</Label>
-                    <Input
-                      id="fiscal"
-                      type="text"
-                      value={formatNumber(data.fiscalRecurring)}
-                      onChange={(e) => handleInputChange('fiscalRecurring', e.target.value)}
-                      className="font-mono text-sm"
-                    />
+                    <Label htmlFor="fiscal">Fiscal (%)</Label>
+                    <div className="relative">
+                      <Input
+                        id="fiscal"
+                        type="text"
+                        value={data.fiscalRecurringPercent.toFixed(2)}
+                        onChange={(e) => handlePercentageChange('fiscalRecurringPercent', e.target.value)}
+                        className="font-mono text-sm pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatNumber((data.totalRevenue2024 * data.fiscalRecurringPercent) / 100)} €
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="accounting">Contable (€)</Label>
-                    <Input
-                      id="accounting"
-                      type="text"
-                      value={formatNumber(data.accountingRecurring)}
-                      onChange={(e) => handleInputChange('accountingRecurring', e.target.value)}
-                      className="font-mono text-sm"
-                    />
+                    <Label htmlFor="accounting">Contable (%)</Label>
+                    <div className="relative">
+                      <Input
+                        id="accounting"
+                        type="text"
+                        value={data.accountingRecurringPercent.toFixed(2)}
+                        onChange={(e) => handlePercentageChange('accountingRecurringPercent', e.target.value)}
+                        className="font-mono text-sm pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatNumber((data.totalRevenue2024 * data.accountingRecurringPercent) / 100)} €
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="labor">Laboral (€)</Label>
-                    <Input
-                      id="labor"
-                      type="text"
-                      value={formatNumber(data.laborRecurring)}
-                      onChange={(e) => handleInputChange('laborRecurring', e.target.value)}
-                      className="font-mono text-sm"
-                    />
+                    <Label htmlFor="labor">Laboral (%)</Label>
+                    <div className="relative">
+                      <Input
+                        id="labor"
+                        type="text"
+                        value={data.laborRecurringPercent.toFixed(2)}
+                        onChange={(e) => handlePercentageChange('laborRecurringPercent', e.target.value)}
+                        className="font-mono text-sm pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatNumber((data.totalRevenue2024 * data.laborRecurringPercent) / 100)} €
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="other">Otros (€)</Label>
-                    <Input
-                      id="other"
-                      type="text"
-                      value={formatNumber(data.otherRevenue)}
-                      onChange={(e) => handleInputChange('otherRevenue', e.target.value)}
-                      className="font-mono text-sm"
-                    />
+                    <Label htmlFor="other">Otros (%)</Label>
+                    <div className="relative">
+                      <Input
+                        id="other"
+                        type="text"
+                        value={data.otherRevenuePercent.toFixed(2)}
+                        onChange={(e) => handlePercentageChange('otherRevenuePercent', e.target.value)}
+                        className="font-mono text-sm pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatNumber((data.totalRevenue2024 * data.otherRevenuePercent) / 100)} €
+                    </p>
                   </div>
                 </div>
               </div>
