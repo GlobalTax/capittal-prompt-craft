@@ -334,12 +334,12 @@ const ValuationCalculator = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
+                      <table className="w-full border-collapse table-fixed">
                         <thead>
                           <tr className="bg-muted/50">
-                            <th className="text-left p-3 font-medium text-sm border-r">Concepto</th>
+                            <th className="text-left p-3 font-medium text-sm border-r w-[200px]">Concepto</th>
                             {data.years.map((year, index) => (
-                              <th key={year.year} className="text-right p-3 font-medium text-sm border-r">
+                              <th key={year.year} className="text-right p-3 font-medium text-sm border-r w-[280px]">
                                 <div className="flex items-center justify-between gap-2">
                                   <span>{year.year}</span>
                                   {data.years.length > 2 && (
@@ -356,7 +356,7 @@ const ValuationCalculator = () => {
                               </th>
                             ))}
                             {data.years.length > 1 && (
-                              <th className="text-right p-3 font-medium text-sm">Var %</th>
+                              <th className="text-right p-3 font-medium text-sm w-[100px]">Var %</th>
                             )}
                           </tr>
                         </thead>
@@ -368,9 +368,9 @@ const ValuationCalculator = () => {
                             </td>
                           </tr>
                           <tr className="border-t">
-                            <td className="p-3 text-sm border-r">Facturación Total</td>
+                            <td className="p-3 text-sm border-r w-[200px]">Facturación Total</td>
                             {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r">
+                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                 <Input
                                   type="text"
                                   value={formatNumber(year.totalRevenue)}
@@ -397,21 +397,21 @@ const ValuationCalculator = () => {
 
                           {/* Servicios Recurrentes */}
                           <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r">Servicios Fiscales</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Fiscales</td>
                             {data.years.map((year, index) => {
                               const amount = (year.totalRevenue * year.fiscalRecurringPercent) / 100;
                               return (
-                                <td key={year.year} className="p-2 text-right border-r">
+                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                   <div className="flex items-center gap-1 justify-end">
                                     <Input
                                       type="text"
                                       value={year.fiscalRecurringPercent || ''}
                                       onChange={(e) => handlePercentageChange(index, 'fiscalRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right"
+                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
                                       placeholder="0"
                                     />
-                                    <span className="text-xs text-muted-foreground">%</span>
-                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
+                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
                                   </div>
                                 </td>
                               );
@@ -420,21 +420,21 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r">Servicios Contables</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Contables</td>
                             {data.years.map((year, index) => {
                               const amount = (year.totalRevenue * year.accountingRecurringPercent) / 100;
                               return (
-                                <td key={year.year} className="p-2 text-right border-r">
+                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                   <div className="flex items-center gap-1 justify-end">
                                     <Input
                                       type="text"
                                       value={year.accountingRecurringPercent || ''}
                                       onChange={(e) => handlePercentageChange(index, 'accountingRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right"
+                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
                                       placeholder="0"
                                     />
-                                    <span className="text-xs text-muted-foreground">%</span>
-                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
+                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
                                   </div>
                                 </td>
                               );
@@ -443,21 +443,21 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r">Servicios Laborales</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Laborales</td>
                             {data.years.map((year, index) => {
                               const amount = (year.totalRevenue * year.laborRecurringPercent) / 100;
                               return (
-                                <td key={year.year} className="p-2 text-right border-r">
+                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                   <div className="flex items-center gap-1 justify-end">
                                     <Input
                                       type="text"
                                       value={year.laborRecurringPercent || ''}
                                       onChange={(e) => handlePercentageChange(index, 'laborRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right"
+                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
                                       placeholder="0"
                                     />
-                                    <span className="text-xs text-muted-foreground">%</span>
-                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
+                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
                                   </div>
                                 </td>
                               );
@@ -466,21 +466,21 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r">Otros Servicios</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Servicios</td>
                             {data.years.map((year, index) => {
                               const amount = (year.totalRevenue * year.otherRevenuePercent) / 100;
                               return (
-                                <td key={year.year} className="p-2 text-right border-r">
+                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                   <div className="flex items-center gap-1 justify-end">
                                     <Input
                                       type="text"
                                       value={year.otherRevenuePercent || ''}
                                       onChange={(e) => handlePercentageChange(index, 'otherRevenuePercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right"
+                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
                                       placeholder="0"
                                     />
-                                    <span className="text-xs text-muted-foreground">%</span>
-                                    <span className="font-mono text-sm ml-2">{formatNumber(amount)}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
+                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
                                   </div>
                                 </td>
                               );
@@ -489,7 +489,7 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/30 font-semibold">
-                            <td className="p-3 text-sm pl-6 border-r">Total Ingresos Recurrentes</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Total Ingresos Recurrentes</td>
                             {data.years.map((year) => {
                               const metrics = calculateMetricsForYear(year);
                               return (
@@ -515,7 +515,7 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r">Otros Ingresos</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Ingresos</td>
                             {data.years.map((year) => {
                               const metrics = calculateMetricsForYear(year);
                               return (
@@ -535,9 +535,9 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r">Costes de Personal</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Costes de Personal</td>
                             {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r">
+                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                 <Input
                                   type="text"
                                   value={formatNumber(year.personnelCosts)}
@@ -550,9 +550,9 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r">Otros Costes Operativos</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Costes Operativos</td>
                             {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r">
+                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                 <Input
                                   type="text"
                                   value={formatNumber(year.otherCosts)}
@@ -565,9 +565,9 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r">Sueldo Propiedad</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Sueldo Propiedad</td>
                             {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r">
+                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
                                 <Input
                                   type="text"
                                   value={formatNumber(year.ownerSalary)}
@@ -580,7 +580,7 @@ const ValuationCalculator = () => {
                           </tr>
 
                           <tr className="border-t bg-muted/30 font-semibold">
-                            <td className="p-3 text-sm pl-6 border-r">Total Costes</td>
+                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Total Costes</td>
                             {data.years.map((year) => {
                               const metrics = calculateMetricsForYear(year);
                               return (
