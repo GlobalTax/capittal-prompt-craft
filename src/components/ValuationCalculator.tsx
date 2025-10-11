@@ -648,11 +648,6 @@ const ValuationCalculator = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <TooltipProvider>
         <div className="container mx-auto p-6 space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-foreground">Calculadora de Valoración Empresarial</h1>
-            <p className="text-muted-foreground">Herramienta especializada para valoración de consultorías</p>
-          </div>
-
           <div className="space-y-6">
               <div className="space-y-6 max-w-[95vw] mx-auto px-4">
                 {/* Validation Alerts */}
