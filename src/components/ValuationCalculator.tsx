@@ -176,12 +176,22 @@ const ValuationCalculator = () => {
 
   const formatNumber = (value: number | undefined): string => {
     if (value === undefined || value === null || isNaN(value)) return '0';
-    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+    // Redondear a 2 decimales para evitar problemas de precisión
+    const rounded = Math.round(value * 100) / 100;
+    
+    // Usar toLocaleString con configuración española
+    return rounded.toLocaleString('es-ES', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
   };
 
   // Función para parsear números con separadores de miles
   const parseNumber = (value: string): number => {
-    return parseFloat(value.replace(/\./g, '')) || 0;
+    // Eliminar puntos (separadores de miles) y reemplazar coma por punto decimal
+    const cleaned = value.replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
   };
 
   const updateYearData = (yearIndex: number, field: keyof YearData, value: number) => {
