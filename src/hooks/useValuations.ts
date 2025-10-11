@@ -2,12 +2,33 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+export type ValuationType = 'own_business' | 'potential_acquisition' | 'client_business';
+
 export interface Valuation {
   id: string;
   user_id: string;
   title: string;
   status: 'draft' | 'in_progress' | 'completed';
   tags: string[];
+  
+  // Tipo de valoración
+  valuation_type: ValuationType;
+  
+  // Campos para clientes
+  client_name?: string;
+  client_company?: string;
+  client_email?: string;
+  client_phone?: string;
+  
+  // Campos para objetivos de compra
+  target_company_name?: string;
+  target_industry?: string;
+  target_location?: string;
+  contact_person?: string;
+  
+  // Notas privadas
+  private_notes?: string;
+  
   year_1: string;
   revenue_1: number;
   fiscal_recurring_1: number;
@@ -62,14 +83,14 @@ export function useValuations() {
     fetchValuations();
   }, []);
 
-  const createValuation = async (title: string, tags: string[] = []) => {
+  const createValuation = async (title: string, tags: string[] = [], valuation_type: ValuationType = 'own_business') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
       const { data, error } = await supabase
         .from('valuations')
-        .insert({ title, tags, user_id: user.id })
+        .insert({ title, tags, user_id: user.id, valuation_type })
         .select()
         .single();
 

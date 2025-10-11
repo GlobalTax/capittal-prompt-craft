@@ -133,6 +133,48 @@ export type Database = {
         }
         Relationships: []
       }
+      advisor_profiles: {
+        Row: {
+          brand_color: string | null
+          business_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          footer_disclaimer: string | null
+          logo_url: string | null
+          professional_title: string | null
+          updated_at: string | null
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          brand_color?: string | null
+          business_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          footer_disclaimer?: string | null
+          logo_url?: string | null
+          professional_title?: string | null
+          updated_at?: string | null
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          brand_color?: string | null
+          business_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          footer_disclaimer?: string | null
+          logo_url?: string | null
+          professional_title?: string | null
+          updated_at?: string | null
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       api_configurations: {
         Row: {
           api_name: string
@@ -13370,7 +13412,12 @@ export type Database = {
         Row: {
           accounting_recurring_1: number | null
           accounting_recurring_2: number | null
+          client_company: string | null
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
           completed: boolean | null
+          contact_person: string | null
           created_at: string | null
           employees_1: number | null
           employees_2: number | null
@@ -13387,20 +13434,30 @@ export type Database = {
           owner_salary_2: number | null
           personnel_costs_1: number | null
           personnel_costs_2: number | null
+          private_notes: string | null
           revenue_1: number | null
           revenue_2: number | null
           status: string | null
           tags: string[] | null
+          target_company_name: string | null
+          target_industry: string | null
+          target_location: string | null
           title: string
           updated_at: string | null
           user_id: string
+          valuation_type: string | null
           year_1: string | null
           year_2: string | null
         }
         Insert: {
           accounting_recurring_1?: number | null
           accounting_recurring_2?: number | null
+          client_company?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           completed?: boolean | null
+          contact_person?: string | null
           created_at?: string | null
           employees_1?: number | null
           employees_2?: number | null
@@ -13417,20 +13474,30 @@ export type Database = {
           owner_salary_2?: number | null
           personnel_costs_1?: number | null
           personnel_costs_2?: number | null
+          private_notes?: string | null
           revenue_1?: number | null
           revenue_2?: number | null
           status?: string | null
           tags?: string[] | null
+          target_company_name?: string | null
+          target_industry?: string | null
+          target_location?: string | null
           title: string
           updated_at?: string | null
           user_id: string
+          valuation_type?: string | null
           year_1?: string | null
           year_2?: string | null
         }
         Update: {
           accounting_recurring_1?: number | null
           accounting_recurring_2?: number | null
+          client_company?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           completed?: boolean | null
+          contact_person?: string | null
           created_at?: string | null
           employees_1?: number | null
           employees_2?: number | null
@@ -13447,13 +13514,18 @@ export type Database = {
           owner_salary_2?: number | null
           personnel_costs_1?: number | null
           personnel_costs_2?: number | null
+          private_notes?: string | null
           revenue_1?: number | null
           revenue_2?: number | null
           status?: string | null
           tags?: string[] | null
+          target_company_name?: string | null
+          target_industry?: string | null
+          target_location?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
+          valuation_type?: string | null
           year_1?: string | null
           year_2?: string | null
         }

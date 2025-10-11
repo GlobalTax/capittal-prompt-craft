@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "./StatusBadge";
 import { Valuation } from "@/hooks/useValuations";
 import { useNavigate } from "react-router-dom";
+import { Building2, Target, Users } from "lucide-react";
 
 interface ValuationCardProps {
   valuation: Valuation;
@@ -19,6 +20,35 @@ export function ValuationCard({ valuation, onToggleComplete, className, style }:
   const totalCosts = Number(valuation.personnel_costs_1) + Number(valuation.other_costs_1) + 
                      Number(valuation.personnel_costs_2) + Number(valuation.other_costs_2);
   const ebitda = totalRevenue - totalCosts;
+
+  const getTypeConfig = () => {
+    switch (valuation.valuation_type) {
+      case 'client_business':
+        return {
+          icon: Users,
+          label: 'Cliente',
+          color: 'text-success border-success',
+          subtitle: valuation.client_company || valuation.client_name
+        };
+      case 'potential_acquisition':
+        return {
+          icon: Target,
+          label: 'Objetivo',
+          color: 'text-warning border-warning',
+          subtitle: valuation.target_company_name
+        };
+      default:
+        return {
+          icon: Building2,
+          label: 'Mi Negocio',
+          color: 'text-primary border-primary',
+          subtitle: null
+        };
+    }
+  };
+
+  const typeConfig = getTypeConfig();
+  const TypeIcon = typeConfig.icon;
 
   return (
     <Card
@@ -37,14 +67,25 @@ export function ValuationCard({ valuation, onToggleComplete, className, style }:
             className="transition-transform group-hover:scale-110"
           />
           <div className="flex-1">
-            <h3 className="font-semibold text-lg mb-2">{valuation.title}</h3>
-            <div className="flex gap-2 flex-wrap">
-              {valuation.tags?.map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+            <div className="flex items-center gap-2 mb-1">
+              <Badge variant="outline" className={`${typeConfig.color} text-xs`}>
+                <TypeIcon className="h-3 w-3 mr-1" />
+                {typeConfig.label}
+              </Badge>
             </div>
+            <h3 className="font-semibold text-lg mb-1">{valuation.title}</h3>
+            {typeConfig.subtitle && (
+              <p className="text-sm text-muted-foreground mb-2">{typeConfig.subtitle}</p>
+            )}
+            {valuation.tags && valuation.tags.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {valuation.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <StatusBadge status={valuation.status} />

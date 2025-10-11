@@ -4,11 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Valuation } from '@/hooks/useValuations';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
+import { ValuationTypeSelector } from './ValuationTypeSelector';
+import { ClientInfoForm } from './ClientInfoForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Trash2, StickyNote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ValuationCalculator from '@/components/ValuationCalculator';
 
 export function ValuationEditor() {
@@ -118,7 +123,45 @@ export function ValuationEditor() {
       </div>
 
       {/* Content */}
-      <div className="container max-w-7xl py-6 px-4">
+      <div className="container max-w-7xl py-6 px-4 space-y-6">
+        {/* Selector de Tipo de Valoración */}
+        <div className="space-y-2">
+          <Label>Tipo de Valoración</Label>
+          <ValuationTypeSelector
+            value={valuation.valuation_type || 'own_business'}
+            onChange={(type) => updateField('valuation_type', type)}
+          />
+        </div>
+
+        {/* Formulario de Contexto (Cliente/Objetivo) */}
+        <ClientInfoForm valuation={valuation} onUpdate={updateField} />
+
+        {/* Notas Privadas */}
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-start gap-2">
+              <StickyNote className="h-4 w-4" />
+              Notas Privadas del Asesor
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4">
+            <div className="space-y-2 p-4 border rounded-lg bg-card">
+              <Label htmlFor="private_notes">
+                Notas Privadas (no visibles para el cliente)
+              </Label>
+              <Textarea
+                id="private_notes"
+                value={valuation.private_notes || ''}
+                onChange={(e) => updateField('private_notes', e.target.value)}
+                placeholder="Añade aquí observaciones estratégicas, puntos clave para la negociación, etc."
+                rows={6}
+                className="resize-none"
+              />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Calculadora de Valoración */}
         <ValuationCalculator />
       </div>
     </div>

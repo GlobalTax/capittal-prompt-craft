@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useValuations } from '@/hooks/useValuations';
+import { useValuations, ValuationType } from '@/hooks/useValuations';
 import { ValuationCard } from './ValuationCard';
+import { ValuationTypeSelector } from './ValuationTypeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
@@ -20,24 +21,32 @@ export function ValuationList() {
   const { valuations, loading, createValuation, updateValuation } = useValuations();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState<ValuationType>('own_business');
   const navigate = useNavigate();
 
   const filteredValuations = useMemo(() => {
     return valuations.filter((v) => {
-      const matchesSearch = v.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = 
+        v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.client_company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.target_company_name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesType = typeFilter === 'all' || v.valuation_type === typeFilter;
+      return matchesSearch && matchesStatus && matchesType;
     });
-  }, [valuations, searchQuery, statusFilter]);
+  }, [valuations, searchQuery, statusFilter, typeFilter]);
 
   const handleCreateNew = async () => {
     if (!newTitle.trim()) return;
-    const newValuation = await createValuation(newTitle);
+    const newValuation = await createValuation(newTitle, [], newType);
     if (newValuation) {
       setShowNewDialog(false);
       setNewTitle('');
+      setNewType('own_business');
       navigate(`/valuation/${newValuation.id}`);
     }
   };
@@ -68,24 +77,47 @@ export function ValuationList() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar valoraciones..."
+              placeholder="Buscar valoraciones, clientes, empresas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2">
-            {['all', 'draft', 'in_progress', 'completed'].map((status) => (
-              <Button
-                key={status}
-                variant={statusFilter === status ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter(status)}
-              >
-                {status === 'all' ? 'Todas' : status === 'draft' ? 'Borradores' : status === 'in_progress' ? 'En Progreso' : 'Completadas'}
-              </Button>
-            ))}
-          </div>
+        </div>
+        
+        {/* Type Filter */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm text-muted-foreground self-center mr-2">Tipo:</span>
+          {[
+            { value: 'all', label: 'Todas' },
+            { value: 'own_business', label: 'Mi Negocio' },
+            { value: 'client_business', label: 'Clientes' },
+            { value: 'potential_acquisition', label: 'Objetivos' }
+          ].map((type) => (
+            <Button
+              key={type.value}
+              variant={typeFilter === type.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter(type.value)}
+            >
+              {type.label}
+            </Button>
+          ))}
+        </div>
+        
+        {/* Status Filter */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm text-muted-foreground self-center mr-2">Estado:</span>
+          {['all', 'draft', 'in_progress', 'completed'].map((status) => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter(status)}
+            >
+              {status === 'all' ? 'Todas' : status === 'draft' ? 'Borradores' : status === 'in_progress' ? 'En Progreso' : 'Completadas'}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -121,14 +153,18 @@ export function ValuationList() {
 
       {/* Dialog Nueva Valoración */}
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nueva Valoración</DialogTitle>
             <DialogDescription>
-              Crea una nueva valoración para tu empresa
+              Crea una nueva valoración para tu empresa, un cliente o un objetivo
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <Label>Tipo de Valoración</Label>
+              <ValuationTypeSelector value={newType} onChange={setNewType} />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="title">Nombre de la Valoración</Label>
               <Input
