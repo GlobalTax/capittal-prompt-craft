@@ -2,19 +2,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Header = () => {
+  const userName = "Usuario"; // En el futuro esto vendrá de auth
+
   return (
-    <header className="bg-background border-b">
-      <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-        {/* Sidebar Trigger + Logo */}
-        <div className="flex items-center space-x-4">
-          <SidebarTrigger />
-          <h1 className="text-2xl font-bold text-foreground">Capittal</h1>
+    <header className="bg-card border-b border-border sticky top-0 z-10">
+      <div className="flex items-center justify-between h-14 px-4 sm:px-6">
+        {/* Sidebar Trigger + Welcome */}
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+          <h1 className="text-lg font-semibold text-foreground">
+            Bienvenido, {userName} 👋
+          </h1>
         </div>
 
-        {/* Language Selector */}
-        <div>
+        {/* Actions */}
+        <div className="flex items-center gap-2">
           <Select defaultValue="catala">
-            <SelectTrigger className="w-24 border-0 bg-transparent text-sm">
+            <SelectTrigger className="w-24 h-8 border-0 bg-transparent text-xs text-muted-foreground hover:text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

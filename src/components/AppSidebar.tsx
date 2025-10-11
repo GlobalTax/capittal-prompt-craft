@@ -110,21 +110,18 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" 
-      : "hover:bg-muted/50 text-muted-foreground hover:text-foreground";
+      ? "bg-accent text-accent-foreground font-medium" 
+      : "hover:bg-sidebar-accent text-sidebar-foreground";
 
   const renderMenuItems = (items: typeof menuItems) => (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild className="h-12">
+          <SidebarMenuButton asChild className="h-9 mx-2 rounded-md">
             <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-4 w-4 shrink-0" />
               {!collapsed && (
-                <div className="flex flex-col items-start overflow-hidden">
-                  <span className="text-sm font-medium truncate w-full">{item.title}</span>
-                  <span className="text-xs text-muted-foreground truncate w-full">{item.description}</span>
-                </div>
+                <span className="text-sm truncate">{item.title}</span>
               )}
             </NavLink>
           </SidebarMenuButton>
@@ -134,11 +131,19 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar className="shrink-0 border-r border-sidebar-border" collapsible="icon" style={{ "--sidebar-width": "18rem" } as React.CSSProperties}>
+    <Sidebar className="shrink-0 border-r border-sidebar-border bg-sidebar" collapsible="icon" style={{ "--sidebar-width": "16rem" } as React.CSSProperties}>
       <SidebarContent className="py-4 overflow-y-auto">
+        {/* Logo/Brand */}
+        {!collapsed && (
+          <div className="px-4 pb-4 mb-2">
+            <h2 className="text-xl font-bold text-sidebar-foreground">Capittal</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">M&A Platform</p>
+          </div>
+        )}
+
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Análisis Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -148,7 +153,7 @@ export function AppSidebar() {
 
         {/* Integrations */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Integraciones
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -158,7 +163,7 @@ export function AppSidebar() {
 
         {/* Advanced Features */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
             Funciones Avanzadas
           </SidebarGroupLabel>
           <SidebarGroupContent>
