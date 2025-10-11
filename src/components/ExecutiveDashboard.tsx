@@ -7,52 +7,54 @@ import { TrendingUp, TrendingDown, DollarSign, BarChart3, Users, AlertCircle, Ta
 import { useDashboardKPIs } from "@/hooks/useDashboardKPIs";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 const ExecutiveDashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { kpis, loading } = useDashboardKPIs(user?.id);
 
   // Transform KPIs from database to display format
   const kpiData = [
     {
-      title: "Valoraciones Totales",
+      title: t('dashboard.totalValuations'),
       value: kpis.find(k => k.metric_type === 'total_valuations')?.value.toLocaleString('es-ES') || "0",
       change: kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage 
         ? `${kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage}%` 
         : "+0%",
       trend: (kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: DollarSign,
-      description: "Valor total de empresas valoradas"
+      description: t('dashboard.totalValuationsDesc')
     },
     {
-      title: "Múltiplo Promedio",
+      title: t('dashboard.averageValue'),
       value: `${kpis.find(k => k.metric_type === 'avg_multiple')?.value.toFixed(1) || "0.0"}x`,
       change: kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage 
         ? `${kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage}%` 
         : "0%",
       trend: (kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: BarChart3,
-      description: "Múltiplo promedio EBITDA aplicado"
+      description: t('dashboard.averageValueDesc')
     },
     {
-      title: "Proyectos Activos",
+      title: t('dashboard.activeClients'),
       value: kpis.find(k => k.metric_type === 'active_projects')?.value.toString() || "0",
       change: kpis.find(k => k.metric_type === 'active_projects')?.change_percentage 
         ? `${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage > 0 ? '+' : ''}${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage}` 
         : "+0",
       trend: (kpis.find(k => k.metric_type === 'active_projects')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: Users,
-      description: "Valoraciones en curso"
+      description: t('dashboard.activeClientsDesc')
     },
     {
-      title: "Precisión Predictiva",
+      title: t('dashboard.completionRate'),
       value: `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.value.toFixed(0) || "0"}%`,
       change: kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage 
         ? `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage}%` 
         : "+0%",
       trend: (kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: Target,
-      description: "Precisión de modelos predictivos"
+      description: t('dashboard.completionRateDesc')
     }
   ];
 
@@ -144,9 +146,9 @@ const ExecutiveDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Ejecutivo</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">
-            Resumen general de valoraciones y análisis predictivo
+            {t('dashboard.subtitle')}
           </p>
         </div>
         <Badge variant="outline" className="px-3 py-1">
@@ -163,9 +165,9 @@ const ExecutiveDashboard = () => {
       {/* Main Content Tabs */}
       <Tabs defaultValue="analytics" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="analytics">Análisis</TabsTrigger>
-          <TabsTrigger value="trends">Tendencias</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
+          <TabsTrigger value="analytics">{t('dashboard.analyticsTab')}</TabsTrigger>
+          <TabsTrigger value="trends">{t('dashboard.trendsTab')}</TabsTrigger>
+          <TabsTrigger value="alerts">{t('dashboard.alertsTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-4">
@@ -173,7 +175,7 @@ const ExecutiveDashboard = () => {
             {/* Monthly Performance */}
             <Card>
               <CardHeader>
-                <CardTitle>Rendimiento Mensual</CardTitle>
+                <CardTitle>{t('dashboard.monthlyPerformance')}</CardTitle>
                 <CardDescription>
                   Valoraciones completadas y valor total por mes
                 </CardDescription>
@@ -196,7 +198,7 @@ const ExecutiveDashboard = () => {
             {/* Sector Distribution */}
             <Card>
               <CardHeader>
-                <CardTitle>Distribución por Sector</CardTitle>
+                <CardTitle>{t('dashboard.sectorDistribution')}</CardTitle>
                 <CardDescription>
                   Porcentaje de valoraciones por sector
                 </CardDescription>
@@ -231,7 +233,7 @@ const ExecutiveDashboard = () => {
         <TabsContent value="trends" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Tendencia de Valoraciones</CardTitle>
+              <CardTitle>{t('dashboard.temporalTrend')}</CardTitle>
               <CardDescription>
                 Evolución temporal del número de valoraciones y valor promedio
               </CardDescription>

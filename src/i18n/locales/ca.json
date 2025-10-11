@@ -1,0 +1,57 @@
+{
+  "header": {
+    "language": "Idioma"
+  },
+  "sidebar": {
+    "mainAnalysis": "Anàlisi Principal",
+    "dashboard": "Dashboard",
+    "valuations": "Valoracions",
+    "reports": "Informes",
+    "integrations": "Integracions",
+    "financialData": "Dades Financeres",
+    "importer": "Importador",
+    "alerts": "Alertes",
+    "zapier": "Zapier",
+    "advancedFeatures": "Funcions Avançades",
+    "dueDiligence": "Due Diligence",
+    "multiplesComparables": "Múltiples Comparables",
+    "settings": "Configuració"
+  },
+  "dashboard": {
+    "title": "Dashboard Executiu",
+    "subtitle": "Anàlisi de rendiment i mètriques clau",
+    "totalValuations": "Valoracions Totals",
+    "totalValuationsDesc": "Nombre total de valoracions completades",
+    "averageValue": "Valor Mitjà",
+    "averageValueDesc": "Valor promig de les valoracions",
+    "activeClients": "Clients Actius",
+    "activeClientsDesc": "Clients amb projectes en curs",
+    "completionRate": "Taxa de Completitud",
+    "completionRateDesc": "Projectes completats vs iniciats",
+    "analyticsTab": "Analítiques",
+    "trendsTab": "Tendències",
+    "alertsTab": "Alertes",
+    "monthlyPerformance": "Rendiment Mensual",
+    "sectorDistribution": "Distribució per Sector",
+    "temporalTrend": "Tendència Temporal de Valoracions",
+    "avgValue": "Valor Mitjà",
+    "recentAlerts": "Alertes Recents"
+  },
+  "auth": {
+    "login": "Iniciar Sessió",
+    "register": "Registrar-se",
+    "email": "Email",
+    "password": "Contrasenya",
+    "confirmPassword": "Confirmar Contrasenya",
+    "loginButton": "Iniciar Sessió",
+    "registerButton": "Crear Compte",
+    "loggingIn": "Iniciant sessió...",
+    "registering": "Creant compte...",
+    "noAccount": "No tens compte?",
+    "haveAccount": "Ja tens compte?",
+    "welcomeBack": "Benvingut de nou!",
+    "createAccount": "Crear el teu compte",
+    "loginSubtitle": "Introdueix les teves credencials per accedir",
+    "registerSubtitle": "Completa el formulari per començar"
+  }
+}

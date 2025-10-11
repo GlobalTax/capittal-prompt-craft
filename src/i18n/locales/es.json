@@ -1,0 +1,57 @@
+{
+  "header": {
+    "language": "Idioma"
+  },
+  "sidebar": {
+    "mainAnalysis": "Análisis Principal",
+    "dashboard": "Dashboard",
+    "valuations": "Valoraciones",
+    "reports": "Informes",
+    "integrations": "Integraciones",
+    "financialData": "Datos Financieros",
+    "importer": "Importador",
+    "alerts": "Alertas",
+    "zapier": "Zapier",
+    "advancedFeatures": "Funciones Avanzadas",
+    "dueDiligence": "Due Diligence",
+    "multiplesComparables": "Múltiplos Comparables",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "title": "Dashboard Ejecutivo",
+    "subtitle": "Análisis de rendimiento y métricas clave",
+    "totalValuations": "Valoraciones Totales",
+    "totalValuationsDesc": "Número total de valoraciones completadas",
+    "averageValue": "Valor Medio",
+    "averageValueDesc": "Valor promedio de las valoraciones",
+    "activeClients": "Clientes Activos",
+    "activeClientsDesc": "Clientes con proyectos en curso",
+    "completionRate": "Tasa de Completitud",
+    "completionRateDesc": "Proyectos completados vs iniciados",
+    "analyticsTab": "Analíticas",
+    "trendsTab": "Tendencias",
+    "alertsTab": "Alertas",
+    "monthlyPerformance": "Rendimiento Mensual",
+    "sectorDistribution": "Distribución por Sector",
+    "temporalTrend": "Tendencia Temporal de Valoraciones",
+    "avgValue": "Valor Medio",
+    "recentAlerts": "Alertas Recientes"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "email": "Email",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "loginButton": "Iniciar Sesión",
+    "registerButton": "Crear Cuenta",
+    "loggingIn": "Iniciando sesión...",
+    "registering": "Creando cuenta...",
+    "noAccount": "¿No tienes cuenta?",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "welcomeBack": "¡Bienvenido de nuevo!",
+    "createAccount": "Crear tu cuenta",
+    "loginSubtitle": "Ingresa tus credenciales para acceder",
+    "registerSubtitle": "Completa el formulario para comenzar"
+  }
+}

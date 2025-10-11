@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,12 +42,12 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-lg border-border/50">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold tracking-tight">Capittal</CardTitle>
-          <CardDescription>Inicia sesión en tu cuenta</CardDescription>
+          <CardDescription>{t('auth.loginSubtitle')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -58,7 +60,7 @@ const Login = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -72,12 +74,12 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {loading ? t('auth.loggingIn') : t('auth.loginButton')}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              ¿No tienes cuenta?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to="/register" className="text-primary hover:underline font-medium">
-                Regístrate
+                {t('auth.register')}
               </Link>
             </p>
           </CardFooter>

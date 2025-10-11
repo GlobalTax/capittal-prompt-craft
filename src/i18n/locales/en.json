@@ -1,0 +1,57 @@
+{
+  "header": {
+    "language": "Language"
+  },
+  "sidebar": {
+    "mainAnalysis": "Main Analysis",
+    "dashboard": "Dashboard",
+    "valuations": "Valuations",
+    "reports": "Reports",
+    "integrations": "Integrations",
+    "financialData": "Financial Data",
+    "importer": "Importer",
+    "alerts": "Alerts",
+    "zapier": "Zapier",
+    "advancedFeatures": "Advanced Features",
+    "dueDiligence": "Due Diligence",
+    "multiplesComparables": "Comparable Multiples",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Executive Dashboard",
+    "subtitle": "Performance analysis and key metrics",
+    "totalValuations": "Total Valuations",
+    "totalValuationsDesc": "Total number of completed valuations",
+    "averageValue": "Average Value",
+    "averageValueDesc": "Average value of valuations",
+    "activeClients": "Active Clients",
+    "activeClientsDesc": "Clients with ongoing projects",
+    "completionRate": "Completion Rate",
+    "completionRateDesc": "Completed vs initiated projects",
+    "analyticsTab": "Analytics",
+    "trendsTab": "Trends",
+    "alertsTab": "Alerts",
+    "monthlyPerformance": "Monthly Performance",
+    "sectorDistribution": "Sector Distribution",
+    "temporalTrend": "Temporal Trend of Valuations",
+    "avgValue": "Avg Value",
+    "recentAlerts": "Recent Alerts"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "loginButton": "Sign In",
+    "registerButton": "Create Account",
+    "loggingIn": "Signing in...",
+    "registering": "Creating account...",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "welcomeBack": "Welcome back!",
+    "createAccount": "Create your account",
+    "loginSubtitle": "Enter your credentials to access",
+    "registerSubtitle": "Complete the form to get started"
+  }
+}

@@ -24,6 +24,7 @@ import {
   Target,
   FileBarChart
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const menuItems = [
   {
@@ -95,10 +96,80 @@ const advancedItems = [
 ];
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+
+  const menuItems = [
+    {
+      title: t('sidebar.dashboard'),
+      url: "/",
+      icon: LayoutDashboard,
+      description: "Resumen ejecutivo"
+    },
+    {
+      title: t('sidebar.valuations'),
+      url: "/valuation",
+      icon: Calculator,
+      description: "Calculadora principal"
+    },
+    {
+      title: t('sidebar.reports'),
+      url: "/reports",
+      icon: FileText,
+      description: "PDFs profesionales"
+    }
+  ];
+
+  const integrationItems = [
+    {
+      title: t('sidebar.financialData'),
+      url: "/integrations/financial",
+      icon: BarChart3,
+      description: "APIs de mercado"
+    },
+    {
+      title: t('sidebar.importer'),
+      url: "/integrations/importer",
+      icon: Database,
+      description: "Excel y CSV"
+    },
+    {
+      title: t('sidebar.alerts'),
+      url: "/integrations/alerts",
+      icon: Bell,
+      description: "Notificaciones"
+    },
+    {
+      title: t('sidebar.zapier'),
+      url: "/integrations/zapier",
+      icon: Zap,
+      description: "Automatización"
+    }
+  ];
+
+  const advancedItems = [
+    {
+      title: t('sidebar.dueDiligence'),
+      url: "/advanced/due-diligence",
+      icon: Target,
+      description: "Checklist completo"
+    },
+    {
+      title: t('sidebar.multiplesComparables'),
+      url: "/advanced/multiples",
+      icon: FileBarChart,
+      description: "Análisis sectorial"
+    },
+    {
+      title: t('sidebar.settings'),
+      url: "/settings",
+      icon: Settings,
+      description: "Ajustes avanzados"
+    }
+  ];
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
@@ -137,7 +208,7 @@ export function AppSidebar() {
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-            Análisis Principal
+            {t('sidebar.mainAnalysis')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {renderMenuItems(menuItems)}
@@ -147,7 +218,7 @@ export function AppSidebar() {
         {/* Integrations */}
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-            Integraciones
+            {t('sidebar.integrations')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {renderMenuItems(integrationItems)}
@@ -157,7 +228,7 @@ export function AppSidebar() {
         {/* Advanced Features */}
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-            Funciones Avanzadas
+            {t('sidebar.advancedFeatures')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {renderMenuItems(advancedItems)}
