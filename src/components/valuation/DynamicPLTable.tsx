@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Euro, Plus, Trash2 } from "lucide-react";
 
 export interface RowData {
@@ -24,13 +25,15 @@ export interface TableSection {
 
 interface DynamicPLTableProps {
   years: string[];
+  yearStatuses: ('closed' | 'projected')[];
   sections: TableSection[];
   onDataChange: (sections: TableSection[]) => void;
   onYearAdd: (type: 'past' | 'future') => void;
   onYearRemove: (yearIndex: number) => void;
+  onYearStatusToggle: (yearIndex: number) => void;
 }
 
-export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYearRemove }: DynamicPLTableProps) {
+export function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
   const formatNumber = (value: number): string => {
     if (value === undefined || value === null || isNaN(value)) return '0';
     const rounded = Math.round(value * 100) / 100;
@@ -203,18 +206,28 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
               <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-muted z-20">Concepto</th>
               {years.map((year, index) => (
               <th key={year} className="text-right p-3 font-medium text-sm border-r w-[250px]">
-                <div className="flex items-center justify-end gap-2">
-                  {years.length > 2 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onYearRemove(index)}
-                      className="h-7 w-7 p-0 hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                  <span>{year}</span>
+                <div className="flex flex-col items-end justify-end gap-1.5">
+                  <div className="flex items-center justify-end gap-2">
+                    {years.length > 2 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onYearRemove(index)}
+                        className="h-7 w-7 p-0 hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                    <span>{year}</span>
+                  </div>
+                  <Badge 
+                    variant={yearStatuses[index] === 'closed' ? 'default' : 'secondary'}
+                    className="cursor-pointer text-xs"
+                    onClick={() => onYearStatusToggle(index)}
+                    title="Click para cambiar entre Cerrado/Proyectado"
+                  >
+                    {yearStatuses[index] === 'closed' ? 'Cerrado' : 'Proyectado'}
+                  </Badge>
                 </div>
               </th>
               ))}

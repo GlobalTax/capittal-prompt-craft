@@ -15,6 +15,7 @@ import { DynamicPLTable, type RowData, type TableSection } from "@/components/va
 
 interface YearData {
   year: string;
+  yearStatus: 'closed' | 'projected'; // closed = cerrado/real, projected = en curso/proyectado
   totalRevenue: number;
   fiscalRecurringPercent: number;
   accountingRecurringPercent: number;
@@ -55,6 +56,7 @@ interface MultiplierScenario {
 interface ValuationConfig {
   methods: ValuationMethod[];
   showSuggestions: boolean;
+  baseYearForValuation: 'lastClosed' | 'current' | 'average2Years';
 }
 
 const ValuationCalculator = () => {
@@ -62,6 +64,7 @@ const ValuationCalculator = () => {
     years: [
       {
         year: "2023",
+        yearStatus: 'closed',
         totalRevenue: 625000,
         fiscalRecurringPercent: 28.85,
         accountingRecurringPercent: 19.23,
@@ -74,6 +77,7 @@ const ValuationCalculator = () => {
       },
       {
         year: "2024",
+        yearStatus: 'closed',
         totalRevenue: 1040000,
         fiscalRecurringPercent: 28.85,
         accountingRecurringPercent: 19.23,
@@ -120,6 +124,7 @@ const ValuationCalculator = () => {
       }
     ],
     showSuggestions: true,
+    baseYearForValuation: 'lastClosed',
   });
   
   // Dynamic table state
@@ -353,8 +358,41 @@ const ValuationCalculator = () => {
   };
 
   const calculateValuations = () => {
-    const metrics = calculateMetrics();
-    const latestYear = data.years[data.years.length - 1];
+    // Determinar qué año usar según la configuración
+    let baseYearData: YearData;
+    let baseMetrics: ReturnType<typeof calculateMetricsForYear>;
+    
+    const closedYears = data.years.filter(y => y.yearStatus === 'closed');
+    const lastClosedYear = closedYears.length > 0 ? closedYears[closedYears.length - 1] : data.years[0];
+    const currentYear = data.years[data.years.length - 1];
+    
+    switch (valuationConfig.baseYearForValuation) {
+      case 'lastClosed':
+        baseYearData = lastClosedYear;
+        baseMetrics = calculateMetricsForYear(baseYearData);
+        break;
+      case 'current':
+        baseYearData = currentYear;
+        baseMetrics = calculateMetricsForYear(baseYearData);
+        break;
+      case 'average2Years':
+        // Promedio de los dos últimos años
+        const last2Years = data.years.slice(-2);
+        const avgRevenue = last2Years.reduce((sum, y) => sum + y.totalRevenue, 0) / last2Years.length;
+        const avgPersonnelCosts = last2Years.reduce((sum, y) => sum + y.personnelCosts, 0) / last2Years.length;
+        const avgOtherCosts = last2Years.reduce((sum, y) => sum + y.otherCosts, 0) / last2Years.length;
+        const avgOwnerSalary = last2Years.reduce((sum, y) => sum + y.ownerSalary, 0) / last2Years.length;
+        
+        baseYearData = {
+          ...currentYear,
+          totalRevenue: avgRevenue,
+          personnelCosts: avgPersonnelCosts,
+          otherCosts: avgOtherCosts,
+          ownerSalary: avgOwnerSalary
+        };
+        baseMetrics = calculateMetricsForYear(baseYearData);
+        break;
+    }
     
     const allValuations: ValuationResult[] = [];
     
@@ -363,8 +401,8 @@ const ValuationCalculator = () => {
       if (!method.enabled) return;
       
       const baseValue = method.type === 'ebitda' 
-        ? metrics.ebitda 
-        : latestYear.totalRevenue;
+        ? baseMetrics.ebitda 
+        : baseYearData.totalRevenue;
       
       // Calcular valoraciones por cada multiplicador
       method.multipliers.forEach(multiplier => {
@@ -375,19 +413,23 @@ const ValuationCalculator = () => {
           let adjustment = 1;
           
           // Ajuste por margen neto
-          if (metrics.netMargin > 30) adjustment += 0.1;
-          else if (metrics.netMargin < 10) adjustment -= 0.1;
+          if (baseMetrics.netMargin > 30) adjustment += 0.1;
+          else if (baseMetrics.netMargin < 10) adjustment -= 0.1;
           
           // Ajuste por recurrencia
-          if (metrics.recurringPercentage > 70) adjustment += 0.05;
-          else if (metrics.recurringPercentage < 40) adjustment -= 0.05;
+          if (baseMetrics.recurringPercentage > 70) adjustment += 0.05;
+          else if (baseMetrics.recurringPercentage < 40) adjustment -= 0.05;
           
           // Ajuste por tamaño
-          if (latestYear.totalRevenue >= 1000000) adjustment += 0.05;
+          if (baseYearData.totalRevenue >= 1000000) adjustment += 0.05;
           
-          // Ajuste por crecimiento
-          if (metrics.revenueGrowth > 20) adjustment += 0.1;
-          else if (metrics.revenueGrowth < 0) adjustment -= 0.15;
+          // Ajuste por crecimiento (solo aplicable si hay más de un año)
+          if (data.years.length > 1) {
+            const previousYear = data.years[data.years.length - 2];
+            const revenueGrowth = ((currentYear.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
+            if (revenueGrowth > 20) adjustment += 0.1;
+            else if (revenueGrowth < 0) adjustment -= 0.15;
+          }
           
           valuationAmount *= adjustment;
         }
@@ -475,7 +517,7 @@ const ValuationCalculator = () => {
     const latestYear = data.years[data.years.length - 1];
     const newYear = (parseInt(latestYear.year) + 1).toString();
     setData(prev => ({
-      years: [...prev.years, { ...latestYear, year: newYear }]
+      years: [...prev.years, { ...latestYear, year: newYear, yearStatus: 'projected' }]
     }));
   };
 
@@ -483,7 +525,17 @@ const ValuationCalculator = () => {
     const firstYear = data.years[0];
     const newYear = (parseInt(firstYear.year) - 1).toString();
     setData(prev => ({
-      years: [{ ...firstYear, year: newYear }, ...prev.years]
+      years: [{ ...firstYear, year: newYear, yearStatus: 'closed' }, ...prev.years]
+    }));
+  };
+  
+  const toggleYearStatus = (yearIndex: number) => {
+    setData(prev => ({
+      years: prev.years.map((year, index) =>
+        index === yearIndex 
+          ? { ...year, yearStatus: year.yearStatus === 'closed' ? 'projected' : 'closed' }
+          : year
+      )
     }));
   };
 
@@ -669,10 +721,12 @@ const ValuationCalculator = () => {
                 <div className="w-full">
                   <DynamicPLTable
                     years={data.years.map(y => y.year)}
+                    yearStatuses={data.years.map(y => y.yearStatus)}
                     sections={dynamicSections}
                     onDataChange={handleDynamicDataChange}
                     onYearAdd={handleYearAdd}
                     onYearRemove={handleYearRemove}
+                    onYearStatusToggle={toggleYearStatus}
                   />
                 </div>
 
@@ -832,6 +886,29 @@ const ValuationCalculator = () => {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     
+                    {/* Selector de año base para valoración */}
+                    <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">Año base para valoración</span>
+                      </div>
+                      <select 
+                        value={valuationConfig.baseYearForValuation}
+                        onChange={(e) => setValuationConfig(prev => ({
+                          ...prev,
+                          baseYearForValuation: e.target.value as 'lastClosed' | 'current' | 'average2Years'
+                        }))}
+                        className="w-full p-2 rounded-md border border-input bg-background text-sm"
+                      >
+                        <option value="lastClosed">Último año cerrado</option>
+                        <option value="current">Año actual / más reciente</option>
+                        <option value="average2Years">Promedio últimos 2 años</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        Selecciona qué dato usar como base para calcular la valoración
+                      </p>
+                    </div>
+                    
                     {/* Toggle de sugerencias automáticas */}
                     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -940,16 +1017,49 @@ const ValuationCalculator = () => {
                         )}
 
                         {/* Info sobre el valor base */}
-                        {method.enabled && (
-                          <Alert className="mt-2">
-                            <AlertDescription className="text-xs">
-                              {method.type === 'ebitda' 
-                                ? `EBITDA actual: ${formatNumber(metrics.ebitda)}€`
-                                : `Facturación actual: ${formatNumber(latestYear.totalRevenue)}€`
-                              }
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                        {method.enabled && (() => {
+                          // Determinar qué año se está usando
+                          const closedYears = data.years.filter(y => y.yearStatus === 'closed');
+                          const lastClosedYear = closedYears.length > 0 ? closedYears[closedYears.length - 1] : data.years[0];
+                          const currentYear = data.years[data.years.length - 1];
+                          
+                          let displayYear = '';
+                          let displayValue = 0;
+                          
+                          switch (valuationConfig.baseYearForValuation) {
+                            case 'lastClosed':
+                              displayYear = lastClosedYear.year;
+                              const lastClosedMetrics = calculateMetricsForYear(lastClosedYear);
+                              displayValue = method.type === 'ebitda' ? lastClosedMetrics.ebitda : lastClosedYear.totalRevenue;
+                              break;
+                            case 'current':
+                              displayYear = currentYear.year;
+                              const currentMetrics = calculateMetricsForYear(currentYear);
+                              displayValue = method.type === 'ebitda' ? currentMetrics.ebitda : currentYear.totalRevenue;
+                              break;
+                            case 'average2Years':
+                              const last2Years = data.years.slice(-2);
+                              displayYear = `Promedio ${last2Years[0].year}-${last2Years[1].year}`;
+                              const avgRevenue = last2Years.reduce((sum, y) => sum + y.totalRevenue, 0) / last2Years.length;
+                              const avgPersonnel = last2Years.reduce((sum, y) => sum + y.personnelCosts, 0) / last2Years.length;
+                              const avgOther = last2Years.reduce((sum, y) => sum + y.otherCosts, 0) / last2Years.length;
+                              displayValue = method.type === 'ebitda' 
+                                ? avgRevenue - avgPersonnel - avgOther 
+                                : avgRevenue;
+                              break;
+                          }
+                          
+                          return (
+                            <Alert className="mt-2">
+                              <AlertDescription className="text-xs">
+                                {method.type === 'ebitda' 
+                                  ? `EBITDA (${displayYear}): ${formatNumber(displayValue)}€`
+                                  : `Facturación (${displayYear}): ${formatNumber(displayValue)}€`
+                                }
+                              </AlertDescription>
+                            </Alert>
+                          );
+                        })()}
                       </div>
                     ))}
 
