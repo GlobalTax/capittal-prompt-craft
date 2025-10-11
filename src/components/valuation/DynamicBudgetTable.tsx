@@ -1,0 +1,361 @@
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Plus, Trash2 } from "lucide-react";
+
+export interface BudgetRowData {
+  id: string;
+  label: string;
+  type: 'input' | 'percentage' | 'calculated';
+  category: 'income' | 'expense' | 'result' | 'custom';
+  indented: boolean;
+  values: { [month: string]: number };
+  percentageOf?: string;
+  formula?: (monthData: { [key: string]: number }) => number;
+}
+
+export interface BudgetTableSection {
+  id: string;
+  title: string;
+  editable: boolean;
+  rows: BudgetRowData[];
+}
+
+interface DynamicBudgetTableProps {
+  months: string[];
+  monthStatuses: ('real' | 'presupuestado')[];
+  sections: BudgetTableSection[];
+  year: number;
+  onDataChange: (sections: BudgetTableSection[]) => void;
+  onMonthStatusToggle: (monthIndex: number) => void;
+}
+
+export const DynamicBudgetTable = React.memo(function DynamicBudgetTable({ 
+  months, 
+  monthStatuses, 
+  sections, 
+  year,
+  onDataChange, 
+  onMonthStatusToggle 
+}: DynamicBudgetTableProps) {
+  const formatNumber = (value: number): string => {
+    if (value === undefined || value === null || isNaN(value)) return '0';
+    const rounded = Math.round(value * 100) / 100;
+    return rounded.toLocaleString('es-ES', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const parseNumber = (value: string): number => {
+    const cleaned = value.replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
+  };
+
+  const calculateVariation = (currentValue: number, previousValue: number) => {
+    if (previousValue === 0) return 0;
+    return ((currentValue - previousValue) / previousValue) * 100;
+  };
+
+  const updateRowLabel = (sectionId: string, rowId: string, newLabel: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: section.rows.map(row =>
+              row.id === rowId ? { ...row, label: newLabel } : row
+            )
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const updateRowValue = (sectionId: string, rowId: string, month: string, value: string) => {
+    const numericValue = parseNumber(value);
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: section.rows.map(row =>
+              row.id === rowId
+                ? { ...row, values: { ...row.values, [month]: numericValue } }
+                : row
+            )
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const updateSectionTitle = (sectionId: string, newTitle: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId ? { ...section, title: newTitle } : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const addRow = (sectionId: string, position: 'top' | 'bottom' = 'bottom') => {
+    const newRow: BudgetRowData = {
+      id: crypto.randomUUID(),
+      label: 'Nueva fila',
+      type: 'input',
+      category: 'custom',
+      indented: true,
+      values: months.reduce((acc, month) => ({ ...acc, [month]: 0 }), {})
+    };
+
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: position === 'top'
+              ? [newRow, ...section.rows]
+              : [...section.rows, newRow]
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const removeRow = (sectionId: string, rowId: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? { ...section, rows: section.rows.filter(row => row.id !== rowId) }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const addSection = () => {
+    const newSection: BudgetTableSection = {
+      id: crypto.randomUUID(),
+      title: 'Nueva Sección',
+      editable: true,
+      rows: []
+    };
+    onDataChange([...sections, newSection]);
+  };
+
+  const removeSection = (sectionId: string) => {
+    onDataChange(sections.filter(section => section.id !== sectionId));
+  };
+
+  const calculateRowValue = (row: BudgetRowData, month: string): number => {
+    if (row.type === 'calculated' && row.formula) {
+      const monthData: { [key: string]: number } = {};
+      sections.forEach(section => {
+        section.rows.forEach(r => {
+          if (r.values[month] !== undefined) {
+            monthData[r.id] = r.values[month];
+          }
+        });
+      });
+      return row.formula(monthData);
+    }
+    return row.values[month] || 0;
+  };
+
+  const calculatePercentageValue = (row: BudgetRowData, month: string): number => {
+    if (row.type === 'percentage' && row.percentageOf) {
+      const baseRow = sections
+        .flatMap(s => s.rows)
+        .find(r => r.id === row.percentageOf);
+      if (baseRow) {
+        const baseValue = baseRow.values[month] || 0;
+        const percentage = row.values[month] || 0;
+        return (baseValue * percentage) / 100;
+      }
+    }
+    return 0;
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'income': return 'text-success';
+      case 'expense': return 'text-destructive';
+      case 'result': return 'text-primary';
+      default: return '';
+    }
+  };
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between px-1">
+        <div>
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Presupuesto Mensual {year}
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Control mensual de ingresos y gastos (editable)
+          </p>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto border rounded-lg shadow-sm bg-card">
+        <table className="w-full table-fixed border-collapse">
+          <colgroup>
+            <col style={{ width: '200px' }} />
+            {months.map((m) => (
+              <col key={`col-${m}`} style={{ width: '140px' }} />
+            ))}
+            {months.length > 1 && <col style={{ width: '100px' }} />}
+          </colgroup>
+          <thead className="sticky top-0 z-20">
+            <tr className="bg-muted border-b-2">
+              <th className="text-left p-3 font-medium text-sm border-r min-w-[200px] w-[200px] sticky left-0 bg-muted z-20">Concepto</th>
+              {months.map((month, index) => (
+              <th key={month} className="text-right p-3 font-medium text-sm border-r w-[140px]">
+                <div className="flex flex-col items-end justify-end gap-1.5">
+                  <span className="text-xs">{month}</span>
+                  <Badge 
+                    variant={monthStatuses[index] === 'real' ? 'default' : 'secondary'}
+                    className="cursor-pointer text-xs"
+                    onClick={() => onMonthStatusToggle(index)}
+                    title="Click para cambiar entre Real/Presupuestado"
+                  >
+                    {monthStatuses[index] === 'real' ? '✓ Real' : '📊 Ppto'}
+                  </Badge>
+                </div>
+              </th>
+              ))}
+              {months.length > 1 && (
+                <th className="text-right p-3 font-medium text-sm w-[100px]">Var %</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {sections.map((section) => (
+              <React.Fragment key={section.id}>
+                {/* Section Header */}
+                <tr className="bg-muted/50 border-b-2 border-muted">
+                  <td colSpan={months.length + 2} className="p-3">
+                    <div className="flex items-center justify-between">
+                      {section.editable ? (
+                        <Input
+                          value={section.title}
+                          onChange={(e) => updateSectionTitle(section.id, e.target.value)}
+                          className="font-bold text-sm bg-transparent border-b border-dotted border-muted-foreground/50 hover:border-muted-foreground focus:border-primary rounded-none p-1 h-auto w-fit max-w-md"
+                        />
+                      ) : (
+                        <span className="font-bold text-sm px-1">{section.title}</span>
+                      )}
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addRow(section.id, 'bottom')}
+                          className="h-7 w-7 p-0 hover:bg-primary/10"
+                          title="Añadir fila"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        {section.editable && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeSection(section.id)}
+                            className="h-7 w-7 p-0 hover:bg-destructive/10"
+                            title="Eliminar sección"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                {/* Section Rows */}
+                {section.rows.map((row) => (
+                  <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
+                    {/* Row Label */}
+                    <td className={`p-3 text-sm border-r min-w-[200px] w-[200px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={row.label}
+                          onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
+                          className="bg-transparent border-b border-dotted border-muted-foreground/30 hover:border-muted-foreground/60 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeRow(section.id, row.id)}
+                          className="h-6 w-6 p-0 opacity-0 hover:opacity-100 flex-shrink-0 hover:bg-destructive/10"
+                          title="Eliminar fila"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </td>
+
+                    {/* Month Values */}
+                    {months.map((month) => (
+                      <td key={month} className="p-3 text-right border-r w-[140px]">
+                        {row.type === 'input' ? (
+                          <Input
+                            type="text"
+                            value={formatNumber(row.values[month] || 0)}
+                            onChange={(e) => updateRowValue(section.id, row.id, month, e.target.value)}
+                            className="font-mono h-9 w-full text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                          />
+                        ) : row.type === 'calculated' ? (
+                          <span className={`font-mono text-sm font-semibold ${getCategoryColor(row.category)}`}>
+                            {formatNumber(calculateRowValue(row, month))}
+                          </span>
+                        ) : (
+                          <span className="font-mono text-sm">
+                            {formatNumber(calculateRowValue(row, month))}
+                          </span>
+                        )}
+                      </td>
+                    ))}
+
+                    {/* Variation Column */}
+                    {months.length > 1 && (
+                      <td className="p-3 text-right font-mono text-sm w-[100px]">
+                        {(() => {
+                          const lastMonth = months[months.length - 1];
+                          const prevMonth = months[months.length - 2];
+                          const currentValue = row.type === 'calculated' 
+                            ? calculateRowValue(row, lastMonth)
+                            : row.values[lastMonth] || 0;
+                          const prevValue = row.type === 'calculated'
+                            ? calculateRowValue(row, prevMonth)
+                            : row.values[prevMonth] || 0;
+                          const variation = calculateVariation(currentValue, prevValue);
+                          
+                          if (variation === 0) return null;
+                          
+                          return (
+                            <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
+                              {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                            </span>
+                          );
+                        })()}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+
+            {/* Add Section Button */}
+            <tr>
+              <td colSpan={months.length + 2} className="p-3 text-center border-t">
+                <Button onClick={addSection} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Añadir Sección
+                </Button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+});
