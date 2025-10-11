@@ -10,8 +10,6 @@ import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import ValuationCalculator from '@/components/ValuationCalculator';
-import DCFCalculator from '@/components/DCFCalculator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function ValuationEditor() {
   const { id } = useParams<{ id: string }>();
@@ -121,35 +119,7 @@ export function ValuationEditor() {
 
       {/* Content */}
       <div className="container max-w-7xl py-6 px-4">
-        <Tabs defaultValue="basica" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 max-w-2xl">
-            <TabsTrigger value="basica">Valoración Básica</TabsTrigger>
-            <TabsTrigger value="dcf">DCF Avanzado</TabsTrigger>
-            <TabsTrigger value="multiples">Múltiplos Sector</TabsTrigger>
-            <TabsTrigger value="duediligence">Due Diligence</TabsTrigger>
-            <TabsTrigger value="integraciones">Integraciones</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="basica" className="space-y-6">
-            <ValuationCalculator />
-          </TabsContent>
-
-          <TabsContent value="dcf" className="space-y-6">
-            <DCFCalculator />
-          </TabsContent>
-
-          <TabsContent value="multiples" className="space-y-6">
-            <p className="text-muted-foreground text-center py-8">Módulo de Múltiplos Sector próximamente...</p>
-          </TabsContent>
-
-          <TabsContent value="duediligence" className="space-y-6">
-            <p className="text-muted-foreground text-center py-8">Módulo de Due Diligence próximamente...</p>
-          </TabsContent>
-
-          <TabsContent value="integraciones" className="space-y-6">
-            <p className="text-muted-foreground text-center py-8">Módulo de Integraciones próximamente...</p>
-          </TabsContent>
-        </Tabs>
+        <ValuationCalculator />
       </div>
     </div>
   );
