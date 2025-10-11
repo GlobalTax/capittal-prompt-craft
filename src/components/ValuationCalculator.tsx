@@ -11,7 +11,7 @@ import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, PieChart, Bar
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import DCFCalculator from "./DCFCalculator";
+
 import ComparableMultiples from "./ComparableMultiples";
 import DueDiligenceChecklist from "./DueDiligenceChecklist";
 import FinancialDataIntegrator from "./FinancialDataIntegrator";
@@ -296,14 +296,10 @@ const ValuationCalculator = () => {
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
                 Valoración Básica
-              </TabsTrigger>
-              <TabsTrigger value="dcf" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                DCF Avanzado
               </TabsTrigger>
               <TabsTrigger value="multiples" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -882,9 +878,6 @@ const ValuationCalculator = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="dcf">
-              <DCFCalculator />
-            </TabsContent>
 
             <TabsContent value="multiples">
               <ComparableMultiples />
