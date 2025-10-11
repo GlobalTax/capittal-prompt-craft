@@ -187,13 +187,13 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse table-fixed">
-            <thead>
-              <tr className="bg-muted/50">
-                <th className="text-left p-3 font-medium text-sm border-r w-[200px]">Concepto</th>
+        <div className="overflow-x-auto border rounded-lg">
+          <table className="min-w-full border-collapse bg-card">
+            <thead className="sticky top-0 z-20">
+              <tr className="bg-muted border-b-2">
+                <th className="text-left p-3 font-medium text-sm border-r min-w-[250px] sticky left-0 bg-muted z-10">Concepto</th>
                 {years.map((year, index) => (
-                  <th key={year} className="text-right p-3 font-medium text-sm border-r w-[280px]">
+                  <th key={year} className="text-right p-3 font-medium text-sm border-r min-w-[150px]">
                     <div className="flex items-center justify-between gap-2">
                       <span>{year}</span>
                       {years.length > 2 && (
@@ -201,7 +201,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                           variant="ghost"
                           size="sm"
                           onClick={() => onYearRemove(index)}
-                          className="h-6 w-6 p-0"
+                          className="h-7 w-7 p-0 hover:bg-destructive/10"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -210,7 +210,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                   </th>
                 ))}
                 {years.length > 1 && (
-                  <th className="text-right p-3 font-medium text-sm w-[100px]">Var %</th>
+                  <th className="text-right p-3 font-medium text-sm min-w-[100px]">Var %</th>
                 )}
               </tr>
             </thead>
@@ -218,37 +218,37 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
               {sections.map((section) => (
                 <tbody key={section.id}>
                   {/* Section Header */}
-                  <tr className="bg-muted/30">
-                    <td colSpan={years.length + 2} className="p-2">
+                  <tr className="bg-muted/50 border-b-2 border-muted">
+                    <td colSpan={years.length + 2} className="p-3">
                       <div className="flex items-center justify-between">
                         {section.editable ? (
                           <Input
                             value={section.title}
                             onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                            className="font-bold text-sm bg-transparent border-none p-0 h-auto w-fit max-w-md"
+                            className="font-bold text-sm bg-transparent border-b border-dotted border-muted-foreground/50 hover:border-muted-foreground focus:border-primary rounded-none p-1 h-auto w-fit max-w-md"
                           />
                         ) : (
-                          <span className="font-bold text-sm">{section.title}</span>
+                          <span className="font-bold text-sm px-1">{section.title}</span>
                         )}
                         <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => addRow(section.id, 'bottom')}
-                            className="h-6 w-6 p-0"
+                            className="h-7 w-7 p-0 hover:bg-primary/10"
                             title="Añadir fila"
                           >
-                            <Plus className="h-3 w-3" />
+                            <Plus className="h-4 w-4" />
                           </Button>
                           {section.editable && (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => removeSection(section.id)}
-                              className="h-6 w-6 p-0"
+                              className="h-7 w-7 p-0 hover:bg-destructive/10"
                               title="Eliminar sección"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
@@ -258,21 +258,21 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
                   {/* Section Rows */}
                   {section.rows.map((row) => (
-                    <tr key={row.id} className="border-t">
+                    <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
                       {/* Row Label */}
-                      <td className={`p-2 text-sm border-r w-[200px] ${row.indented ? 'pl-6' : ''}`}>
+                      <td className={`p-3 text-sm border-r min-w-[250px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                         <div className="flex items-center gap-2">
                           <Input
                             value={row.label}
                             onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
-                            className="bg-transparent border-none p-0 h-auto text-sm flex-1 min-w-0"
+                            className="bg-transparent border-b border-dotted border-muted-foreground/30 hover:border-muted-foreground/60 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                           />
                           {row.category === 'custom' && (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => removeRow(section.id, row.id)}
-                              className="h-5 w-5 p-0 opacity-0 hover:opacity-100 flex-shrink-0"
+                              className="h-6 w-6 p-0 opacity-0 hover:opacity-100 flex-shrink-0 hover:bg-destructive/10"
                               title="Eliminar fila"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -283,13 +283,13 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
                       {/* Year Values */}
                       {years.map((year) => (
-                        <td key={year} className="p-2 text-right border-r w-[280px]">
+                        <td key={year} className="p-3 text-right border-r min-w-[150px]">
                           {row.type === 'input' ? (
                             <Input
                               type="text"
                               value={formatNumber(row.values[year] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                              className="font-mono h-8 text-right"
+                              className="font-mono h-9 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                             />
                           ) : row.type === 'percentage' ? (
                             <div className="flex items-center gap-1 justify-end">
@@ -297,7 +297,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                                 type="text"
                                 value={row.values[year] || ''}
                                 onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                                className="font-mono h-8 w-16 text-right"
+                                className="font-mono h-9 w-20 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                               />
                               <span className="text-xs">%</span>
                               <span className="font-mono text-sm ml-2 w-20 text-right">
