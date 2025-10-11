@@ -88,9 +88,18 @@ export function useValuations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
+      const currentYear = new Date().getFullYear();
+
       const { data, error } = await supabase
         .from('valuations')
-        .insert({ title, tags, user_id: user.id, valuation_type })
+        .insert({ 
+          title, 
+          tags, 
+          user_id: user.id, 
+          valuation_type,
+          year_1: currentYear.toString(),
+          year_2: (currentYear + 1).toString(),
+        })
         .select()
         .single();
 

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { DynamicPLTable, type RowData, type TableSection } from "@/components/valuation/DynamicPLTable";
+import { Valuation } from "@/hooks/useValuations";
 
 
 interface YearData {
@@ -59,37 +60,51 @@ interface ValuationConfig {
   baseYearForValuation: 'lastClosed' | 'current' | 'average2Years';
 }
 
-const ValuationCalculator = () => {
-  const [data, setData] = useState<FinancialData>({
+interface ValuationCalculatorProps {
+  valuation: Valuation;
+  onUpdate: (field: string, value: any) => void;
+}
+
+// Helper para mapear Valuation → FinancialData
+const mapValuationToFinancialData = (val: Valuation): FinancialData => {
+  const currentYear = new Date().getFullYear();
+  
+  return {
     years: [
       {
-        year: "2023",
+        year: val.year_1 || currentYear.toString(),
         yearStatus: 'closed',
-        totalRevenue: 625000,
-        fiscalRecurringPercent: 28.85,
-        accountingRecurringPercent: 19.23,
-        laborRecurringPercent: 11.54,
-        otherRevenuePercent: 0.48,
-        personnelCosts: 400000,
-        otherCosts: 50000,
-        ownerSalary: 45000,
-        numberOfEmployees: 8,
+        totalRevenue: val.revenue_1 || 0,
+        fiscalRecurringPercent: val.fiscal_recurring_1 || 0,
+        accountingRecurringPercent: val.accounting_recurring_1 || 0,
+        laborRecurringPercent: val.labor_recurring_1 || 0,
+        otherRevenuePercent: val.other_revenue_1 || 0,
+        personnelCosts: val.personnel_costs_1 || 0,
+        otherCosts: val.other_costs_1 || 0,
+        ownerSalary: val.owner_salary_1 || 0,
+        numberOfEmployees: val.employees_1 || 0,
       },
       {
-        year: "2024",
+        year: val.year_2 || (currentYear + 1).toString(),
         yearStatus: 'closed',
-        totalRevenue: 1040000,
-        fiscalRecurringPercent: 28.85,
-        accountingRecurringPercent: 19.23,
-        laborRecurringPercent: 11.54,
-        otherRevenuePercent: 0.48,
-        personnelCosts: 450000,
-        otherCosts: 62500,
-        ownerSalary: 50000,
-        numberOfEmployees: 9,
-      }
-    ]
-  });
+        totalRevenue: val.revenue_2 || 0,
+        fiscalRecurringPercent: val.fiscal_recurring_2 || 0,
+        accountingRecurringPercent: val.accounting_recurring_2 || 0,
+        laborRecurringPercent: val.labor_recurring_2 || 0,
+        otherRevenuePercent: val.other_revenue_2 || 0,
+        personnelCosts: val.personnel_costs_2 || 0,
+        otherCosts: val.other_costs_2 || 0,
+        ownerSalary: val.owner_salary_2 || 0,
+        numberOfEmployees: val.employees_2 || 0,
+      },
+    ],
+  };
+};
+
+const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) => {
+  const [data, setData] = useState<FinancialData>(() => 
+    mapValuationToFinancialData(valuation)
+  );
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
   
@@ -547,6 +562,41 @@ const ValuationCalculator = () => {
     }
   };
 
+  // Sincronizar cambios a Supabase
+  const syncToValuation = (updatedYears: YearData[]) => {
+    if (updatedYears.length >= 2) {
+      const year1 = updatedYears[0];
+      const year2 = updatedYears[1];
+      
+      onUpdate('year_1', year1.year);
+      onUpdate('revenue_1', year1.totalRevenue);
+      onUpdate('fiscal_recurring_1', year1.fiscalRecurringPercent);
+      onUpdate('accounting_recurring_1', year1.accountingRecurringPercent);
+      onUpdate('labor_recurring_1', year1.laborRecurringPercent);
+      onUpdate('other_revenue_1', year1.otherRevenuePercent);
+      onUpdate('personnel_costs_1', year1.personnelCosts);
+      onUpdate('other_costs_1', year1.otherCosts);
+      onUpdate('owner_salary_1', year1.ownerSalary);
+      onUpdate('employees_1', year1.numberOfEmployees);
+      
+      onUpdate('year_2', year2.year);
+      onUpdate('revenue_2', year2.totalRevenue);
+      onUpdate('fiscal_recurring_2', year2.fiscalRecurringPercent);
+      onUpdate('accounting_recurring_2', year2.accountingRecurringPercent);
+      onUpdate('labor_recurring_2', year2.laborRecurringPercent);
+      onUpdate('other_revenue_2', year2.otherRevenuePercent);
+      onUpdate('personnel_costs_2', year2.personnelCosts);
+      onUpdate('other_costs_2', year2.otherCosts);
+      onUpdate('owner_salary_2', year2.ownerSalary);
+      onUpdate('employees_2', year2.numberOfEmployees);
+    }
+  };
+
+  // Sincronizar estado local cuando cambie la prop valuation
+  useEffect(() => {
+    setData(mapValuationToFinancialData(valuation));
+  }, [valuation]);
+
   // Dynamic table handlers
   const handleDynamicDataChange = (newSections: TableSection[]) => {
     setDynamicSections(newSections);
@@ -596,6 +646,9 @@ const ValuationCalculator = () => {
     });
 
     setData({ years: updatedYears });
+    
+    // Propagar cambios a Supabase
+    syncToValuation(updatedYears);
   };
 
   const handleYearAdd = (type: 'past' | 'future') => {
@@ -1156,3 +1209,4 @@ const ValuationCalculator = () => {
 };
 
 export default ValuationCalculator;
+export type { ValuationCalculatorProps };

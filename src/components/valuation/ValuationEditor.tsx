@@ -208,7 +208,7 @@ export function ValuationEditor() {
         </Collapsible>
 
         {/* Calculadora de Valoración */}
-        <ValuationCalculator />
+        <ValuationCalculator valuation={valuation} onUpdate={updateField} />
       </div>
     </div>
   );
