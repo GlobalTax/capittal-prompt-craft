@@ -158,15 +158,21 @@ const ValuationCalculator = () => {
   };
 
   const handlePercentageChange = (field: keyof FinancialData, value: string) => {
-    // Permitir números, puntos y comas
+    // Permitir campo vacío
+    if (value === '') {
+      setData(prev => ({ ...prev, [field]: 0 }));
+      return;
+    }
+    
+    // Limpiar entrada y validar
     const cleanValue = value.replace(/[^\d.,]/g, '').replace(',', '.');
-    const numValue = parseFloat(cleanValue) || 0;
-    // Limitar el porcentaje entre 0 y 100
-    const cappedValue = Math.min(Math.max(numValue, 0), 100);
-    setData(prev => ({
-      ...prev,
-      [field]: cappedValue
-    }));
+    const numValue = parseFloat(cleanValue);
+    
+    if (!isNaN(numValue)) {
+      // Limitar entre 0-100
+      const cappedValue = Math.min(Math.max(numValue, 0), 100);
+      setData(prev => ({ ...prev, [field]: cappedValue }));
+    }
   };
 
   // Data validation
@@ -328,8 +334,9 @@ const ValuationCalculator = () => {
                       <Input
                         id="fiscal"
                         type="text"
-                        value={data.fiscalRecurringPercent.toFixed(2)}
+                        value={data.fiscalRecurringPercent || ''}
                         onChange={(e) => handlePercentageChange('fiscalRecurringPercent', e.target.value)}
+                        placeholder="0"
                         className="font-mono text-sm pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
@@ -344,8 +351,9 @@ const ValuationCalculator = () => {
                       <Input
                         id="accounting"
                         type="text"
-                        value={data.accountingRecurringPercent.toFixed(2)}
+                        value={data.accountingRecurringPercent || ''}
                         onChange={(e) => handlePercentageChange('accountingRecurringPercent', e.target.value)}
+                        placeholder="0"
                         className="font-mono text-sm pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
@@ -360,8 +368,9 @@ const ValuationCalculator = () => {
                       <Input
                         id="labor"
                         type="text"
-                        value={data.laborRecurringPercent.toFixed(2)}
+                        value={data.laborRecurringPercent || ''}
                         onChange={(e) => handlePercentageChange('laborRecurringPercent', e.target.value)}
+                        placeholder="0"
                         className="font-mono text-sm pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
@@ -376,8 +385,9 @@ const ValuationCalculator = () => {
                       <Input
                         id="other"
                         type="text"
-                        value={data.otherRevenuePercent.toFixed(2)}
+                        value={data.otherRevenuePercent || ''}
                         onChange={(e) => handlePercentageChange('otherRevenuePercent', e.target.value)}
+                        placeholder="0"
                         className="font-mono text-sm pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
