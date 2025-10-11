@@ -220,6 +220,66 @@ const ValuationCalculator = () => {
             category: 'result' as const,
             indented: true,
             values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.numberOfEmployees }), {})
+          },
+          {
+            id: 'total-costs',
+            label: 'Costes Totales',
+            type: 'calculated' as const,
+            category: 'result' as const,
+            indented: true,
+            values: {},
+            formula: (yearData: Record<string, number>) => {
+              const personnelCosts = yearData['personnel-costs'] || 0;
+              const otherCosts = yearData['other-costs'] || 0;
+              const ownerSalary = yearData['owner-salary'] || 0;
+              return personnelCosts + otherCosts + ownerSalary;
+            }
+          },
+          {
+            id: 'profit-before-taxes',
+            label: 'BAI (Beneficio Antes de Impuestos)',
+            type: 'calculated' as const,
+            category: 'result' as const,
+            indented: true,
+            values: {},
+            formula: (yearData: Record<string, number>) => {
+              const totalRevenue = yearData['total-revenue'] || 0;
+              const personnelCosts = yearData['personnel-costs'] || 0;
+              const otherCosts = yearData['other-costs'] || 0;
+              const ownerSalary = yearData['owner-salary'] || 0;
+              return totalRevenue - personnelCosts - otherCosts - ownerSalary;
+            }
+          },
+          {
+            id: 'ebitda',
+            label: 'EBITDA',
+            type: 'calculated' as const,
+            category: 'result' as const,
+            indented: true,
+            values: {},
+            formula: (yearData: Record<string, number>) => {
+              const totalRevenue = yearData['total-revenue'] || 0;
+              const personnelCosts = yearData['personnel-costs'] || 0;
+              const otherCosts = yearData['other-costs'] || 0;
+              return totalRevenue - personnelCosts - otherCosts;
+            }
+          },
+          {
+            id: 'net-margin',
+            label: 'Margen Neto (%)',
+            type: 'calculated' as const,
+            category: 'result' as const,
+            indented: true,
+            values: {},
+            formula: (yearData: Record<string, number>) => {
+              const totalRevenue = yearData['total-revenue'] || 0;
+              const personnelCosts = yearData['personnel-costs'] || 0;
+              const otherCosts = yearData['other-costs'] || 0;
+              const ownerSalary = yearData['owner-salary'] || 0;
+              const totalCosts = personnelCosts + otherCosts + ownerSalary;
+              if (totalRevenue === 0) return 0;
+              return ((totalRevenue - totalCosts) / totalRevenue) * 100;
+            }
           }
         ]
       }

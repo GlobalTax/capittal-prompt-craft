@@ -313,6 +313,10 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                               {formatNumber(calculatePercentageValue(row, year))}
                             </span>
                           </div>
+                        ) : row.type === 'calculated' ? (
+                          <span className="font-mono text-sm font-semibold">
+                            {formatNumber(calculateRowValue(row, year))}
+                          </span>
                         ) : (
                           <span className="font-mono text-sm">
                             {formatNumber(calculateRowValue(row, year))}
