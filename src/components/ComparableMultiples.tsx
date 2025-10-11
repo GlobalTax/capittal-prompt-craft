@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { BarChart3, TrendingUp, Building, Info } from "lucide-react";
+import { BarChart3, Building, Info, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ScatterChart, Scatter } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { useSectorMultiples } from "@/hooks/useSectorMultiples";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CompanyData {
   revenue: number;
@@ -35,6 +36,7 @@ interface ValuationResult {
 }
 
 const ComparableMultiples = () => {
+  const { sectorMultiples: sectorData, loading } = useSectorMultiples();
   const [companyData, setCompanyData] = useState<CompanyData>({
     revenue: 1040000,
     ebitda: 527500,
@@ -46,44 +48,26 @@ const ComparableMultiples = () => {
   const [selectedBenchmark, setSelectedBenchmark] = useState<string>("avg");
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
 
-  // Base de datos de múltiplos por sector (datos aproximados del mercado español)
-  const sectorMultiples: SectorMultiples[] = [
-    {
-      sector: "consulting",
-      revenueMultiple: { min: 0.6, avg: 1.2, max: 2.0 },
-      ebitdaMultiple: { min: 4.0, avg: 7.0, max: 12.0 },
-      peRatio: { min: 8.0, avg: 15.0, max: 25.0 },
-      description: "Consultoría y Servicios Profesionales"
+  // Transform sector multiples from database to component format
+  const sectorMultiples: SectorMultiples[] = sectorData.map(sector => ({
+    sector: sector.sector_code,
+    revenueMultiple: { 
+      min: sector.revenue_multiple_min, 
+      avg: sector.revenue_multiple_avg, 
+      max: sector.revenue_multiple_max 
     },
-    {
-      sector: "technology",
-      revenueMultiple: { min: 1.5, avg: 3.0, max: 6.0 },
-      ebitdaMultiple: { min: 8.0, avg: 15.0, max: 25.0 },
-      peRatio: { min: 15.0, avg: 25.0, max: 40.0 },
-      description: "Tecnología y Software"
+    ebitdaMultiple: { 
+      min: sector.ebitda_multiple_min, 
+      avg: sector.ebitda_multiple_avg, 
+      max: sector.ebitda_multiple_max 
     },
-    {
-      sector: "manufacturing",
-      revenueMultiple: { min: 0.4, avg: 0.8, max: 1.5 },
-      ebitdaMultiple: { min: 3.0, avg: 6.0, max: 10.0 },
-      peRatio: { min: 6.0, avg: 12.0, max: 20.0 },
-      description: "Manufactura e Industria"
+    peRatio: { 
+      min: sector.pe_ratio_min, 
+      avg: sector.pe_ratio_avg, 
+      max: sector.pe_ratio_max 
     },
-    {
-      sector: "retail",
-      revenueMultiple: { min: 0.3, avg: 0.7, max: 1.2 },
-      ebitdaMultiple: { min: 4.0, avg: 8.0, max: 15.0 },
-      peRatio: { min: 10.0, avg: 18.0, max: 30.0 },
-      description: "Comercio y Retail"
-    },
-    {
-      sector: "healthcare",
-      revenueMultiple: { min: 1.0, avg: 2.0, max: 4.0 },
-      ebitdaMultiple: { min: 6.0, avg: 12.0, max: 20.0 },
-      peRatio: { min: 12.0, avg: 20.0, max: 35.0 },
-      description: "Salud y Servicios Médicos"
-    }
-  ];
+    description: sector.sector_name
+  }));
 
   const calculateValuations = () => {
     const currentSector = sectorMultiples.find(s => s.sector === companyData.sector);
@@ -181,6 +165,24 @@ const ComparableMultiples = () => {
   }));
 
   const currentSector = sectorMultiples.find(s => s.sector === companyData.sector);
+
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Cargando múltiplos de sector...
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-[300px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

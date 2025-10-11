@@ -3841,6 +3841,42 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_kpis: {
+        Row: {
+          change_percentage: number | null
+          created_at: string | null
+          id: string
+          metric_type: string
+          period_end: string | null
+          period_start: string | null
+          updated_at: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          change_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          metric_type: string
+          period_end?: string | null
+          period_start?: string | null
+          updated_at?: string | null
+          user_id: string
+          value: number
+        }
+        Update: {
+          change_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          metric_type?: string
+          period_end?: string | null
+          period_start?: string | null
+          updated_at?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       dd: {
         Row: {
           created_at: string
@@ -10938,6 +10974,57 @@ export type Database = {
           },
         ]
       }
+      sector_multiples: {
+        Row: {
+          created_at: string | null
+          ebitda_multiple_avg: number | null
+          ebitda_multiple_max: number | null
+          ebitda_multiple_min: number | null
+          id: string
+          pe_ratio_avg: number | null
+          pe_ratio_max: number | null
+          pe_ratio_min: number | null
+          revenue_multiple_avg: number | null
+          revenue_multiple_max: number | null
+          revenue_multiple_min: number | null
+          sector_code: string
+          sector_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ebitda_multiple_avg?: number | null
+          ebitda_multiple_max?: number | null
+          ebitda_multiple_min?: number | null
+          id?: string
+          pe_ratio_avg?: number | null
+          pe_ratio_max?: number | null
+          pe_ratio_min?: number | null
+          revenue_multiple_avg?: number | null
+          revenue_multiple_max?: number | null
+          revenue_multiple_min?: number | null
+          sector_code: string
+          sector_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ebitda_multiple_avg?: number | null
+          ebitda_multiple_max?: number | null
+          ebitda_multiple_min?: number | null
+          id?: string
+          pe_ratio_avg?: number | null
+          pe_ratio_max?: number | null
+          pe_ratio_min?: number | null
+          revenue_multiple_avg?: number | null
+          revenue_multiple_max?: number | null
+          revenue_multiple_min?: number | null
+          sector_code?: string
+          sector_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       security_audit_status: {
         Row: {
           audit_type: string
@@ -13354,6 +13441,47 @@ export type Database = {
           },
         ]
       }
+      valuation_comments: {
+        Row: {
+          author_id: string
+          comment_type: string | null
+          content: string
+          created_at: string | null
+          id: string
+          section: string | null
+          updated_at: string | null
+          valuation_id: string
+        }
+        Insert: {
+          author_id: string
+          comment_type?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          section?: string | null
+          updated_at?: string | null
+          valuation_id: string
+        }
+        Update: {
+          author_id?: string
+          comment_type?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          section?: string | null
+          updated_at?: string | null
+          valuation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_comments_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       valuation_events: {
         Row: {
           created_at: string
@@ -13407,6 +13535,53 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      valuation_tasks: {
+        Row: {
+          assignee_id: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          valuation_id: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          valuation_id: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          valuation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_tasks_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuations: {
         Row: {

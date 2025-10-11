@@ -1,43 +1,56 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, BarChart3, Users, AlertCircle, Target, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, Users, AlertCircle, Target, Zap, Loader2 } from "lucide-react";
+import { useDashboardKPIs } from "@/hooks/useDashboardKPIs";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ExecutiveDashboard = () => {
-  // Mock data for dashboard
+  const { user } = useAuth();
+  const { kpis, loading } = useDashboardKPIs(user?.id);
+
+  // Transform KPIs from database to display format
   const kpiData = [
     {
       title: "Valoraciones Totales",
-      value: "€2.4M",
-      change: "+12%",
-      trend: "up",
+      value: kpis.find(k => k.metric_type === 'total_valuations')?.value.toLocaleString('es-ES') || "0",
+      change: kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage 
+        ? `${kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage}%` 
+        : "+0%",
+      trend: (kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: DollarSign,
       description: "Valor total de empresas valoradas"
     },
     {
       title: "Múltiplo Promedio",
-      value: "4.2x",
-      change: "-3%",
-      trend: "down", 
+      value: `${kpis.find(k => k.metric_type === 'avg_multiple')?.value.toFixed(1) || "0.0"}x`,
+      change: kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage 
+        ? `${kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage}%` 
+        : "0%",
+      trend: (kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: BarChart3,
       description: "Múltiplo promedio EBITDA aplicado"
     },
     {
       title: "Proyectos Activos",
-      value: "18",
-      change: "+5",
-      trend: "up",
+      value: kpis.find(k => k.metric_type === 'active_projects')?.value.toString() || "0",
+      change: kpis.find(k => k.metric_type === 'active_projects')?.change_percentage 
+        ? `${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage > 0 ? '+' : ''}${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage}` 
+        : "+0",
+      trend: (kpis.find(k => k.metric_type === 'active_projects')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: Users,
       description: "Valoraciones en curso"
     },
     {
       title: "Precisión Predictiva",
-      value: "94%",
-      change: "+2%",
-      trend: "up",
+      value: `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.value.toFixed(0) || "0"}%`,
+      change: kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage 
+        ? `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage}%` 
+        : "+0%",
+      trend: (kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage || 0) >= 0 ? "up" : "down",
       icon: Target,
       description: "Precisión de modelos predictivos"
     }
@@ -104,6 +117,27 @@ const ExecutiveDashboard = () => {
       </CardContent>
     </Card>
   );
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              Cargando Dashboard...
+            </h1>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
