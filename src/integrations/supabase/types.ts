@@ -175,6 +175,48 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_rules: {
+        Row: {
+          channels: Json | null
+          condition: string
+          created_at: string | null
+          enabled: boolean | null
+          frequency: string | null
+          id: string
+          name: string
+          threshold: number
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channels?: Json | null
+          condition: string
+          created_at?: string | null
+          enabled?: boolean | null
+          frequency?: string | null
+          id?: string
+          name: string
+          threshold: number
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channels?: Json | null
+          condition?: string
+          created_at?: string | null
+          enabled?: boolean | null
+          frequency?: string | null
+          id?: string
+          name?: string
+          threshold?: number
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_configurations: {
         Row: {
           api_name: string
@@ -4836,6 +4878,53 @@ export type Database = {
             columns: ["folder_id"]
             isOneToOne: false
             referencedRelation: "document_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      due_diligence_items: {
+        Row: {
+          category: string
+          checked: boolean | null
+          created_at: string | null
+          description: string
+          id: string
+          impact: string
+          notes: string | null
+          title: string
+          updated_at: string | null
+          valuation_id: string
+        }
+        Insert: {
+          category: string
+          checked?: boolean | null
+          created_at?: string | null
+          description: string
+          id?: string
+          impact: string
+          notes?: string | null
+          title: string
+          updated_at?: string | null
+          valuation_id: string
+        }
+        Update: {
+          category?: string
+          checked?: boolean | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          impact?: string
+          notes?: string | null
+          title?: string
+          updated_at?: string | null
+          valuation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "due_diligence_items_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
             referencedColumns: ["id"]
           },
         ]
@@ -11571,6 +11660,51 @@ export type Database = {
           tags?: string[] | null
           unsubscribed?: boolean
           verified?: boolean
+        }
+        Relationships: []
+      }
+      system_alerts: {
+        Row: {
+          action_required: boolean | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          related_entity: string | null
+          related_entity_id: string | null
+          severity: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_required?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_entity?: string | null
+          related_entity_id?: string | null
+          severity: string
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_required?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_entity?: string | null
+          related_entity_id?: string | null
+          severity?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
