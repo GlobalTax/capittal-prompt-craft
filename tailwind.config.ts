@@ -13,8 +13,23 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        xs: ['12px', { lineHeight: '16px', letterSpacing: '-0.01em' }],
+        sm: ['13px', { lineHeight: '18px', letterSpacing: '-0.01em' }],
+        base: ['14px', { lineHeight: '20px', letterSpacing: '-0.01em' }],
+        lg: ['16px', { lineHeight: '24px', letterSpacing: '-0.01em' }],
+        xl: ['18px', { lineHeight: '28px', letterSpacing: '-0.01em' }],
+        '2xl': ['24px', { lineHeight: '32px', letterSpacing: '-0.02em' }],
+        '3xl': ['30px', { lineHeight: '36px', letterSpacing: '-0.02em' }],
+      },
       fontFamily: {
-        sans: ['ABC Diatype', 'system-ui', 'sans-serif'],
+        sans: ['ABC Diatype', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+      },
+      letterSpacing: {
+        tighter: '-0.02em',
+        tight: '-0.01em',
+        normal: '0',
+        wide: '0.01em',
       },
       colors: {
         border: "hsl(var(--border))",
