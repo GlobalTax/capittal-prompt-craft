@@ -326,125 +326,184 @@ const ValuationCalculator = () => {
               <Separator />
 
               <div className="space-y-3">
-                <h4 className="font-medium">Facturación Recurrente (%)</h4>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="fiscal">Fiscal (%)</Label>
-                    <div className="relative">
-                      <Input
-                        id="fiscal"
-                        type="text"
-                        value={data.fiscalRecurringPercent || ''}
-                        onChange={(e) => handlePercentageChange('fiscalRecurringPercent', e.target.value)}
-                        placeholder="0"
-                        className="font-mono text-sm pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatNumber((data.totalRevenue2024 * data.fiscalRecurringPercent) / 100)} €
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="accounting">Contable (%)</Label>
-                    <div className="relative">
-                      <Input
-                        id="accounting"
-                        type="text"
-                        value={data.accountingRecurringPercent || ''}
-                        onChange={(e) => handlePercentageChange('accountingRecurringPercent', e.target.value)}
-                        placeholder="0"
-                        className="font-mono text-sm pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatNumber((data.totalRevenue2024 * data.accountingRecurringPercent) / 100)} €
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="labor">Laboral (%)</Label>
-                    <div className="relative">
-                      <Input
-                        id="labor"
-                        type="text"
-                        value={data.laborRecurringPercent || ''}
-                        onChange={(e) => handlePercentageChange('laborRecurringPercent', e.target.value)}
-                        placeholder="0"
-                        className="font-mono text-sm pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatNumber((data.totalRevenue2024 * data.laborRecurringPercent) / 100)} €
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="other">Otros (%)</Label>
-                    <div className="relative">
-                      <Input
-                        id="other"
-                        type="text"
-                        value={data.otherRevenuePercent || ''}
-                        onChange={(e) => handlePercentageChange('otherRevenuePercent', e.target.value)}
-                        placeholder="0"
-                        className="font-mono text-sm pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatNumber((data.totalRevenue2024 * data.otherRevenuePercent) / 100)} €
-                    </p>
-                  </div>
+                <h4 className="font-medium">Composición Facturación Recurrente</h4>
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 font-medium text-sm">Concepto</th>
+                        <th className="text-right p-3 font-medium text-sm">%</th>
+                        <th className="text-right p-3 font-medium text-sm">Importe (€)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      <tr>
+                        <td className="p-3 text-sm">Servicios Fiscales</td>
+                        <td className="p-3 text-right">
+                          <div className="relative inline-block w-24">
+                            <Input
+                              id="fiscal"
+                              type="text"
+                              value={data.fiscalRecurringPercent || ''}
+                              onChange={(e) => handlePercentageChange('fiscalRecurringPercent', e.target.value)}
+                              placeholder="0"
+                              className="font-mono text-sm pr-6 h-8 text-right"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber((data.totalRevenue2024 * data.fiscalRecurringPercent) / 100)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-sm">Servicios Contables</td>
+                        <td className="p-3 text-right">
+                          <div className="relative inline-block w-24">
+                            <Input
+                              id="accounting"
+                              type="text"
+                              value={data.accountingRecurringPercent || ''}
+                              onChange={(e) => handlePercentageChange('accountingRecurringPercent', e.target.value)}
+                              placeholder="0"
+                              className="font-mono text-sm pr-6 h-8 text-right"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber((data.totalRevenue2024 * data.accountingRecurringPercent) / 100)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-sm">Servicios Laborales</td>
+                        <td className="p-3 text-right">
+                          <div className="relative inline-block w-24">
+                            <Input
+                              id="labor"
+                              type="text"
+                              value={data.laborRecurringPercent || ''}
+                              onChange={(e) => handlePercentageChange('laborRecurringPercent', e.target.value)}
+                              placeholder="0"
+                              className="font-mono text-sm pr-6 h-8 text-right"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber((data.totalRevenue2024 * data.laborRecurringPercent) / 100)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-sm">Otros Servicios</td>
+                        <td className="p-3 text-right">
+                          <div className="relative inline-block w-24">
+                            <Input
+                              id="other"
+                              type="text"
+                              value={data.otherRevenuePercent || ''}
+                              onChange={(e) => handlePercentageChange('otherRevenuePercent', e.target.value)}
+                              placeholder="0"
+                              className="font-mono text-sm pr-6 h-8 text-right"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber((data.totalRevenue2024 * data.otherRevenuePercent) / 100)}
+                        </td>
+                      </tr>
+                      <tr className="bg-muted/30 font-semibold">
+                        <td className="p-3 text-sm">Total Facturación Recurrente</td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {(data.fiscalRecurringPercent + data.accountingRecurringPercent + data.laborRecurringPercent + data.otherRevenuePercent).toFixed(1)}%
+                        </td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber(
+                            (data.totalRevenue2024 * (data.fiscalRecurringPercent + data.accountingRecurringPercent + data.laborRecurringPercent + data.otherRevenuePercent)) / 100
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
               <Separator />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personnelCosts">Costes Personal (€)</Label>
-                  <Input
-                    id="personnelCosts"
-                    type="text"
-                    value={formatNumber(data.personnelCosts)}
-                    onChange={(e) => handleInputChange('personnelCosts', e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="otherCosts">Otros Costes (€)</Label>
-                  <Input
-                    id="otherCosts"
-                    type="text"
-                    value={formatNumber(data.otherCosts)}
-                    onChange={(e) => handleInputChange('otherCosts', e.target.value)}
-                    className="font-mono"
-                  />
+              <div className="space-y-3">
+                <h4 className="font-medium">Estructura de Costes</h4>
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 font-medium text-sm">Concepto</th>
+                        <th className="text-right p-3 font-medium text-sm">Importe (€)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      <tr>
+                        <td className="p-3 text-sm">Costes de Personal</td>
+                        <td className="p-3 text-right">
+                          <Input
+                            id="personnelCosts"
+                            type="text"
+                            value={formatNumber(data.personnelCosts)}
+                            onChange={(e) => handleInputChange('personnelCosts', e.target.value)}
+                            className="font-mono h-8 w-40 ml-auto text-right"
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-sm">Otros Costes Operativos</td>
+                        <td className="p-3 text-right">
+                          <Input
+                            id="otherCosts"
+                            type="text"
+                            value={formatNumber(data.otherCosts)}
+                            onChange={(e) => handleInputChange('otherCosts', e.target.value)}
+                            className="font-mono h-8 w-40 ml-auto text-right"
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-sm">Sueldo Propiedad</td>
+                        <td className="p-3 text-right">
+                          <Input
+                            id="ownerSalary"
+                            type="text"
+                            value={formatNumber(data.ownerSalary)}
+                            onChange={(e) => handleInputChange('ownerSalary', e.target.value)}
+                            className="font-mono h-8 w-40 ml-auto text-right"
+                          />
+                        </td>
+                      </tr>
+                      <tr className="bg-muted/30 font-semibold">
+                        <td className="p-3 text-sm">Total Costes</td>
+                        <td className="p-3 text-right font-mono text-sm">
+                          {formatNumber(data.personnelCosts + data.otherCosts + data.ownerSalary)}
+                        </td>
+                      </tr>
+                      <tr className="bg-primary/10 font-bold">
+                        <td className="p-3 text-sm">EBITDA</td>
+                        <td className="p-3 text-right font-mono text-sm text-primary">
+                          {formatNumber(data.totalRevenue2024 - (data.personnelCosts + data.otherCosts + data.ownerSalary))}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ownerSalary">Sueldo Propiedad (€)</Label>
-                  <Input
-                    id="ownerSalary"
-                    type="text"
-                    value={formatNumber(data.ownerSalary)}
-                    onChange={(e) => handleInputChange('ownerSalary', e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employees">Nº Trabajadores</Label>
-                  <Input
-                    id="employees"
-                    type="text"
-                    value={formatNumber(data.numberOfEmployees)}
-                    onChange={(e) => handleInputChange('numberOfEmployees', e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="employees">Nº Trabajadores</Label>
+                <Input
+                  id="employees"
+                  type="text"
+                  value={formatNumber(data.numberOfEmployees)}
+                  onChange={(e) => handleInputChange('numberOfEmployees', e.target.value)}
+                  className="font-mono"
+                />
               </div>
             </CardContent>
           </Card>
