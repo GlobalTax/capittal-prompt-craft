@@ -103,7 +103,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-accent text-accent-foreground font-medium" 
+      ? "bg-accent text-accent-foreground font-normal" 
       : "hover:bg-sidebar-accent text-sidebar-foreground";
 
   const renderMenuItems = (items: typeof menuItems) => (
@@ -114,7 +114,7 @@ export function AppSidebar() {
             <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
               <item.icon className="h-4 w-4 shrink-0" />
               {!collapsed && (
-                <span className="text-sm truncate">{item.title}</span>
+                <span className="text-sm font-normal truncate">{item.title}</span>
               )}
             </NavLink>
           </SidebarMenuButton>
