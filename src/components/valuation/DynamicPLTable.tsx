@@ -276,7 +276,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                           onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
                           className="bg-transparent border-b border-dotted border-muted-foreground/30 hover:border-muted-foreground/60 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                         />
-                        {row.category === 'custom' && (
+                        {section.editable && (
                           <Button
                             variant="ghost"
                             size="sm"
