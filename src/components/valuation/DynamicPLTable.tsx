@@ -276,17 +276,15 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                           onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
                           className="bg-transparent border-b border-dotted border-muted-foreground/30 hover:border-muted-foreground/60 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                         />
-                        {section.editable && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeRow(section.id, row.id)}
-                            className="h-6 w-6 p-0 opacity-0 hover:opacity-100 flex-shrink-0 hover:bg-destructive/10"
-                            title="Eliminar fila"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeRow(section.id, row.id)}
+                          className="h-6 w-6 p-0 opacity-0 hover:opacity-100 flex-shrink-0 hover:bg-destructive/10"
+                          title="Eliminar fila"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </td>
 
