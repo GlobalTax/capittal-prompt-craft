@@ -216,11 +216,19 @@ const ValuationCalculator = () => {
     }
   };
 
-  const addYear = () => {
+  const addFutureYear = () => {
     const latestYear = data.years[data.years.length - 1];
     const newYear = (parseInt(latestYear.year) + 1).toString();
     setData(prev => ({
       years: [...prev.years, { ...latestYear, year: newYear }]
+    }));
+  };
+
+  const addPastYear = () => {
+    const firstYear = data.years[0];
+    const newYear = (parseInt(firstYear.year) - 1).toString();
+    setData(prev => ({
+      years: [{ ...firstYear, year: newYear }, ...prev.years]
     }));
   };
 
@@ -323,10 +331,16 @@ const ValuationCalculator = () => {
                         <Euro className="h-5 w-5" />
                         P&L Comparativo Multi-año
                       </CardTitle>
-                      <Button onClick={addYear} size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Añadir Año
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button onClick={addPastYear} size="sm" variant="outline">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Año Anterior
+                        </Button>
+                        <Button onClick={addFutureYear} size="sm" variant="outline">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Año Posterior
+                        </Button>
+                      </div>
                     </div>
                     <CardDescription>
                       Análisis comparativo de ingresos, costes y márgenes por año
