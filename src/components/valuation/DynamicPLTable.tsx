@@ -1,0 +1,359 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Euro, Plus, Trash2 } from "lucide-react";
+
+export interface RowData {
+  id: string;
+  label: string;
+  type: 'input' | 'percentage' | 'calculated';
+  category: 'revenue' | 'cost' | 'result' | 'custom';
+  indented: boolean;
+  values: { [year: string]: number };
+  percentageOf?: string;
+  formula?: (yearData: { [key: string]: number }) => number;
+}
+
+export interface TableSection {
+  id: string;
+  title: string;
+  editable: boolean;
+  rows: RowData[];
+}
+
+interface DynamicPLTableProps {
+  years: string[];
+  sections: TableSection[];
+  onDataChange: (sections: TableSection[]) => void;
+  onYearAdd: (type: 'past' | 'future') => void;
+  onYearRemove: (yearIndex: number) => void;
+}
+
+export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYearRemove }: DynamicPLTableProps) {
+  const formatNumber = (value: number): string => {
+    if (value === undefined || value === null || isNaN(value)) return '0';
+    const rounded = Math.round(value * 100) / 100;
+    return rounded.toLocaleString('es-ES', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const parseNumber = (value: string): number => {
+    const cleaned = value.replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
+  };
+
+  const calculateVariation = (currentValue: number, previousValue: number) => {
+    if (previousValue === 0) return 0;
+    return ((currentValue - previousValue) / previousValue) * 100;
+  };
+
+  const updateRowLabel = (sectionId: string, rowId: string, newLabel: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: section.rows.map(row =>
+              row.id === rowId ? { ...row, label: newLabel } : row
+            )
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const updateRowValue = (sectionId: string, rowId: string, year: string, value: string) => {
+    const numericValue = parseNumber(value);
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: section.rows.map(row =>
+              row.id === rowId
+                ? { ...row, values: { ...row.values, [year]: numericValue } }
+                : row
+            )
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const updateSectionTitle = (sectionId: string, newTitle: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId ? { ...section, title: newTitle } : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const addRow = (sectionId: string, position: 'top' | 'bottom' = 'bottom') => {
+    const newRow: RowData = {
+      id: crypto.randomUUID(),
+      label: 'Nueva fila',
+      type: 'input',
+      category: 'custom',
+      indented: true,
+      values: years.reduce((acc, year) => ({ ...acc, [year]: 0 }), {})
+    };
+
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? {
+            ...section,
+            rows: position === 'top'
+              ? [newRow, ...section.rows]
+              : [...section.rows, newRow]
+          }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const removeRow = (sectionId: string, rowId: string) => {
+    const updatedSections = sections.map(section =>
+      section.id === sectionId
+        ? { ...section, rows: section.rows.filter(row => row.id !== rowId) }
+        : section
+    );
+    onDataChange(updatedSections);
+  };
+
+  const addSection = () => {
+    const newSection: TableSection = {
+      id: crypto.randomUUID(),
+      title: 'Nueva Sección',
+      editable: true,
+      rows: []
+    };
+    onDataChange([...sections, newSection]);
+  };
+
+  const removeSection = (sectionId: string) => {
+    onDataChange(sections.filter(section => section.id !== sectionId));
+  };
+
+  const calculateRowValue = (row: RowData, year: string): number => {
+    if (row.type === 'calculated' && row.formula) {
+      const yearData: { [key: string]: number } = {};
+      sections.forEach(section => {
+        section.rows.forEach(r => {
+          if (r.values[year] !== undefined) {
+            yearData[r.id] = r.values[year];
+          }
+        });
+      });
+      return row.formula(yearData);
+    }
+    return row.values[year] || 0;
+  };
+
+  const calculatePercentageValue = (row: RowData, year: string): number => {
+    if (row.type === 'percentage' && row.percentageOf) {
+      const baseRow = sections
+        .flatMap(s => s.rows)
+        .find(r => r.id === row.percentageOf);
+      if (baseRow) {
+        const baseValue = baseRow.values[year] || 0;
+        const percentage = row.values[year] || 0;
+        return (baseValue * percentage) / 100;
+      }
+    }
+    return 0;
+  };
+
+  return (
+    <Card className="shadow-md">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Euro className="h-5 w-5" />
+            P&L Comparativo Multi-año
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => onYearAdd('past')} size="sm" variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Año Anterior
+            </Button>
+            <Button onClick={() => onYearAdd('future')} size="sm" variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Año Posterior
+            </Button>
+          </div>
+        </div>
+        <CardDescription>
+          Análisis comparativo de ingresos, costes y márgenes por año (editable)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse table-fixed">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="text-left p-3 font-medium text-sm border-r w-[200px]">Concepto</th>
+                {years.map((year, index) => (
+                  <th key={year} className="text-right p-3 font-medium text-sm border-r w-[280px]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>{year}</span>
+                      {years.length > 2 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onYearRemove(index)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </th>
+                ))}
+                {years.length > 1 && (
+                  <th className="text-right p-3 font-medium text-sm w-[100px]">Var %</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {sections.map((section) => (
+                <tbody key={section.id}>
+                  {/* Section Header */}
+                  <tr className="bg-muted/30">
+                    <td colSpan={years.length + 2} className="p-2">
+                      <div className="flex items-center justify-between">
+                        {section.editable ? (
+                          <Input
+                            value={section.title}
+                            onChange={(e) => updateSectionTitle(section.id, e.target.value)}
+                            className="font-bold text-sm bg-transparent border-none p-0 h-auto w-fit max-w-md"
+                          />
+                        ) : (
+                          <span className="font-bold text-sm">{section.title}</span>
+                        )}
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => addRow(section.id, 'bottom')}
+                            className="h-6 w-6 p-0"
+                            title="Añadir fila"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          {section.editable && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSection(section.id)}
+                              className="h-6 w-6 p-0"
+                              title="Eliminar sección"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Section Rows */}
+                  {section.rows.map((row) => (
+                    <tr key={row.id} className="border-t">
+                      {/* Row Label */}
+                      <td className={`p-2 text-sm border-r w-[200px] ${row.indented ? 'pl-6' : ''}`}>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={row.label}
+                            onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
+                            className="bg-transparent border-none p-0 h-auto text-sm flex-1 min-w-0"
+                          />
+                          {row.category === 'custom' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeRow(section.id, row.id)}
+                              className="h-5 w-5 p-0 opacity-0 hover:opacity-100 flex-shrink-0"
+                              title="Eliminar fila"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Year Values */}
+                      {years.map((year) => (
+                        <td key={year} className="p-2 text-right border-r w-[280px]">
+                          {row.type === 'input' ? (
+                            <Input
+                              type="text"
+                              value={formatNumber(row.values[year] || 0)}
+                              onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
+                              className="font-mono h-8 text-right"
+                            />
+                          ) : row.type === 'percentage' ? (
+                            <div className="flex items-center gap-1 justify-end">
+                              <Input
+                                type="text"
+                                value={row.values[year] || ''}
+                                onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
+                                className="font-mono h-8 w-16 text-right"
+                              />
+                              <span className="text-xs">%</span>
+                              <span className="font-mono text-sm ml-2 w-20 text-right">
+                                {formatNumber(calculatePercentageValue(row, year))}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-mono text-sm">
+                              {formatNumber(calculateRowValue(row, year))}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+
+                      {/* Variation Column */}
+                      {years.length > 1 && (
+                        <td className="p-3 text-right font-mono text-sm">
+                          {(() => {
+                            const lastYear = years[years.length - 1];
+                            const prevYear = years[years.length - 2];
+                            const currentValue = row.type === 'calculated' 
+                              ? calculateRowValue(row, lastYear)
+                              : row.values[lastYear] || 0;
+                            const prevValue = row.type === 'calculated'
+                              ? calculateRowValue(row, prevYear)
+                              : row.values[prevYear] || 0;
+                            const variation = calculateVariation(currentValue, prevValue);
+                            
+                            if (variation === 0) return null;
+                            
+                            return (
+                              <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
+                                {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
+                              </span>
+                            );
+                          })()}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              ))}
+
+              {/* Add Section Button */}
+              <tr>
+                <td colSpan={years.length + 2} className="p-3 text-center border-t">
+                  <Button onClick={addSection} variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Añadir Sección
+                  </Button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

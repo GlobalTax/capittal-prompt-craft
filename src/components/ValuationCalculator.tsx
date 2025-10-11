@@ -10,6 +10,7 @@ import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2,
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { DynamicPLTable, type RowData, type TableSection } from "@/components/valuation/DynamicPLTable";
 
 
 interface YearData {
@@ -66,6 +67,110 @@ const ValuationCalculator = () => {
   });
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
+  
+  // Dynamic table state
+  const [dynamicSections, setDynamicSections] = useState<TableSection[]>(() => {
+    // Initialize dynamic sections from existing data
+    return [
+      {
+        id: 'revenue-section',
+        title: 'INGRESOS',
+        editable: false,
+        rows: [
+          {
+            id: 'total-revenue',
+            label: 'Facturación Total',
+            type: 'input' as const,
+            category: 'revenue' as const,
+            indented: false,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.totalRevenue }), {})
+          },
+          {
+            id: 'fiscal-recurring',
+            label: 'Servicios Fiscales',
+            type: 'percentage' as const,
+            category: 'revenue' as const,
+            indented: true,
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.fiscalRecurringPercent }), {})
+          },
+          {
+            id: 'accounting-recurring',
+            label: 'Servicios Contables',
+            type: 'percentage' as const,
+            category: 'revenue' as const,
+            indented: true,
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.accountingRecurringPercent }), {})
+          },
+          {
+            id: 'labor-recurring',
+            label: 'Servicios Laborales',
+            type: 'percentage' as const,
+            category: 'revenue' as const,
+            indented: true,
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.laborRecurringPercent }), {})
+          },
+          {
+            id: 'other-revenue',
+            label: 'Otros Servicios',
+            type: 'percentage' as const,
+            category: 'revenue' as const,
+            indented: true,
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.otherRevenuePercent }), {})
+          }
+        ]
+      },
+      {
+        id: 'costs-section',
+        title: 'COSTES',
+        editable: false,
+        rows: [
+          {
+            id: 'personnel-costs',
+            label: 'Costes de Personal',
+            type: 'input' as const,
+            category: 'cost' as const,
+            indented: true,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.personnelCosts }), {})
+          },
+          {
+            id: 'other-costs',
+            label: 'Otros Costes Operativos',
+            type: 'input' as const,
+            category: 'cost' as const,
+            indented: true,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.otherCosts }), {})
+          },
+          {
+            id: 'owner-salary',
+            label: 'Sueldo Propiedad',
+            type: 'input' as const,
+            category: 'cost' as const,
+            indented: true,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.ownerSalary }), {})
+          }
+        ]
+      },
+      {
+        id: 'results-section',
+        title: 'RESULTADOS',
+        editable: false,
+        rows: [
+          {
+            id: 'employees',
+            label: 'Nº Trabajadores',
+            type: 'input' as const,
+            category: 'result' as const,
+            indented: true,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.numberOfEmployees }), {})
+          }
+        ]
+      }
+    ];
+  });
 
   const calculateMetricsForYear = (yearData: YearData) => {
     const fiscalRecurring = (yearData.totalRevenue * yearData.fiscalRecurringPercent) / 100;
@@ -240,6 +345,98 @@ const ValuationCalculator = () => {
     }
   };
 
+  // Dynamic table handlers
+  const handleDynamicDataChange = (newSections: TableSection[]) => {
+    setDynamicSections(newSections);
+    
+    // Sync back to original data structure for calculations
+    const updatedYears = data.years.map(year => {
+      const totalRevenueRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'total-revenue');
+      const fiscalRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'fiscal-recurring');
+      const accountingRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'accounting-recurring');
+      const laborRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'labor-recurring');
+      const otherRevenueRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'other-revenue');
+      const personnelRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'personnel-costs');
+      const otherCostsRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'other-costs');
+      const ownerSalaryRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'owner-salary');
+      const employeesRow = newSections
+        .flatMap(s => s.rows)
+        .find(r => r.id === 'employees');
+
+      return {
+        ...year,
+        totalRevenue: totalRevenueRow?.values[year.year] || 0,
+        fiscalRecurringPercent: fiscalRow?.values[year.year] || 0,
+        accountingRecurringPercent: accountingRow?.values[year.year] || 0,
+        laborRecurringPercent: laborRow?.values[year.year] || 0,
+        otherRevenuePercent: otherRevenueRow?.values[year.year] || 0,
+        personnelCosts: personnelRow?.values[year.year] || 0,
+        otherCosts: otherCostsRow?.values[year.year] || 0,
+        ownerSalary: ownerSalaryRow?.values[year.year] || 0,
+        numberOfEmployees: employeesRow?.values[year.year] || 0,
+      };
+    });
+
+    setData({ years: updatedYears });
+  };
+
+  const handleYearAdd = (type: 'past' | 'future') => {
+    if (type === 'future') {
+      addFutureYear();
+    } else {
+      addPastYear();
+    }
+    
+    // Update dynamic sections with new year
+    setTimeout(() => {
+      setDynamicSections(prevSections => 
+        prevSections.map(section => ({
+          ...section,
+          rows: section.rows.map(row => ({
+            ...row,
+            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: row.values[y.year] || 0 }), {})
+          }))
+        }))
+      );
+    }, 0);
+  };
+
+  const handleYearRemove = (yearIndex: number) => {
+    removeYear(yearIndex);
+    
+    // Update dynamic sections to remove year
+    setTimeout(() => {
+      const removedYear = data.years[yearIndex]?.year;
+      if (removedYear) {
+        setDynamicSections(prevSections =>
+          prevSections.map(section => ({
+            ...section,
+            rows: section.rows.map(row => {
+              const { [removedYear]: _, ...remainingValues } = row.values;
+              return { ...row, values: remainingValues };
+            })
+          }))
+        );
+      }
+    }, 0);
+  };
+
   const calculateVariation = (currentValue: number, previousValue: number) => {
     if (previousValue === 0) return 0;
     return ((currentValue - previousValue) / previousValue) * 100;
@@ -323,368 +520,14 @@ const ValuationCalculator = () => {
                   </Alert>
                 )}
 
-                {/* P&L Comparativo */}
-                <Card className="shadow-md">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Euro className="h-5 w-5" />
-                        P&L Comparativo Multi-año
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Button onClick={addPastYear} size="sm" variant="outline">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Año Anterior
-                        </Button>
-                        <Button onClick={addFutureYear} size="sm" variant="outline">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Año Posterior
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Análisis comparativo de ingresos, costes y márgenes por año
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse table-fixed">
-                        <thead>
-                          <tr className="bg-muted/50">
-                            <th className="text-left p-3 font-medium text-sm border-r w-[200px]">Concepto</th>
-                            {data.years.map((year, index) => (
-                              <th key={year.year} className="text-right p-3 font-medium text-sm border-r w-[280px]">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span>{year.year}</span>
-                                  {data.years.length > 2 && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeYear(index)}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </th>
-                            ))}
-                            {data.years.length > 1 && (
-                              <th className="text-right p-3 font-medium text-sm w-[100px]">Var %</th>
-                            )}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {/* INGRESOS */}
-                          <tr className="bg-muted/30">
-                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
-                              INGRESOS
-                            </td>
-                          </tr>
-                          <tr className="border-t">
-                            <td className="p-3 text-sm border-r w-[200px]">Facturación Total</td>
-                            {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                <Input
-                                  type="text"
-                                  value={formatNumber(year.totalRevenue)}
-                                  onChange={(e) => handleInputChange(index, 'totalRevenue', e.target.value)}
-                                  className="font-mono h-8 text-right"
-                                />
-                              </td>
-                            ))}
-                            {data.years.length > 1 && (
-                              <td className="p-3 text-right font-mono text-sm">
-                                {(() => {
-                                  const last = data.years[data.years.length - 1];
-                                  const prev = data.years[data.years.length - 2];
-                                  const variation = calculateVariation(last.totalRevenue, prev.totalRevenue);
-                                  return (
-                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
-                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
-                                    </span>
-                                  );
-                                })()}
-                              </td>
-                            )}
-                          </tr>
-
-                          {/* Servicios Recurrentes */}
-                          <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Fiscales</td>
-                            {data.years.map((year, index) => {
-                              const amount = (year.totalRevenue * year.fiscalRecurringPercent) / 100;
-                              return (
-                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                  <div className="flex items-center gap-1 justify-end">
-                                    <Input
-                                      type="text"
-                                      value={year.fiscalRecurringPercent || ''}
-                                      onChange={(e) => handlePercentageChange(index, 'fiscalRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
-                                      placeholder="0"
-                                    />
-                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
-                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
-                                  </div>
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Contables</td>
-                            {data.years.map((year, index) => {
-                              const amount = (year.totalRevenue * year.accountingRecurringPercent) / 100;
-                              return (
-                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                  <div className="flex items-center gap-1 justify-end">
-                                    <Input
-                                      type="text"
-                                      value={year.accountingRecurringPercent || ''}
-                                      onChange={(e) => handlePercentageChange(index, 'accountingRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
-                                      placeholder="0"
-                                    />
-                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
-                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
-                                  </div>
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Servicios Laborales</td>
-                            {data.years.map((year, index) => {
-                              const amount = (year.totalRevenue * year.laborRecurringPercent) / 100;
-                              return (
-                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                  <div className="flex items-center gap-1 justify-end">
-                                    <Input
-                                      type="text"
-                                      value={year.laborRecurringPercent || ''}
-                                      onChange={(e) => handlePercentageChange(index, 'laborRecurringPercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
-                                      placeholder="0"
-                                    />
-                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
-                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
-                                  </div>
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Servicios</td>
-                            {data.years.map((year, index) => {
-                              const amount = (year.totalRevenue * year.otherRevenuePercent) / 100;
-                              return (
-                                <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                  <div className="flex items-center gap-1 justify-end">
-                                    <Input
-                                      type="text"
-                                      value={year.otherRevenuePercent || ''}
-                                      onChange={(e) => handlePercentageChange(index, 'otherRevenuePercent', e.target.value)}
-                                      className="font-mono h-8 w-16 text-right flex-shrink-0"
-                                      placeholder="0"
-                                    />
-                                    <span className="text-xs text-muted-foreground flex-shrink-0">%</span>
-                                    <span className="font-mono text-sm ml-2 w-20 text-right truncate">{formatNumber(amount)}</span>
-                                  </div>
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t bg-muted/30 font-semibold">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Total Ingresos Recurrentes</td>
-                            {data.years.map((year) => {
-                              const metrics = calculateMetricsForYear(year);
-                              return (
-                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
-                                  {formatNumber(metrics.totalRecurring)}
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && (
-                              <td className="p-3 text-right font-mono text-sm">
-                                {(() => {
-                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
-                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
-                                  const variation = calculateVariation(lastMetrics.totalRecurring, prevMetrics.totalRecurring);
-                                  return (
-                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
-                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
-                                    </span>
-                                  );
-                                })()}
-                              </td>
-                            )}
-                          </tr>
-
-                          <tr className="border-t bg-muted/10">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Ingresos</td>
-                            {data.years.map((year) => {
-                              const metrics = calculateMetricsForYear(year);
-                              return (
-                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
-                                  {formatNumber(metrics.otherIncome)}
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          {/* COSTES */}
-                          <tr className="bg-muted/30 border-t">
-                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
-                              COSTES
-                            </td>
-                          </tr>
-
-                          <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Costes de Personal</td>
-                            {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                <Input
-                                  type="text"
-                                  value={formatNumber(year.personnelCosts)}
-                                  onChange={(e) => handleInputChange(index, 'personnelCosts', e.target.value)}
-                                  className="font-mono h-8 text-right"
-                                />
-                              </td>
-                            ))}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Otros Costes Operativos</td>
-                            {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                <Input
-                                  type="text"
-                                  value={formatNumber(year.otherCosts)}
-                                  onChange={(e) => handleInputChange(index, 'otherCosts', e.target.value)}
-                                  className="font-mono h-8 text-right"
-                                />
-                              </td>
-                            ))}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Sueldo Propiedad</td>
-                            {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r w-[280px]">
-                                <Input
-                                  type="text"
-                                  value={formatNumber(year.ownerSalary)}
-                                  onChange={(e) => handleInputChange(index, 'ownerSalary', e.target.value)}
-                                  className="font-mono h-8 text-right"
-                                />
-                              </td>
-                            ))}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t bg-muted/30 font-semibold">
-                            <td className="p-3 text-sm pl-6 border-r w-[200px]">Total Costes</td>
-                            {data.years.map((year) => {
-                              const metrics = calculateMetricsForYear(year);
-                              return (
-                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
-                                  {formatNumber(metrics.totalCosts)}
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && (
-                              <td className="p-3 text-right font-mono text-sm">
-                                {(() => {
-                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
-                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
-                                  const variation = calculateVariation(lastMetrics.totalCosts, prevMetrics.totalCosts);
-                                  return (
-                                    <span className={variation >= 0 ? 'text-destructive' : 'text-success'}>
-                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
-                                    </span>
-                                  );
-                                })()}
-                              </td>
-                            )}
-                          </tr>
-
-                          {/* RESULTADOS */}
-                          <tr className="bg-muted/30 border-t">
-                            <td colSpan={data.years.length + 2} className="p-2 font-bold text-sm">
-                              RESULTADOS
-                            </td>
-                          </tr>
-
-                          <tr className="border-t bg-primary/10 font-bold">
-                            <td className="p-3 text-sm pl-6 border-r">EBITDA</td>
-                            {data.years.map((year) => {
-                              const metrics = calculateMetricsForYear(year);
-                              return (
-                                <td key={year.year} className="p-3 text-right font-mono text-sm text-primary border-r">
-                                  {formatNumber(metrics.ebitda)}
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && (
-                              <td className="p-3 text-right font-mono text-sm">
-                                {(() => {
-                                  const lastMetrics = calculateMetricsForYear(data.years[data.years.length - 1]);
-                                  const prevMetrics = calculateMetricsForYear(data.years[data.years.length - 2]);
-                                  const variation = calculateVariation(lastMetrics.ebitda, prevMetrics.ebitda);
-                                  return (
-                                    <span className={variation >= 0 ? 'text-success' : 'text-destructive'}>
-                                      {variation >= 0 ? '+' : ''}{variation.toFixed(1)}%
-                                    </span>
-                                  );
-                                })()}
-                              </td>
-                            )}
-                          </tr>
-
-                          <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r">Margen EBITDA %</td>
-                            {data.years.map((year) => {
-                              const metrics = calculateMetricsForYear(year);
-                              const ebitdaMargin = (metrics.ebitda / year.totalRevenue) * 100;
-                              return (
-                                <td key={year.year} className="p-3 text-right font-mono text-sm border-r">
-                                  {ebitdaMargin.toFixed(1)}%
-                                </td>
-                              );
-                            })}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-
-                          <tr className="border-t">
-                            <td className="p-3 text-sm pl-6 border-r">Nº Trabajadores</td>
-                            {data.years.map((year, index) => (
-                              <td key={year.year} className="p-2 text-right border-r">
-                                <Input
-                                  type="text"
-                                  value={formatNumber(year.numberOfEmployees)}
-                                  onChange={(e) => handleInputChange(index, 'numberOfEmployees', e.target.value)}
-                                  className="font-mono h-8 text-right"
-                                />
-                              </td>
-                            ))}
-                            {data.years.length > 1 && <td></td>}
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* P&L Comparativo - Dynamic Table */}
+                <DynamicPLTable 
+                  years={data.years.map(y => y.year)}
+                  sections={dynamicSections}
+                  onDataChange={handleDynamicDataChange}
+                  onYearAdd={handleYearAdd}
+                  onYearRemove={handleYearRemove}
+                />
 
                 {/* Métricas Clave y Gráficos */}
                 <div className="grid lg:grid-cols-2 gap-6">
