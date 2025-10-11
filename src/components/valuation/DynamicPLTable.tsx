@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -190,10 +190,17 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
       {/* Tabla sin Card */}
       <div className="overflow-x-auto border rounded-lg shadow-sm bg-card">
-        <table className="w-full border-collapse">
+        <table className="w-full table-fixed border-collapse">
+          <colgroup>
+            <col style={{ width: '300px' }} />
+            {years.map((y) => (
+              <col key={`col-${y}`} style={{ width: '250px' }} />
+            ))}
+            {years.length > 1 && <col style={{ width: '120px' }} />}
+          </colgroup>
           <thead className="sticky top-0 z-20">
             <tr className="bg-muted border-b-2">
-              <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-muted z-10">Concepto</th>
+              <th className="text-left p-3 font-medium text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-muted z-20">Concepto</th>
               {years.map((year, index) => (
               <th key={year} className="text-right p-3 font-medium text-sm border-r w-[250px]">
                 <div className="flex items-center justify-end gap-2">
@@ -212,13 +219,13 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
               </th>
               ))}
               {years.length > 1 && (
-                <th className="text-right p-3 font-medium text-sm min-w-[120px]">Var %</th>
+                <th className="text-right p-3 font-medium text-sm w-[120px]">Var %</th>
               )}
             </tr>
           </thead>
           <tbody>
             {sections.map((section) => (
-              <tbody key={section.id}>
+              <React.Fragment key={section.id}>
                 {/* Section Header */}
                 <tr className="bg-muted/50 border-b-2 border-muted">
                   <td colSpan={years.length + 2} className="p-3">
@@ -316,7 +323,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
 
                     {/* Variation Column */}
                     {years.length > 1 && (
-                      <td className="p-3 text-right font-mono text-sm">
+                      <td className="p-3 text-right font-mono text-sm w-[120px]">
                         {(() => {
                           const lastYear = years[years.length - 1];
                           const prevYear = years[years.length - 2];
@@ -340,7 +347,7 @@ export function DynamicPLTable({ years, sections, onDataChange, onYearAdd, onYea
                     )}
                   </tr>
                 ))}
-              </tbody>
+              </React.Fragment>
             ))}
 
             {/* Add Section Button */}
