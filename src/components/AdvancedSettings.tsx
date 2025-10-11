@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Database, Users, Bell, Palette, Download, Upload, Shield, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AdvisorProfileSettings } from "@/components/advisor/AdvisorProfileSettings";
 
 const AdvancedSettings = () => {
   const { toast } = useToast();
@@ -489,70 +490,7 @@ const AdvancedSettings = () => {
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Personalización de Marca</CardTitle>
-              <CardDescription>
-                Personalizar la apariencia para tu despacho
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nombre de la Empresa</Label>
-                    <Input defaultValue="Capittal Consulting" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Logo de la Empresa</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <Palette className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">Arrastra tu logo aquí o haz clic para seleccionar</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Color Primario</Label>
-                    <div className="flex space-x-2">
-                      <Input type="color" defaultValue="#2563eb" className="w-12 h-10" />
-                      <Input defaultValue="#2563eb" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Color Secundario</Label>
-                    <div className="flex space-x-2">
-                      <Input type="color" defaultValue="#64748b" className="w-12 h-10" />
-                      <Input defaultValue="#64748b" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Vista Previa</Label>
-                    <div className="border rounded-lg p-4 bg-white">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <div className="w-8 h-8 bg-blue-600 rounded"></div>
-                        <span className="font-semibold">Capittal Consulting</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-2 bg-blue-600 rounded w-3/4"></div>
-                        <div className="h-2 bg-gray-300 rounded w-1/2"></div>
-                        <div className="h-2 bg-gray-300 rounded w-2/3"></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button className="w-full">
-                    <Palette className="h-4 w-4 mr-2" />
-                    Aplicar Branding
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AdvisorProfileSettings />
         </TabsContent>
       </Tabs>
     </div>

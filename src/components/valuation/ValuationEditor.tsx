@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Valuation } from '@/hooks/useValuations';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
 import { ClientInfoForm } from './ClientInfoForm';
@@ -10,11 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Trash2, StickyNote } from 'lucide-react';
+import { ArrowLeft, Trash2, StickyNote, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ValuationCalculator from '@/components/ValuationCalculator';
+import { generateValuationPDF } from '@/components/reports/ValuationPDFExporter';
 
 export function ValuationEditor() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +24,8 @@ export function ValuationEditor() {
   const { toast } = useToast();
   const [valuation, setValuation] = useState<Valuation | null>(null);
   const [loading, setLoading] = useState(true);
+  const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   useEffect(() => {
     if (id) fetchValuation();
@@ -83,6 +87,38 @@ export function ValuationEditor() {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    if (!valuation) return;
+
+    // Verificar perfil del asesor
+    if (!advisorProfile?.business_name) {
+      toast({
+        title: 'Perfil incompleto',
+        description: 'Configura tu perfil en Ajustes > Branding antes de generar PDFs',
+        variant: 'destructive',
+      });
+      navigate('/settings');
+      return;
+    }
+
+    try {
+      setGeneratingPDF(true);
+      await generateValuationPDF(valuation, advisorProfile);
+      toast({
+        title: 'PDF generado',
+        description: 'El informe se ha descargado correctamente',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al generar PDF',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container max-w-7xl py-6 space-y-6">
@@ -115,6 +151,16 @@ export function ValuationEditor() {
           </div>
           <div className="flex items-center gap-4">
             <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={handleGeneratePDF}
+              disabled={generatingPDF || profileLoading}
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              {generatingPDF ? 'Generando...' : 'Generar PDF'}
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleDelete}>
               <Trash2 className="h-5 w-5 text-destructive" />
             </Button>

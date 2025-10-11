@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useValuations, ValuationType } from '@/hooks/useValuations';
+import { useValuations, ValuationType, Valuation } from '@/hooks/useValuations';
+import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
 import { ValuationCard } from './ValuationCard';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, MoreVertical, FileText, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -14,18 +15,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { generateValuationPDF } from '@/components/reports/ValuationPDFExporter';
 
 export function ValuationList() {
-  const { valuations, loading, createValuation, updateValuation } = useValuations();
+  const { valuations, loading, createValuation, updateValuation, deleteValuation } = useValuations();
+  const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ValuationType>('own_business');
+  const [generatingPDF, setGeneratingPDF] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const filteredValuations = useMemo(() => {
     return valuations.filter((v) => {
@@ -56,6 +68,41 @@ export function ValuationList() {
       completed,
       status: completed ? 'completed' : 'in_progress'
     });
+  };
+
+  const handleGeneratePDF = async (valuation: Valuation) => {
+    // Verificar perfil del asesor
+    if (!advisorProfile?.business_name) {
+      toast({
+        title: 'Perfil incompleto',
+        description: 'Configura tu perfil en Ajustes > Branding antes de generar PDFs',
+        variant: 'destructive',
+      });
+      navigate('/settings');
+      return;
+    }
+
+    try {
+      setGeneratingPDF(valuation.id);
+      await generateValuationPDF(valuation, advisorProfile);
+      toast({
+        title: 'PDF generado',
+        description: 'El informe se ha descargado correctamente',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al generar PDF',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingPDF(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta valoración?')) return;
+    await deleteValuation(id);
   };
 
   return (
@@ -139,13 +186,49 @@ export function ValuationList() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredValuations.map((valuation, index) => (
-              <ValuationCard
-                key={valuation.id}
-                valuation={valuation}
-                onToggleComplete={handleToggleComplete}
-                style={{ animationDelay: `${index * 50}ms` }}
-                className="animate-fade-in"
-              />
+              <div key={valuation.id} className="relative group">
+                <ValuationCard
+                  valuation={valuation}
+                  onToggleComplete={handleToggleComplete}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  className="animate-fade-in"
+                />
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 bg-card/80 backdrop-blur">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate(`/valuation/${valuation.id}`)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGeneratePDF(valuation);
+                        }}
+                        disabled={generatingPDF === valuation.id || profileLoading}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        {generatingPDF === valuation.id ? 'Generando...' : 'Generar PDF'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(valuation.id);
+                        }}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
             ))}
           </div>
         )}
