@@ -1,22 +1,18 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { UserProfile } from "@/components/auth/UserProfile";
 
 const Header = () => {
-  const userName = "Usuario"; // En el futuro esto vendrá de auth
-
   return (
     <header className="bg-card border-b border-border sticky top-0 z-10">
       <div className="flex items-center justify-between h-14 px-4 sm:px-6">
-        {/* Sidebar Trigger + Welcome */}
+        {/* Sidebar Trigger */}
         <div className="flex items-center gap-4">
           <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-          <h1 className="text-lg font-semibold text-foreground">
-            Bienvenido, {userName} 👋
-          </h1>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Select defaultValue="catala">
             <SelectTrigger className="w-24 h-8 border-0 bg-transparent text-xs text-muted-foreground hover:text-foreground">
               <SelectValue />
@@ -27,6 +23,7 @@ const Header = () => {
               <SelectItem value="english">English</SelectItem>
             </SelectContent>
           </Select>
+          <UserProfile />
         </div>
       </div>
     </header>
