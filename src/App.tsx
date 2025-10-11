@@ -7,7 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import ExecutiveDashboard from "@/components/ExecutiveDashboard";
-import ValuationCalculator from "@/components/ValuationCalculator";
+import { ValuationList } from "@/components/valuation/ValuationList";
+import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
 import CollaborationHub from "@/components/CollaborationHub";
 import AdvancedSettings from "@/components/AdvancedSettings";
@@ -38,7 +39,8 @@ const App = () => {
                   <div className="container mx-auto max-w-7xl">
                     <Routes>
                       <Route path="/" element={<ExecutiveDashboard />} />
-                      <Route path="/valuation" element={<ValuationCalculator />} />
+                      <Route path="/valuation" element={<ValuationList />} />
+                      <Route path="/valuation/:id" element={<ValuationEditor />} />
                       <Route path="/reports" element={<ReportGenerator />} />
                       <Route path="/collaboration" element={<CollaborationHub />} />
                       <Route path="/integrations/financial" element={<FinancialDataIntegrator />} />

@@ -545,6 +545,85 @@ export type Database = {
           },
         ]
       }
+      buyer_company_matches: {
+        Row: {
+          assigned_to: string | null
+          buyer_feedback: string | null
+          buyer_interest_level:
+            | Database["public"]["Enums"]["interest_level"]
+            | null
+          company_valuation_id: string | null
+          created_at: string
+          id: string
+          match_reasons: Json | null
+          match_score: number | null
+          potential_buyer_id: string
+          presentation_sent: boolean | null
+          presentation_sent_date: string | null
+          security_company_id: string
+          status: Database["public"]["Enums"]["match_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          buyer_feedback?: string | null
+          buyer_interest_level?:
+            | Database["public"]["Enums"]["interest_level"]
+            | null
+          company_valuation_id?: string | null
+          created_at?: string
+          id?: string
+          match_reasons?: Json | null
+          match_score?: number | null
+          potential_buyer_id: string
+          presentation_sent?: boolean | null
+          presentation_sent_date?: string | null
+          security_company_id: string
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          buyer_feedback?: string | null
+          buyer_interest_level?:
+            | Database["public"]["Enums"]["interest_level"]
+            | null
+          company_valuation_id?: string | null
+          created_at?: string
+          id?: string
+          match_reasons?: Json | null
+          match_score?: number | null
+          potential_buyer_id?: string
+          presentation_sent?: boolean | null
+          presentation_sent_date?: string | null
+          security_company_id?: string
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_company_matches_company_valuation_id_fkey"
+            columns: ["company_valuation_id"]
+            isOneToOne: false
+            referencedRelation: "company_valuations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_company_matches_potential_buyer_id_fkey"
+            columns: ["potential_buyer_id"]
+            isOneToOne: false
+            referencedRelation: "potential_buyers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_company_matches_security_company_id_fkey"
+            columns: ["security_company_id"]
+            isOneToOne: false
+            referencedRelation: "security_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buying_mandates: {
         Row: {
           assigned_user_id: string | null
@@ -2372,6 +2451,86 @@ export type Database = {
             columns: ["search_id"]
             isOneToOne: false
             referencedRelation: "security_searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_valuations: {
+        Row: {
+          business_clients: number | null
+          business_monthly_fee: number | null
+          business_months: number | null
+          created_at: string
+          created_by: string | null
+          ebitda_amount: number | null
+          ebitda_multiple: number | null
+          final_valuation: number
+          hybrid_calculation_method: string | null
+          hybrid_weight_ebitda: number | null
+          hybrid_weight_recurring: number | null
+          id: string
+          market_conditions: Json | null
+          methodology_notes: string | null
+          residential_clients: number | null
+          residential_monthly_fee: number | null
+          residential_months: number | null
+          security_company_id: string
+          updated_at: string
+          valuation_date: string
+          valuation_type: Database["public"]["Enums"]["valuation_type"]
+        }
+        Insert: {
+          business_clients?: number | null
+          business_monthly_fee?: number | null
+          business_months?: number | null
+          created_at?: string
+          created_by?: string | null
+          ebitda_amount?: number | null
+          ebitda_multiple?: number | null
+          final_valuation: number
+          hybrid_calculation_method?: string | null
+          hybrid_weight_ebitda?: number | null
+          hybrid_weight_recurring?: number | null
+          id?: string
+          market_conditions?: Json | null
+          methodology_notes?: string | null
+          residential_clients?: number | null
+          residential_monthly_fee?: number | null
+          residential_months?: number | null
+          security_company_id: string
+          updated_at?: string
+          valuation_date?: string
+          valuation_type: Database["public"]["Enums"]["valuation_type"]
+        }
+        Update: {
+          business_clients?: number | null
+          business_monthly_fee?: number | null
+          business_months?: number | null
+          created_at?: string
+          created_by?: string | null
+          ebitda_amount?: number | null
+          ebitda_multiple?: number | null
+          final_valuation?: number
+          hybrid_calculation_method?: string | null
+          hybrid_weight_ebitda?: number | null
+          hybrid_weight_recurring?: number | null
+          id?: string
+          market_conditions?: Json | null
+          methodology_notes?: string | null
+          residential_clients?: number | null
+          residential_monthly_fee?: number | null
+          residential_months?: number | null
+          security_company_id?: string
+          updated_at?: string
+          valuation_date?: string
+          valuation_type?: Database["public"]["Enums"]["valuation_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_valuations_security_company_id_fkey"
+            columns: ["security_company_id"]
+            isOneToOne: false
+            referencedRelation: "security_companies"
             referencedColumns: ["id"]
           },
         ]
@@ -9061,6 +9220,66 @@ export type Database = {
           },
         ]
       }
+      potential_buyers: {
+        Row: {
+          acquisition_criteria: Json | null
+          buyer_type: Database["public"]["Enums"]["buyer_type"]
+          contact_person: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          investment_capacity_max: number | null
+          investment_capacity_min: number | null
+          last_contact_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          preferred_regions: string[] | null
+          preferred_sectors: string[] | null
+          status: Database["public"]["Enums"]["buyer_status"]
+          updated_at: string
+        }
+        Insert: {
+          acquisition_criteria?: Json | null
+          buyer_type: Database["public"]["Enums"]["buyer_type"]
+          contact_person?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          investment_capacity_max?: number | null
+          investment_capacity_min?: number | null
+          last_contact_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          preferred_regions?: string[] | null
+          preferred_sectors?: string[] | null
+          status?: Database["public"]["Enums"]["buyer_status"]
+          updated_at?: string
+        }
+        Update: {
+          acquisition_criteria?: Json | null
+          buyer_type?: Database["public"]["Enums"]["buyer_type"]
+          contact_person?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          investment_capacity_max?: number | null
+          investment_capacity_min?: number | null
+          last_contact_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_regions?: string[] | null
+          preferred_sectors?: string[] | null
+          status?: Database["public"]["Enums"]["buyer_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       practice_areas: {
         Row: {
           color: string | null
@@ -10709,13 +10928,17 @@ export type Database = {
       }
       security_companies: {
         Row: {
+          avg_monthly_fee_business: number | null
+          avg_monthly_fee_residential: number | null
+          business_subscribers: number | null
           city: string | null
+          contract_length_avg: number | null
           created_at: string | null
           ebitda: number | null
           email: string | null
           employees: number | null
-          fit_score: number | null
           id: string
+          is_cra: boolean | null
           last_contact_date: string | null
           name: string
           nif: string | null
@@ -10723,21 +10946,28 @@ export type Database = {
           phone: string | null
           province: string | null
           region: string | null
+          residential_subscribers: number | null
           revenue: number | null
           segment: string | null
           stage: string | null
           status: string | null
+          subscriber_churn_rate: number | null
+          total_subscribers: number | null
           updated_at: string | null
           website: string | null
         }
         Insert: {
+          avg_monthly_fee_business?: number | null
+          avg_monthly_fee_residential?: number | null
+          business_subscribers?: number | null
           city?: string | null
+          contract_length_avg?: number | null
           created_at?: string | null
           ebitda?: number | null
           email?: string | null
           employees?: number | null
-          fit_score?: number | null
           id?: string
+          is_cra?: boolean | null
           last_contact_date?: string | null
           name: string
           nif?: string | null
@@ -10745,21 +10975,28 @@ export type Database = {
           phone?: string | null
           province?: string | null
           region?: string | null
+          residential_subscribers?: number | null
           revenue?: number | null
           segment?: string | null
           stage?: string | null
           status?: string | null
+          subscriber_churn_rate?: number | null
+          total_subscribers?: number | null
           updated_at?: string | null
           website?: string | null
         }
         Update: {
+          avg_monthly_fee_business?: number | null
+          avg_monthly_fee_residential?: number | null
+          business_subscribers?: number | null
           city?: string | null
+          contract_length_avg?: number | null
           created_at?: string | null
           ebitda?: number | null
           email?: string | null
           employees?: number | null
-          fit_score?: number | null
           id?: string
+          is_cra?: boolean | null
           last_contact_date?: string | null
           name?: string
           nif?: string | null
@@ -10767,10 +11004,13 @@ export type Database = {
           phone?: string | null
           province?: string | null
           region?: string | null
+          residential_subscribers?: number | null
           revenue?: number | null
           segment?: string | null
           stage?: string | null
           status?: string | null
+          subscriber_churn_rate?: number | null
+          total_subscribers?: number | null
           updated_at?: string | null
           website?: string | null
         }
@@ -11341,6 +11581,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_target_contacts_security_company"
+            columns: ["target_company_id"]
+            isOneToOne: false
+            referencedRelation: "security_companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "target_contacts_target_company_id_fkey"
             columns: ["target_company_id"]
@@ -12618,6 +12865,7 @@ export type Database = {
           due_date: string
           id: string
           priority: string
+          tags: string[] | null
           title: string
           updated_at: string | null
           user_id: string
@@ -12630,6 +12878,7 @@ export type Database = {
           due_date: string
           id?: string
           priority?: string
+          tags?: string[] | null
           title: string
           updated_at?: string | null
           user_id: string
@@ -12642,6 +12891,7 @@ export type Database = {
           due_date?: string
           id?: string
           priority?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
           user_id?: string
@@ -13092,6 +13342,120 @@ export type Database = {
           session_id?: string | null
           step?: number | null
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      valuation_tags: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      valuations: {
+        Row: {
+          accounting_recurring_1: number | null
+          accounting_recurring_2: number | null
+          completed: boolean | null
+          created_at: string | null
+          employees_1: number | null
+          employees_2: number | null
+          fiscal_recurring_1: number | null
+          fiscal_recurring_2: number | null
+          id: string
+          labor_recurring_1: number | null
+          labor_recurring_2: number | null
+          other_costs_1: number | null
+          other_costs_2: number | null
+          other_revenue_1: number | null
+          other_revenue_2: number | null
+          owner_salary_1: number | null
+          owner_salary_2: number | null
+          personnel_costs_1: number | null
+          personnel_costs_2: number | null
+          revenue_1: number | null
+          revenue_2: number | null
+          status: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          year_1: string | null
+          year_2: string | null
+        }
+        Insert: {
+          accounting_recurring_1?: number | null
+          accounting_recurring_2?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          employees_1?: number | null
+          employees_2?: number | null
+          fiscal_recurring_1?: number | null
+          fiscal_recurring_2?: number | null
+          id?: string
+          labor_recurring_1?: number | null
+          labor_recurring_2?: number | null
+          other_costs_1?: number | null
+          other_costs_2?: number | null
+          other_revenue_1?: number | null
+          other_revenue_2?: number | null
+          owner_salary_1?: number | null
+          owner_salary_2?: number | null
+          personnel_costs_1?: number | null
+          personnel_costs_2?: number | null
+          revenue_1?: number | null
+          revenue_2?: number | null
+          status?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          year_1?: string | null
+          year_2?: string | null
+        }
+        Update: {
+          accounting_recurring_1?: number | null
+          accounting_recurring_2?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          employees_1?: number | null
+          employees_2?: number | null
+          fiscal_recurring_1?: number | null
+          fiscal_recurring_2?: number | null
+          id?: string
+          labor_recurring_1?: number | null
+          labor_recurring_2?: number | null
+          other_costs_1?: number | null
+          other_costs_2?: number | null
+          other_revenue_1?: number | null
+          other_revenue_2?: number | null
+          owner_salary_1?: number | null
+          owner_salary_2?: number | null
+          personnel_costs_1?: number | null
+          personnel_costs_2?: number | null
+          revenue_1?: number | null
+          revenue_2?: number | null
+          status?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          year_1?: string | null
+          year_2?: string | null
         }
         Relationships: []
       }
@@ -14239,6 +14603,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      validate_contact_company_association: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          company_exists: boolean
+          company_id: string
+          contact_id: string
+          contact_name: string
+        }[]
+      }
       validate_email_secure: {
         Args: { p_email: string }
         Returns: boolean
@@ -14308,6 +14681,8 @@ export type Database = {
         | "enterprise"
         | "family_office"
         | "investment_fund"
+      buyer_status: "active" | "inactive" | "qualified" | "hot"
+      buyer_type: "strategic" | "financial" | "individual"
       collaborator_type:
         | "referente"
         | "partner_comercial"
@@ -14359,6 +14734,7 @@ export type Database = {
       email_status: "SENT" | "OPENED" | "CLICKED"
       geographic_scope: "local" | "regional" | "nacional" | "internacional"
       interaction_type: "email" | "llamada" | "reunion" | "nota" | "task"
+      interest_level: "low" | "medium" | "high" | "very_high"
       lead_source:
         | "WEBSITE_FORM"
         | "CAPITAL_MARKET"
@@ -14410,6 +14786,12 @@ export type Database = {
         | "completed"
         | "discarded"
       mandate_relationship_type: "target" | "buyer" | "seller" | "advisor"
+      match_status:
+        | "matched"
+        | "presented"
+        | "interested"
+        | "rejected"
+        | "negotiating"
       nurturing_status: "ACTIVE" | "PAUSED" | "COMPLETED" | "FAILED"
       recipient_type: "collaborator" | "employee"
       reconversion_estado_type:
@@ -14447,6 +14829,7 @@ export type Database = {
         | "research"
         | "follow_up"
       transaction_interest: "compra" | "venta" | "ambos" | "ninguno"
+      valuation_type: "ebitda_multiple" | "subscriber_based" | "hybrid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -14604,6 +14987,8 @@ export const Constants = {
         "family_office",
         "investment_fund",
       ],
+      buyer_status: ["active", "inactive", "qualified", "hot"],
+      buyer_type: ["strategic", "financial", "individual"],
       collaborator_type: [
         "referente",
         "partner_comercial",
@@ -14654,6 +15039,7 @@ export const Constants = {
       email_status: ["SENT", "OPENED", "CLICKED"],
       geographic_scope: ["local", "regional", "nacional", "internacional"],
       interaction_type: ["email", "llamada", "reunion", "nota", "task"],
+      interest_level: ["low", "medium", "high", "very_high"],
       lead_source: [
         "WEBSITE_FORM",
         "CAPITAL_MARKET",
@@ -14711,6 +15097,13 @@ export const Constants = {
         "discarded",
       ],
       mandate_relationship_type: ["target", "buyer", "seller", "advisor"],
+      match_status: [
+        "matched",
+        "presented",
+        "interested",
+        "rejected",
+        "negotiating",
+      ],
       nurturing_status: ["ACTIVE", "PAUSED", "COMPLETED", "FAILED"],
       recipient_type: ["collaborator", "employee"],
       reconversion_estado_type: [
@@ -14752,6 +15145,7 @@ export const Constants = {
         "follow_up",
       ],
       transaction_interest: ["compra", "venta", "ambos", "ninguno"],
+      valuation_type: ["ebitda_multiple", "subscriber_based", "hybrid"],
     },
   },
 } as const
