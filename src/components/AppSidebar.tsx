@@ -103,7 +103,10 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="px-4 pb-4 mb-2">
             <h2 className="text-xl font-bold text-sidebar-foreground">Capittal</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">M&A Platform</p>
+            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <Calculator className="h-3 w-3" />
+              Herramienta de Valoración Despachos
+            </p>
           </div>
         )}
 

@@ -103,7 +103,7 @@ export function AdvisorProfileSettings() {
             <Label htmlFor="professional_title">Título Profesional</Label>
             <Input
               id="professional_title"
-              placeholder="Asesor M&A Senior"
+              placeholder="Asesor de Valoración Senior"
               value={formData.professional_title}
               onChange={(e) => updateField('professional_title', e.target.value)}
             />

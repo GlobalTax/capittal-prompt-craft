@@ -13,7 +13,7 @@ const FinancialRatiosGuide = () => {
     {
       name: "VE / EBITDA",
       description: "Valor de empresa / Beneficios antes de intereses, impuestos, depreciaciones y amortizaciones",
-      interpretation: "Múltiplo más utilizado en M&A"
+      interpretation: "Múltiplo más utilizado en valoración de empresas"
     },
     {
       name: "VE / EBIT",
