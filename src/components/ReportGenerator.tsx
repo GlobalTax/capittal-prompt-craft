@@ -25,7 +25,7 @@ const ReportGenerator = () => {
   const { valuations, loading: valuationsLoading } = useValuations();
   const { profile } = useAdvisorProfile();
   
-  const [reportType, setReportType] = useState<"ejecutivo" | "due-diligence" | "comparativo" | "valoracion-rapida">("ejecutivo");
+  const [reportType, setReportType] = useState<"ejecutivo" | "comparativo" | "valoracion-rapida">("ejecutivo");
   const [selectedValuationId, setSelectedValuationId] = useState<string>("");
   const [reportTitle, setReportTitle] = useState("");
   const [clientName, setClientName] = useState("");
@@ -40,13 +40,6 @@ const ReportGenerator = () => {
       description: "Resumen completo para directivos y stakeholders",
       pages: "8-12 páginas",
       sections: ["Resumen Ejecutivo", "Metodología", "Análisis Financiero", "Valoración", "Conclusiones"]
-    },
-    {
-      id: "due-diligence",
-      name: "Due Diligence Completo",
-      description: "Análisis detallado para procesos de inversión",
-      pages: "15-25 páginas", 
-      sections: ["Análisis de Negocio", "Financiero", "Legal", "Operacional", "Riesgos", "Recomendaciones"]
     },
     {
       id: "comparativo",

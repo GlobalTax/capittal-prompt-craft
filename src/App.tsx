@@ -14,7 +14,6 @@ import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
 import AdvancedSettings from "@/components/AdvancedSettings";
 import MonthlyBudget from "@/components/MonthlyBudget";
-import DueDiligenceChecklist from "@/components/DueDiligenceChecklist";
 import ComparableMultiples from "@/components/ComparableMultiples";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -44,7 +43,6 @@ const App = () => {
                   <Route path="valuation/:id" element={<ValuationEditor />} />
                   <Route path="reports" element={<ReportGenerator />} />
                   <Route path="advanced/budget" element={<MonthlyBudget />} />
-                  <Route path="advanced/due-diligence" element={<DueDiligenceChecklist />} />
                   <Route path="advanced/multiples" element={<ComparableMultiples />} />
                   <Route path="settings" element={<AdvancedSettings />} />
                 </Route>

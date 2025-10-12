@@ -60,12 +60,6 @@ export function AppSidebar() {
       description: "Presupuesto mensualizado"
     },
     {
-      title: t('sidebar.dueDiligence'),
-      url: "/advanced/due-diligence",
-      icon: Target,
-      description: "Checklist completo"
-    },
-    {
       title: t('sidebar.multiplesComparables'),
       url: "/advanced/multiples",
       icon: FileBarChart,

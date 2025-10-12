@@ -6,7 +6,7 @@ type ReportRow = Database['public']['Tables']['valuation_reports']['Row'];
 export interface ValuationReport {
   id: string;
   valuation_id: string;
-  report_type: 'ejecutivo' | 'due-diligence' | 'comparativo' | 'valoracion-rapida';
+  report_type: 'ejecutivo' | 'comparativo' | 'valoracion-rapida';
   title: string;
   client_name?: string;
   content: any;

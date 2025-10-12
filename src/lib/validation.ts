@@ -45,7 +45,7 @@ export const valuationSchema = z.object({
  */
 export const reportConfigSchema = z.object({
   valuation_id: z.string().uuid('ID de valoración inválido'),
-  report_type: z.enum(['ejecutivo', 'due-diligence', 'comparativo', 'valoracion-rapida']),
+  report_type: z.enum(['ejecutivo', 'comparativo', 'valoracion-rapida']),
   title: z.string().min(1, 'El título es requerido').max(200),
   client_name: z.string().max(200).optional(),
   content: z.record(z.any()).optional(),

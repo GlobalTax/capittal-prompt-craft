@@ -2544,8 +2544,14 @@ export type Database = {
           business_clients: number | null
           business_monthly_fee: number | null
           business_months: number | null
+          client_email: string | null
+          client_name: string | null
+          company_name: string | null
+          comparable_multiples_results: Json | null
+          config: Json | null
           created_at: string
           created_by: string | null
+          dcf_results: Json | null
           ebitda_amount: number | null
           ebitda_multiple: number | null
           final_valuation: number
@@ -2555,10 +2561,15 @@ export type Database = {
           id: string
           market_conditions: Json | null
           methodology_notes: string | null
+          pl_rows: Json | null
           residential_clients: number | null
           residential_monthly_fee: number | null
           residential_months: number | null
+          sector_code: string | null
+          sector_name: string | null
           security_company_id: string
+          status: string | null
+          title: string | null
           updated_at: string
           valuation_date: string
           valuation_type: Database["public"]["Enums"]["valuation_type"]
@@ -2567,8 +2578,14 @@ export type Database = {
           business_clients?: number | null
           business_monthly_fee?: number | null
           business_months?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          company_name?: string | null
+          comparable_multiples_results?: Json | null
+          config?: Json | null
           created_at?: string
           created_by?: string | null
+          dcf_results?: Json | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
           final_valuation: number
@@ -2578,10 +2595,15 @@ export type Database = {
           id?: string
           market_conditions?: Json | null
           methodology_notes?: string | null
+          pl_rows?: Json | null
           residential_clients?: number | null
           residential_monthly_fee?: number | null
           residential_months?: number | null
+          sector_code?: string | null
+          sector_name?: string | null
           security_company_id: string
+          status?: string | null
+          title?: string | null
           updated_at?: string
           valuation_date?: string
           valuation_type: Database["public"]["Enums"]["valuation_type"]
@@ -2590,8 +2612,14 @@ export type Database = {
           business_clients?: number | null
           business_monthly_fee?: number | null
           business_months?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          company_name?: string | null
+          comparable_multiples_results?: Json | null
+          config?: Json | null
           created_at?: string
           created_by?: string | null
+          dcf_results?: Json | null
           ebitda_amount?: number | null
           ebitda_multiple?: number | null
           final_valuation?: number
@@ -2601,10 +2629,15 @@ export type Database = {
           id?: string
           market_conditions?: Json | null
           methodology_notes?: string | null
+          pl_rows?: Json | null
           residential_clients?: number | null
           residential_monthly_fee?: number | null
           residential_months?: number | null
+          sector_code?: string | null
+          sector_name?: string | null
           security_company_id?: string
+          status?: string | null
+          title?: string | null
           updated_at?: string
           valuation_date?: string
           valuation_type?: Database["public"]["Enums"]["valuation_type"]
@@ -4878,53 +4911,6 @@ export type Database = {
             columns: ["folder_id"]
             isOneToOne: false
             referencedRelation: "document_folders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      due_diligence_items: {
-        Row: {
-          category: string
-          checked: boolean | null
-          created_at: string | null
-          description: string
-          id: string
-          impact: string
-          notes: string | null
-          title: string
-          updated_at: string | null
-          valuation_id: string
-        }
-        Insert: {
-          category: string
-          checked?: boolean | null
-          created_at?: string | null
-          description: string
-          id?: string
-          impact: string
-          notes?: string | null
-          title: string
-          updated_at?: string | null
-          valuation_id: string
-        }
-        Update: {
-          category?: string
-          checked?: boolean | null
-          created_at?: string | null
-          description?: string
-          id?: string
-          impact?: string
-          notes?: string | null
-          title?: string
-          updated_at?: string | null
-          valuation_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "due_diligence_items_valuation_id_fkey"
-            columns: ["valuation_id"]
-            isOneToOne: false
-            referencedRelation: "valuations"
             referencedColumns: ["id"]
           },
         ]
@@ -8193,7 +8179,7 @@ export type Database = {
           month_statuses: Json
           sections: Json
           updated_at: string
-          user_id: string
+          user_id: string | null
           year: number
         }
         Insert: {
@@ -8203,7 +8189,7 @@ export type Database = {
           month_statuses?: Json
           sections?: Json
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           year: number
         }
         Update: {
@@ -8213,7 +8199,7 @@ export type Database = {
           month_statuses?: Json
           sections?: Json
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           year?: number
         }
         Relationships: []
@@ -9325,6 +9311,45 @@ export type Database = {
           is_active?: boolean
           name?: string
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pl_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          is_system: boolean | null
+          rows: Json
+          sector_code: string | null
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          rows?: Json
+          sector_code?: string | null
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          rows?: Json
+          sector_code?: string | null
+          template_name?: string
           updated_at?: string
         }
         Relationships: []
