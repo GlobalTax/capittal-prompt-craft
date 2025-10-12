@@ -31,7 +31,7 @@ interface DynamicBudgetTableProps {
   onMonthStatusToggle: (monthIndex: number) => void;
 }
 
-export const DynamicBudgetTable = React.memo(function DynamicBudgetTable({ 
+export function DynamicBudgetTable({ 
   months, 
   monthStatuses, 
   sections, 
@@ -74,18 +74,27 @@ export const DynamicBudgetTable = React.memo(function DynamicBudgetTable({
 
   const updateRowValue = (sectionId: string, rowId: string, month: string, value: string) => {
     const numericValue = parseNumber(value);
-    const updatedSections = sections.map(section =>
-      section.id === sectionId
-        ? {
-            ...section,
-            rows: section.rows.map(row =>
-              row.id === rowId
-                ? { ...row, values: { ...row.values, [month]: numericValue } }
-                : row
-            )
-          }
-        : section
-    );
+    
+    // Create deep copies to ensure change detection
+    const updatedSections = sections.map(section => {
+      if (section.id !== sectionId) return section;
+      
+      return {
+        ...section,
+        rows: section.rows.map(row => {
+          if (row.id !== rowId) return row;
+          
+          return {
+            ...row,
+            values: {
+              ...row.values,
+              [month]: numericValue
+            }
+          };
+        })
+      };
+    });
+    
     onDataChange(updatedSections);
   };
 
@@ -272,7 +281,7 @@ export const DynamicBudgetTable = React.memo(function DynamicBudgetTable({
 
                 {/* Section Rows */}
                 {section.rows.map((row) => (
-                  <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
+                  <tr key={`${row.id}-${JSON.stringify(row.values)}`} className="border-t hover:bg-muted/20 transition-colors">
                     {/* Row Label */}
                     <td className={`p-3 text-sm border-r min-w-[200px] w-[200px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                       <div className="flex items-center gap-2">
@@ -358,4 +367,4 @@ export const DynamicBudgetTable = React.memo(function DynamicBudgetTable({
       </div>
     </div>
   );
-});
+}
