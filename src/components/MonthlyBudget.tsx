@@ -57,12 +57,7 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
         type: 'calculated',
         category: 'result',
         indented: false,
-        values: createMonthValues(months),
-        formula: (monthData: { [key: string]: number }) => {
-          return Object.entries(monthData)
-            .filter(([key]) => key === 'sales' || key === 'other-income')
-            .reduce((sum, [, value]) => sum + value, 0);
-        }
+        values: createMonthValues(months)
       },
       { 
         id: 'total-expenses', 
@@ -70,12 +65,7 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
         type: 'calculated',
         category: 'result',
         indented: false,
-        values: createMonthValues(months),
-        formula: (monthData: { [key: string]: number }) => {
-          return Object.entries(monthData)
-            .filter(([key]) => ['rent', 'salaries', 'insurance', 'supplies', 'marketing'].includes(key))
-            .reduce((sum, [, value]) => sum + value, 0);
-        }
+        values: createMonthValues(months)
       },
       { 
         id: 'net-result', 
@@ -83,12 +73,7 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
         type: 'calculated',
         category: 'result',
         indented: false,
-        values: createMonthValues(months),
-        formula: (monthData: { [key: string]: number }) => {
-          const income = (monthData['total-income'] || 0);
-          const expenses = (monthData['total-expenses'] || 0);
-          return income - expenses;
-        }
+        values: createMonthValues(months)
       }
     ]
   }
@@ -141,10 +126,16 @@ export default function MonthlyBudget() {
     }
   };
 
-  const handleSectionsChange = async (newSections: BudgetTableSection[]) => {
+  const handleSectionsChange = (newSections: BudgetTableSection[]) => {
     setSections(newSections);
+    
+    // Debounce the save to avoid excessive writes
     if (currentBudgetId) {
-      await updateBudget(currentBudgetId, { sections: newSections as any });
+      const timeoutId = setTimeout(() => {
+        updateBudget(currentBudgetId, { sections: newSections as any });
+      }, 800);
+      
+      return () => clearTimeout(timeoutId);
     }
   };
 

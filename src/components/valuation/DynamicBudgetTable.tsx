@@ -151,18 +151,59 @@ export function DynamicBudgetTable({
     onDataChange(sections.filter(section => section.id !== sectionId));
   };
 
-  const calculateRowValue = (row: BudgetRowData, month: string): number => {
-    if (row.type === 'calculated' && row.formula) {
-      const monthData: { [key: string]: number } = {};
-      sections.forEach(section => {
-        section.rows.forEach(r => {
-          if (r.values[month] !== undefined) {
-            monthData[r.id] = r.values[month];
-          }
-        });
-      });
-      return row.formula(monthData);
+  // Helper: sum all rows of a given category for a specific month
+  const sumByCategory = (category: 'income' | 'expense', month: string): number => {
+    return sections
+      .flatMap(s => s.rows)
+      .filter(r => r.category === category && (r.type === 'input' || r.type === 'percentage'))
+      .reduce((sum, r) => sum + getRowComputedValue(r, month), 0);
+  };
+
+  // Helper: get the computed value for any row
+  const getRowComputedValue = (row: BudgetRowData, month: string): number => {
+    if (row.type === 'input') {
+      return row.values[month] || 0;
     }
+    if (row.type === 'percentage') {
+      return calculatePercentageValue(row, month);
+    }
+    if (row.type === 'calculated') {
+      return calculateRowValue(row, month);
+    }
+    return 0;
+  };
+
+  const calculateRowValue = (row: BudgetRowData, month: string): number => {
+    if (row.type === 'percentage') {
+      return calculatePercentageValue(row, month);
+    }
+    
+    if (row.type === 'calculated') {
+      // Dynamic calculation based on row ID
+      if (row.id === 'total-income') {
+        return sumByCategory('income', month);
+      }
+      if (row.id === 'total-expenses') {
+        return sumByCategory('expense', month);
+      }
+      if (row.id === 'net-result') {
+        return sumByCategory('income', month) - sumByCategory('expense', month);
+      }
+      
+      // Backward compatibility: use formula if exists
+      if (row.formula) {
+        const monthData: { [key: string]: number } = {};
+        sections.forEach(section => {
+          section.rows.forEach(r => {
+            monthData[r.id] = getRowComputedValue(r, month);
+          });
+        });
+        return row.formula(monthData);
+      }
+      
+      return 0;
+    }
+    
     return row.values[month] || 0;
   };
 
@@ -172,7 +213,7 @@ export function DynamicBudgetTable({
         .flatMap(s => s.rows)
         .find(r => r.id === row.percentageOf);
       if (baseRow) {
-        const baseValue = baseRow.values[month] || 0;
+        const baseValue = getRowComputedValue(baseRow, month);
         const percentage = row.values[month] || 0;
         return (baseValue * percentage) / 100;
       }
