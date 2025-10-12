@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,6 +107,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   );
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
+  
+  // Debounced data for charts to prevent jumping
+  const [debouncedData, setDebouncedData] = useState<FinancialData>(data);
   
   // Valuation configuration state
   const [valuationConfig, setValuationConfig] = useState<ValuationConfig>({
@@ -464,7 +467,40 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     calculateValuations();
   }, [data, valuationConfig]);
 
+  // Debounce chart data updates to prevent jumping
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedData(data);
+    }, 400);
+    
+    return () => clearTimeout(timer);
+  }, [data]);
+
   const metrics = calculateMetrics();
+
+  // Memoized chart data using debounced data
+  const revenueCompositionData = useMemo(() => {
+    const latestYear = debouncedData.years[debouncedData.years.length - 1];
+    const fiscalRecurring = (latestYear.totalRevenue * latestYear.fiscalRecurringPercent) / 100;
+    const accountingRecurring = (latestYear.totalRevenue * latestYear.accountingRecurringPercent) / 100;
+    const laborRecurring = (latestYear.totalRevenue * latestYear.laborRecurringPercent) / 100;
+    const otherRevenue = (latestYear.totalRevenue * latestYear.otherRevenuePercent) / 100;
+    
+    return [
+      { name: "Fiscal", value: fiscalRecurring, fill: "hsl(var(--chart-1))" },
+      { name: "Contable", value: accountingRecurring, fill: "hsl(var(--chart-2))" },
+      { name: "Laboral", value: laborRecurring, fill: "hsl(var(--chart-3))" },
+      { name: "Otros", value: otherRevenue, fill: "hsl(var(--chart-4))" }
+    ].filter(item => item.value > 0);
+  }, [debouncedData.years]);
+
+  const yearComparisonData = useMemo(() => 
+    debouncedData.years.map(year => ({
+      year: year.year,
+      revenue: year.totalRevenue
+    })),
+    [debouncedData.years]
+  );
 
   const getMarginStatus = (margin: number, type: 'net' | 'owner') => {
     if (type === 'net') {
@@ -735,40 +771,28 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     other: { label: "Otros", color: "hsl(var(--chart-4))" },
   };
 
-  const latestYear = data.years[data.years.length - 1];
-  
-  const revenueCompositionData = [
-    { name: "Fiscal", value: (latestYear.totalRevenue * latestYear.fiscalRecurringPercent) / 100, fill: "hsl(var(--chart-1))" },
-    { name: "Contable", value: (latestYear.totalRevenue * latestYear.accountingRecurringPercent) / 100, fill: "hsl(var(--chart-2))" },
-    { name: "Laboral", value: (latestYear.totalRevenue * latestYear.laborRecurringPercent) / 100, fill: "hsl(var(--chart-3))" },
-    { name: "Otros", value: (latestYear.totalRevenue * latestYear.otherRevenuePercent) / 100, fill: "hsl(var(--chart-4))" },
-  ].filter(item => item.value > 0);
-
-  const yearComparisonData = data.years.map(year => ({
-    year: year.year,
-    revenue: year.totalRevenue
-  }));
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <TooltipProvider>
         <div className="container mx-auto p-6 space-y-6">
           <div className="space-y-6">
               <div className="space-y-6 max-w-[95vw] mx-auto px-4">
-                {/* Validation Alerts */}
-                {validateData().length > 0 && (
-                  <Alert className="border-warning">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>Advertencias detectadas:</strong>
-                      <ul className="mt-1 list-disc list-inside">
-                        {validateData().map((issue, index) => (
-                          <li key={index}>{issue}</li>
-                        ))}
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {/* Validation Alerts - Fixed height to prevent layout shifts */}
+                <div className="min-h-14">
+                  {validateData().length > 0 && (
+                    <Alert className="border-warning">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Advertencias detectadas:</strong>
+                        <ul className="mt-1 list-disc list-inside">
+                          {validateData().map((issue, index) => (
+                            <li key={index}>{issue}</li>
+                          ))}
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
 
                 {/* P&L Comparativo - Dynamic Table */}
                 <div className="w-full">
@@ -784,7 +808,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                 </div>
 
                 {/* Métricas Clave y Gráficos */}
-                <div className="grid lg:grid-cols-2 gap-6">
+                <div className="grid lg:grid-cols-2 gap-6 min-h-[400px]">
                   {/* Key Metrics */}
                   <Card className="shadow-md">
                     <CardHeader>
@@ -918,7 +942,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                               }}
                             />
-                            <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                           </BarChart>
                         </ChartContainer>
                       </div>

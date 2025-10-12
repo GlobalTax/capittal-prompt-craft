@@ -69,6 +69,15 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
 
   const updateRowValue = (sectionId: string, rowId: string, year: string, value: string) => {
     const numericValue = parseNumber(value);
+    
+    // Find current value to avoid unnecessary updates
+    const currentSection = sections.find(s => s.id === sectionId);
+    const currentRow = currentSection?.rows.find(r => r.id === rowId);
+    const currentValue = currentRow?.values[year];
+    
+    // Only update if value actually changed
+    if (currentValue === numericValue) return;
+    
     const updatedSections = sections.map(section =>
       section.id === sectionId
         ? {
