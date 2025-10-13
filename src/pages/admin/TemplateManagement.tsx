@@ -12,9 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Upload, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function TemplateManagement() {
   const queryClient = useQueryClient();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -23,8 +25,10 @@ export default function TemplateManagement() {
     file: null as File | null
   });
 
+  // Don't fetch if not admin
   const { data: templates } = useQuery({
     queryKey: ['admin-templates'],
+    enabled: isAdmin && !roleLoading,
     queryFn: async () => {
       const { data } = await supabase
         .from('document_templates')
@@ -33,6 +37,27 @@ export default function TemplateManagement() {
       return data || [];
     }
   });
+
+  // Render nothing if loading roles
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Verificando permisos...</div>
+      </div>
+    );
+  }
+
+  // Render 403 if not admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="p-8 max-w-md">
+          <h1 className="text-2xl font-bold mb-4">Acceso Denegado</h1>
+          <p className="text-muted-foreground">No tienes permisos para acceder a esta página.</p>
+        </Card>
+      </div>
+    );
+  }
 
   const uploadTemplate = useMutation({
     mutationFn: async () => {

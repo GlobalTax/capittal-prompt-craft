@@ -207,14 +207,20 @@ export default function UserManagement() {
       });
       
       if (error) {
-        // Manejar errores de autenticación/autorización
+        console.error('Error inviting user:', error);
+        // Manejar errores de autenticación/autorización sin retry
         if (error.message?.includes('401') || error.message?.includes('403')) {
           toast.error('Acceso denegado: No tienes permisos para invitar usuarios.');
-          return null;
+          throw new Error('Unauthorized');
         }
         throw error;
       }
       return data;
+    },
+    retry: (failureCount, error: any) => {
+      // Don't retry on auth errors
+      if (error?.message === 'Unauthorized') return false;
+      return failureCount < 1;
     },
     onSuccess: (data) => {
       toast.success('Invitación enviada correctamente');
