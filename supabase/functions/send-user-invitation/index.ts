@@ -61,13 +61,42 @@ serve(async (req) => {
       });
     }
 
-    // Crear invitación usando la función de base de datos
+    // Crear invitación usando la función de base de datos (idempotente)
     const { data, error } = await supabaseClient.rpc('create_user_invitation', {
       p_email: email,
       p_role: role
     });
 
-    if (error) throw error;
+    if (error) {
+      // Si es un error de duplicado (que no debería ocurrir con ON CONFLICT), 
+      // recuperar el token existente como fallback
+      if (error.code === '23505') {
+        console.log(`Duplicate invitation for ${email}, retrieving existing token`);
+        const { data: existing, error: fetchError } = await supabaseClient
+          .from('pending_invitations')
+          .select('token')
+          .eq('email', email.toLowerCase().trim())
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (fetchError || !existing) {
+          throw new Error('No se pudo recuperar la invitación existente');
+        }
+        
+        const invitationUrl = `${Deno.env.get('SUPABASE_URL')}/invite?token=${existing.token}`;
+        console.log(`Existing invitation retrieved for ${email}`);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          invitation_id: existing.token,
+          invitation_url: invitationUrl 
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw error;
+    }
 
     // Generar link de invitación
     const invitationUrl = `${Deno.env.get('SUPABASE_URL')}/invite?token=${data}`;
