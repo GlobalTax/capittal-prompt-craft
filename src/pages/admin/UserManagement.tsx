@@ -229,7 +229,7 @@ function AdminUsersPanel() {
       }
       
       const { data, error } = await supabase.functions.invoke('send-user-invitation', {
-        body: { email: cleanEmail, role }
+        body: { email: cleanEmail, role, app_url: window.location.origin }
       });
       
       if (error) {
@@ -361,7 +361,7 @@ function AdminUsersPanel() {
   const resendInvitation = useMutation({
     mutationFn: async (invitation: PendingInvitation) => {
       const { data, error } = await supabase.functions.invoke('send-user-invitation', {
-        body: { email: invitation.email, role: invitation.role }
+        body: { email: invitation.email, role: invitation.role, app_url: window.location.origin }
       });
       if (error) throw error;
       return data;
@@ -395,7 +395,7 @@ function AdminUsersPanel() {
 
   const copyInvitationLink = (token: string) => {
     const baseUrl = window.location.origin;
-    const invitationUrl = `${baseUrl}/register?invitation=${token}`;
+    const invitationUrl = `${baseUrl}/invite?token=${token}`;
     navigator.clipboard.writeText(invitationUrl);
     toast.success('Link de invitación copiado');
   };
