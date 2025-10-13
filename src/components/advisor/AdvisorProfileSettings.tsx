@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Upload, X, Building2, Mail, Phone, Globe } from 'lucide-react';
+import { Upload, X, Building2, Mail, Phone, Globe, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function AdvisorProfileSettings() {
+  const { isAdvisor, loading: roleLoading } = useUserRole();
   const { profile, loading, updateProfile, uploadLogo, deleteLogo } = useAdvisorProfile();
   const [formData, setFormData] = useState({
     business_name: '',
@@ -36,12 +39,27 @@ export function AdvisorProfileSettings() {
     }
   }, [profile]);
 
-  if (loading) {
+  // Loading states
+  if (loading || roleLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-48 w-full" />
       </div>
+    );
+  }
+
+  // Access control: only advisors can access
+  if (!isAdvisor) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Acceso Denegado</AlertTitle>
+        <AlertDescription>
+          Solo los usuarios con rol de <strong>Asesor</strong> pueden acceder a esta configuración.
+          Si crees que deberías tener acceso, contacta con un administrador.
+        </AlertDescription>
+      </Alert>
     );
   }
 

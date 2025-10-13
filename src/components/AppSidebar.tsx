@@ -36,7 +36,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
-  const { isAdmin, loading } = useUserRole();
+  const { isAdmin, isAdvisor, loading } = useUserRole();
 
   const menuItems = [
     {
@@ -129,6 +129,15 @@ export function AppSidebar() {
     }
   ];
 
+  const advisorItems = [
+    {
+      title: "Mi Perfil de Asesor",
+      url: "/settings?tab=branding",
+      icon: Settings,
+      description: "Configurar perfil y branding"
+    }
+  ];
+
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
@@ -195,6 +204,18 @@ export function AppSidebar() {
             {renderMenuItems(resourceItems)}
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Advisor Profile (only for advisors) */}
+        {!loading && isAdvisor && (
+          <SidebarGroup>
+            <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+              Perfil de Asesor
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              {renderMenuItems(advisorItems)}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Administration (only for admins) */}
         {!loading && isAdmin && (

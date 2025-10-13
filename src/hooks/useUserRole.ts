@@ -45,6 +45,7 @@ export const useUserRole = () => {
     role,
     isAdmin: role === 'admin' || role === 'superadmin',
     isSuperAdmin: role === 'superadmin',
+    isAdvisor: role === 'advisor',
     loading
   };
 };

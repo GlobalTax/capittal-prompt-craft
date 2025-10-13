@@ -547,6 +547,7 @@ function AdminUsersPanel() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">Usuario</SelectItem>
+                  <SelectItem value="advisor">Asesor</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="superadmin">Superadministrador</SelectItem>
                 </SelectContent>
@@ -597,6 +598,7 @@ function AdminUsersPanel() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">Usuario</SelectItem>
+                  <SelectItem value="advisor">Asesor</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="superadmin">Superadministrador</SelectItem>
                 </SelectContent>
