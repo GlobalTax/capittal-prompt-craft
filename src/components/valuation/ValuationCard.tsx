@@ -53,7 +53,7 @@ export const ValuationCard = React.memo(function ValuationCard({ valuation, onTo
 
   return (
     <Card
-      className={`group hover:scale-[1.02] transition-all duration-200 hover:shadow-lg cursor-pointer ${className}`}
+      className={`group transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${className ?? ''}`}
       style={style}
       onClick={() => navigate(`/valuation/${valuation.id}`)}
     >
