@@ -62,34 +62,10 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
 
-  // Renderizar loading o 403 si no es admin
-  if (roleLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Verificando permisos...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Acceso Denegado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>No tienes permisos para acceder a esta página.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Fetch users with all details - solo si es admin
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
-    enabled: isAdmin,
+    enabled: isAdmin && !roleLoading,
     queryFn: async () => {
       // Llamar a la Edge Function en lugar de auth.admin.listUsers()
       const { data: authUsersData, error: authError } = await supabase.functions.invoke('admin-list-users');
@@ -268,6 +244,30 @@ export default function UserManagement() {
       default: return 'outline';
     }
   };
+
+  // Early returns after all hooks
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Verificando permisos...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive">Acceso Denegado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No tienes permisos para acceder a esta página.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Nunca';
