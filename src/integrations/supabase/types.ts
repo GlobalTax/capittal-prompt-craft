@@ -14924,7 +14924,7 @@ export type Database = {
       }
       has_role_secure: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
+          _required_role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
