@@ -12223,6 +12223,35 @@ export type Database = {
           },
         ]
       }
+      template_downloads: {
+        Row: {
+          downloaded_at: string | null
+          id: string
+          template_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          downloaded_at?: string | null
+          id?: string
+          template_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          downloaded_at?: string | null
+          id?: string
+          template_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_downloads_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "document_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       template_sections: {
         Row: {
           content: string | null
@@ -13246,6 +13275,42 @@ export type Database = {
           title?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_verification_status: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          rejection_reason: string | null
+          updated_at: string | null
+          user_id: string
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          updated_at?: string | null
+          user_id: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -14863,6 +14928,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_download_count: {
+        Args: { p_template_id: string }
+        Returns: undefined
       }
       initiate_winback_sequence: {
         Args: { p_lead_id: string; p_sequence_id?: string }
