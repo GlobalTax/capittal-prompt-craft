@@ -54,17 +54,23 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState("");
   const [newRole, setNewRole] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("user");
 
   // Fetch users with all details
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      // Llamar a la Edge Function en lugar de auth.admin.listUsers()
+      const { data: authUsersData, error: authError } = await supabase.functions.invoke('admin-list-users');
+      
       if (authError) throw authError;
+      if (!authUsersData?.users) throw new Error('No se pudieron obtener usuarios');
 
-      const userIds = authUsers.users.map(u => u.id);
+      const userIds = authUsersData.users.map((u: any) => u.id);
 
       const [profiles, roles, verifications] = await Promise.all([
         supabase.from('user_profiles').select('*').in('id', userIds),
@@ -72,7 +78,7 @@ export default function UserManagement() {
         supabase.from('user_verification_status').select('*').in('user_id', userIds)
       ]);
 
-      return authUsers.users.map(user => {
+      return authUsersData.users.map((user: any) => {
         const profile = profiles.data?.find(p => p.id === user.id);
         const role = roles.data?.find(r => r.user_id === user.id);
         const verification = verifications.data?.find(v => v.user_id === user.id);
@@ -150,6 +156,34 @@ export default function UserManagement() {
     }
   });
 
+  // Invite user mutation
+  const inviteUser = useMutation({
+    mutationFn: async ({ email, role }: { email: string; role: string }) => {
+      const { data, error } = await supabase.functions.invoke('send-user-invitation', {
+        body: { email, role }
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success('Invitación enviada correctamente');
+      setShowInviteDialog(false);
+      setInviteEmail("");
+      setInviteRole("user");
+      
+      // Mostrar el link de invitación
+      if (data?.invitation_url) {
+        toast.info(`Link de invitación: ${data.invitation_url}`, {
+          duration: 10000
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Error al enviar invitación');
+    }
+  });
+
   // Filtered users
   const filteredUsers = users?.filter(user => {
     const matchesSearch = 
@@ -221,10 +255,16 @@ export default function UserManagement() {
           <h1 className="text-3xl font-bold mb-2">Gestión de Usuarios</h1>
           <p className="text-muted-foreground">Administrar permisos, verificaciones y accesos</p>
         </div>
-        <Button onClick={exportToCSV} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Exportar CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowInviteDialog(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Invitar Usuario
+          </Button>
+          <Button onClick={exportToCSV} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -496,6 +536,57 @@ export default function UserManagement() {
             >
               <Shield className="h-4 w-4 mr-2" />
               Cambiar Rol
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite User Dialog */}
+      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invitar Nuevo Usuario</DialogTitle>
+            <DialogDescription>
+              Envía una invitación por email para que se registre en la plataforma
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="usuario@ejemplo.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Rol Inicial</Label>
+              <Select value={inviteRole} onValueChange={setInviteRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Usuario</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="superadmin">Superadministrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => inviteUser.mutate({ 
+                email: inviteEmail, 
+                role: inviteRole 
+              })}
+              disabled={!inviteEmail || inviteUser.isPending}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Enviar Invitación
             </Button>
           </DialogFooter>
         </DialogContent>
