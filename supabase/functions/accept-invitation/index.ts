@@ -108,7 +108,8 @@ serve(async (req) => {
       // Handle duplicate user
       if (signUpError.message?.includes('already registered')) {
         return new Response(JSON.stringify({ 
-          error: 'Este email ya está registrado' 
+          error: 'Este email ya está registrado. Inicia sesión para vincular tu invitación.',
+          code: 'EMAIL_EXISTS'
         }), {
           status: 409,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

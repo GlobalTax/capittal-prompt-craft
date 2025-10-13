@@ -26,6 +26,8 @@ const AcceptInvitation = () => {
   const [submitting, setSubmitting] = useState(false);
   const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [emailExists, setEmailExists] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -34,7 +36,64 @@ const AcceptInvitation = () => {
 
   useEffect(() => {
     validateToken();
+    checkAuthentication();
   }, [token]);
+
+  const checkAuthentication = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setIsAuthenticated(true);
+      // If user is authenticated and we have a valid invitation, link it
+      if (invitationData && !invitationData.used_at) {
+        await linkInvitation();
+      }
+    }
+  };
+
+  const linkInvitation = async () => {
+    if (!token) return;
+
+    try {
+      setSubmitting(true);
+      console.log("Linking invitation to authenticated user...");
+
+      const { data, error } = await supabase.functions.invoke('link-invitation', {
+        body: { token }
+      });
+
+      if (error) {
+        console.error("Error linking invitation:", error);
+        const errorMessage = data?.error || error.message || "Error al vincular la invitación";
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
+        return;
+      }
+
+      console.log("Invitation linked successfully:", data);
+      toast({
+        title: "¡Invitación vinculada!",
+        description: `Tu cuenta ha sido vinculada exitosamente con el rol: ${data.role}`,
+      });
+
+      // Redirect to fee calculator
+      setTimeout(() => {
+        navigate("/fee-calculator");
+      }, 1500);
+
+    } catch (err) {
+      console.error("Error linking invitation:", err);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al vincular la invitación",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const validateToken = async () => {
     if (!token) {
@@ -129,6 +188,15 @@ const AcceptInvitation = () => {
 
       if (error) {
         console.error("Error accepting invitation:", error);
+        
+        // Check if the error is because the email already exists
+        if (error.message?.includes('409') || data?.code === 'EMAIL_EXISTS') {
+          setEmailExists(true);
+          setError(data?.error || "Este email ya está registrado. Inicia sesión para vincular tu invitación.");
+          setSubmitting(false);
+          return;
+        }
+        
         toast({
           title: "Error",
           description: error.message || "Error al aceptar la invitación",
@@ -139,6 +207,14 @@ const AcceptInvitation = () => {
       }
 
       if (data?.error) {
+        // Check if the error is because the email already exists
+        if (data?.code === 'EMAIL_EXISTS') {
+          setEmailExists(true);
+          setError(data.error);
+          setSubmitting(false);
+          return;
+        }
+        
         toast({
           title: "Error",
           description: data.error,
@@ -187,6 +263,37 @@ const AcceptInvitation = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-muted-foreground">Validando invitación...</p>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (emailExists) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-warning" />
+              <CardTitle>Cuenta existente detectada</CardTitle>
+            </div>
+            <CardDescription>
+              Ya existe una cuenta con este email
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                {error || "Para completar tu invitación, inicia sesión con tu cuenta existente."}
+              </AlertDescription>
+            </Alert>
+            <Button 
+              onClick={() => navigate(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)} 
+              className="w-full"
+            >
+              Ir a Login
+            </Button>
           </CardContent>
         </Card>
       </div>

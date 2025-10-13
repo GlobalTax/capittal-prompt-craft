@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.accept-invitation]
 verify_jwt = false
+
+[functions.link-invitation]
+verify_jwt = true
