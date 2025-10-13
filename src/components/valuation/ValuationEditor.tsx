@@ -178,17 +178,6 @@ export function ValuationEditor() {
 
       {/* Content */}
       <div className="container max-w-7xl py-6 px-4 space-y-6">
-        {/* Selector de Tipo de Valoración - Solo si no está forzado por la ruta */}
-        {!isAdvisorMode && (
-          <div className="space-y-2">
-            <Label>Tipo de Valoración</Label>
-            <ValuationTypeSelector
-              value={valuation.valuation_type || 'client_business'}
-              onChange={(type) => updateField('valuation_type', type)}
-            />
-          </div>
-        )}
-
         {/* Formulario de Contexto - Forzar tipo según ruta */}
         <ClientInfoForm 
           valuation={{
