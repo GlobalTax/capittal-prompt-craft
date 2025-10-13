@@ -15272,6 +15272,7 @@ export type Database = {
         | "sales_rep"
         | "marketing"
         | "support"
+        | "advisor"
       approval_stage: "loi" | "preliminary" | "final" | "closing"
       approval_status: "pending" | "approved" | "rejected" | "revision_required"
       approval_type: "loi" | "contract" | "final_terms" | "closing"
@@ -15576,6 +15577,7 @@ export const Constants = {
         "sales_rep",
         "marketing",
         "support",
+        "advisor",
       ],
       approval_stage: ["loi", "preliminary", "final", "closing"],
       approval_status: ["pending", "approved", "rejected", "revision_required"],
