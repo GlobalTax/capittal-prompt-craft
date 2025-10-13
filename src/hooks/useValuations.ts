@@ -93,16 +93,16 @@ export function useValuations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
-      const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-      const newValuation = await valuationRepository.create({ 
-        title, 
-        tags, 
-        user_id: user.id, 
-        valuation_type,
-        year_1: currentYear.toString(),
-        year_2: (currentYear + 1).toString(),
-      });
+    const newValuation = await valuationRepository.create({ 
+      title, 
+      tags, 
+      user_id: user.id, 
+      valuation_type,
+      year_1: (currentYear - 1).toString(),
+      year_2: currentYear.toString(),
+    });
 
       setValuations([newValuation, ...valuations]);
       toast({
