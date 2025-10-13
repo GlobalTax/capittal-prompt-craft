@@ -50,6 +50,7 @@ interface UserData {
 // Componente interno que contiene toda la lógica y hooks
 function AdminUsersPanel() {
   const queryClient = useQueryClient();
+  const { isSuperAdmin } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -61,6 +62,24 @@ function AdminUsersPanel() {
   const [newRole, setNewRole] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
+  const [showStorageWarning, setShowStorageWarning] = useState(false);
+
+  // Detect iframe/storage blocking
+  useState(() => {
+    const checkStorage = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const isEmbedded = window.self !== window.top;
+        
+        if (!data.session && isEmbedded) {
+          setShowStorageWarning(true);
+        }
+      } catch (error) {
+        console.error('Storage check failed:', error);
+      }
+    };
+    checkStorage();
+  });
 
   // Fetch users with all details
   const { data: users, isLoading } = useQuery({
@@ -169,47 +188,55 @@ function AdminUsersPanel() {
   // Invite user mutation
   const inviteUser = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
-      
-      // Validar y limpiar email
       const cleanEmail = email.trim().toLowerCase();
       if (!cleanEmail || !cleanEmail.includes('@')) {
         throw new Error('Email inválido');
       }
+      
       const { data, error } = await supabase.functions.invoke('send-user-invitation', {
         body: { email: cleanEmail, role }
       });
       
       if (error) {
         console.error('Error inviting user:', error);
-        // Manejar errores de autenticación/autorización sin retry
-        if (error.message?.includes('401') || error.message?.includes('403')) {
-          toast.error('Acceso denegado: No tienes permisos para invitar usuarios.');
-          throw new Error('Unauthorized');
-        }
-        throw error;
+        // Extract detailed error if available
+        const errorMsg = error.context?.error || error.message || 'Error al enviar invitación';
+        throw new Error(errorMsg);
       }
+      
       return data;
     },
-    retry: (failureCount, error: any) => {
-      // Don't retry on auth errors
-      if (error?.message === 'Unauthorized') return false;
-      return failureCount < 1;
-    },
+    retry: false,
     onSuccess: (data) => {
-      toast.success('Invitación enviada correctamente');
+      toast.success(data?.message || 'Invitación enviada correctamente');
       setShowInviteDialog(false);
       setInviteEmail("");
       setInviteRole("user");
       
-      // Mostrar el link de invitación
+      // Show invitation URL with copy action
       if (data?.invitation_url) {
-        toast.info(`Link de invitación: ${data.invitation_url}`, {
-          duration: 10000
-        });
+        toast.info(
+          <div className="flex flex-col gap-2">
+            <p className="font-semibold">Link de invitación creado</p>
+            <p className="text-xs break-all">{data.invitation_url}</p>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                navigator.clipboard.writeText(data.invitation_url);
+                toast.success('Link copiado al portapapeles');
+              }}
+            >
+              Copiar link
+            </Button>
+          </div>,
+          { duration: 10000 }
+        );
       }
     },
     onError: (error: any) => {
-      toast.error(error?.message || 'Error al enviar invitación');
+      const errorMsg = error?.message || 'Error al enviar invitación';
+      toast.error(errorMsg, { duration: 5000 });
     }
   });
 
@@ -278,6 +305,40 @@ function AdminUsersPanel() {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
+      {/* Storage Warning Banner */}
+      {showStorageWarning && (
+        <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  Vista embebida detectada
+                </h3>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                  Tu navegador bloquea el almacenamiento en esta vista. Abre la app en una nueva pestaña para continuar.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => window.open(window.location.href, '_blank')}
+                >
+                  Abrir en nueva pestaña
+                </Button>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowStorageWarning(false)}
+              >
+                ×
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -285,7 +346,12 @@ function AdminUsersPanel() {
           <p className="text-muted-foreground">Administrar permisos, verificaciones y accesos</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setShowInviteDialog(true)} className="gap-2">
+          <Button 
+            onClick={() => setShowInviteDialog(true)} 
+            className="gap-2"
+            disabled={!isSuperAdmin}
+            title={!isSuperAdmin ? 'Solo superadministradores pueden invitar usuarios' : ''}
+          >
             <UserPlus className="h-4 w-4" />
             Invitar Usuario
           </Button>
@@ -549,7 +615,12 @@ function AdminUsersPanel() {
                   <SelectItem value="user">Usuario</SelectItem>
                   <SelectItem value="advisor">Asesor</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="superadmin">Superadministrador</SelectItem>
+                  <SelectItem 
+                    value="superadmin" 
+                    disabled={!isSuperAdmin}
+                  >
+                    Superadministrador {!isSuperAdmin && '(Solo superadmin)'}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -563,6 +634,7 @@ function AdminUsersPanel() {
                 userId: selectedUser.id, 
                 role: newRole 
               })}
+              disabled={newRole === 'superadmin' && !isSuperAdmin}
             >
               <Shield className="h-4 w-4 mr-2" />
               Cambiar Rol
@@ -600,7 +672,12 @@ function AdminUsersPanel() {
                   <SelectItem value="user">Usuario</SelectItem>
                   <SelectItem value="advisor">Asesor</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="superadmin">Superadministrador</SelectItem>
+                  <SelectItem 
+                    value="superadmin"
+                    disabled={!isSuperAdmin}
+                  >
+                    Superadministrador {!isSuperAdmin && '(Solo superadmin)'}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -614,7 +691,7 @@ function AdminUsersPanel() {
                 email: inviteEmail, 
                 role: inviteRole 
               })}
-              disabled={!inviteEmail || inviteUser.isPending}
+              disabled={!inviteEmail || inviteUser.isPending || (inviteRole === 'superadmin' && !isSuperAdmin)}
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Enviar Invitación
