@@ -146,19 +146,43 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     onDataChange(sections.filter(section => section.id !== sectionId));
   };
 
-  const calculateRowValue = (row: RowData, year: string): number => {
+  // Helper to get computed value for any row type
+  const getRowComputedValue = (row: RowData, year: string, visitedIds: Set<string> = new Set()): number => {
+    // Prevent circular dependencies
+    if (visitedIds.has(row.id)) {
+      return 0;
+    }
+    visitedIds.add(row.id);
+
+    if (row.type === 'input') {
+      return row.values[year] || 0;
+    }
+    
+    if (row.type === 'percentage' && row.percentageOf) {
+      const baseRow = sections.flatMap(s => s.rows).find(r => r.id === row.percentageOf);
+      if (baseRow) {
+        const baseValue = getRowComputedValue(baseRow, year, new Set(visitedIds));
+        const percentage = row.values[year] || 0;
+        return (baseValue * percentage) / 100;
+      }
+      return 0;
+    }
+    
     if (row.type === 'calculated' && row.formula) {
       const yearData: { [key: string]: number } = {};
       sections.forEach(section => {
         section.rows.forEach(r => {
-          if (r.values[year] !== undefined) {
-            yearData[r.id] = r.values[year];
-          }
+          yearData[r.id] = getRowComputedValue(r, year, new Set(visitedIds));
         });
       });
       return row.formula(yearData);
     }
+    
     return row.values[year] || 0;
+  };
+
+  const calculateRowValue = (row: RowData, year: string): number => {
+    return getRowComputedValue(row, year);
   };
 
   const calculatePercentageValue = (row: RowData, year: string): number => {
@@ -167,7 +191,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
         .flatMap(s => s.rows)
         .find(r => r.id === row.percentageOf);
       if (baseRow) {
-        const baseValue = baseRow.values[year] || 0;
+        const baseValue = getRowComputedValue(baseRow, year);
         const percentage = row.values[year] || 0;
         return (baseValue * percentage) / 100;
       }
@@ -351,12 +375,8 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                         {(() => {
                           const lastYear = years[years.length - 1];
                           const prevYear = years[years.length - 2];
-                          const currentValue = row.type === 'calculated' 
-                            ? calculateRowValue(row, lastYear)
-                            : row.values[lastYear] || 0;
-                          const prevValue = row.type === 'calculated'
-                            ? calculateRowValue(row, prevYear)
-                            : row.values[prevYear] || 0;
+                          const currentValue = getRowComputedValue(row, lastYear);
+                          const prevValue = getRowComputedValue(row, prevYear);
                           const variation = calculateVariation(currentValue, prevValue);
                           
                           if (variation === 0) return null;

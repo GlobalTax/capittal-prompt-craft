@@ -208,26 +208,38 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           {
             id: 'personnel-costs',
             label: 'Costes de Personal',
-            type: 'input' as const,
+            type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.personnelCosts }), {})
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => {
+              const percentage = y.totalRevenue ? (y.personnelCosts / y.totalRevenue) * 100 : 0;
+              return { ...acc, [y.year]: percentage };
+            }, {})
           },
           {
             id: 'other-costs',
             label: 'Otros Costes Operativos',
-            type: 'input' as const,
+            type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.otherCosts }), {})
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => {
+              const percentage = y.totalRevenue ? (y.otherCosts / y.totalRevenue) * 100 : 0;
+              return { ...acc, [y.year]: percentage };
+            }, {})
           },
           {
             id: 'owner-salary',
             label: 'Sueldo Propiedad',
-            type: 'input' as const,
+            type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.ownerSalary }), {})
+            percentageOf: 'total-revenue',
+            values: data.years.reduce((acc, y) => {
+              const percentage = y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0;
+              return { ...acc, [y.year]: percentage };
+            }, {})
           }
         ]
       },
@@ -667,16 +679,22 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         .flatMap(s => s.rows)
         .find(r => r.id === 'employees');
 
+      // Convert percentage values back to absolute amounts
+      const totalRevenue = totalRevenueRow?.values[year.year] || 0;
+      const personnelCosts = totalRevenue * ((personnelRow?.values[year.year] || 0) / 100);
+      const otherCosts = totalRevenue * ((otherCostsRow?.values[year.year] || 0) / 100);
+      const ownerSalary = totalRevenue * ((ownerSalaryRow?.values[year.year] || 0) / 100);
+
       return {
         ...year,
-        totalRevenue: totalRevenueRow?.values[year.year] || 0,
+        totalRevenue,
         fiscalRecurringPercent: fiscalRow?.values[year.year] || 0,
         accountingRecurringPercent: accountingRow?.values[year.year] || 0,
         laborRecurringPercent: laborRow?.values[year.year] || 0,
         otherRevenuePercent: otherRevenueRow?.values[year.year] || 0,
-        personnelCosts: personnelRow?.values[year.year] || 0,
-        otherCosts: otherCostsRow?.values[year.year] || 0,
-        ownerSalary: ownerSalaryRow?.values[year.year] || 0,
+        personnelCosts,
+        otherCosts,
+        ownerSalary,
         numberOfEmployees: employeesRow?.values[year.year] || 0,
       };
     });
