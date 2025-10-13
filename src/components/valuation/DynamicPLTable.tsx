@@ -53,7 +53,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     return ((currentValue - previousValue) / previousValue) * 100;
   };
 
-  const updateRowLabel = (sectionId: string, rowId: string, newLabel: string) => {
+  const updateRowLabel = React.useCallback((sectionId: string, rowId: string, newLabel: string) => {
     const updatedSections = sections.map(section =>
       section.id === sectionId
         ? {
@@ -65,9 +65,9 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
         : section
     );
     onDataChange(updatedSections);
-  };
+  }, [sections, onDataChange]);
 
-  const updateRowValue = (sectionId: string, rowId: string, year: string, value: string) => {
+  const updateRowValue = React.useCallback((sectionId: string, rowId: string, year: string, value: string) => {
     const numericValue = parseNumber(value);
     
     // Find current value to avoid unnecessary updates
@@ -91,16 +91,16 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
         : section
     );
     onDataChange(updatedSections);
-  };
+  }, [sections, onDataChange]);
 
-  const updateSectionTitle = (sectionId: string, newTitle: string) => {
+  const updateSectionTitle = React.useCallback((sectionId: string, newTitle: string) => {
     const updatedSections = sections.map(section =>
       section.id === sectionId ? { ...section, title: newTitle } : section
     );
     onDataChange(updatedSections);
-  };
+  }, [sections, onDataChange]);
 
-  const addRow = (sectionId: string, position: 'top' | 'bottom' = 'bottom') => {
+  const addRow = React.useCallback((sectionId: string, position: 'top' | 'bottom' = 'bottom') => {
     const newRow: RowData = {
       id: crypto.randomUUID(),
       label: 'Nueva fila',
@@ -121,18 +121,18 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
         : section
     );
     onDataChange(updatedSections);
-  };
+  }, [years, sections, onDataChange]);
 
-  const removeRow = (sectionId: string, rowId: string) => {
+  const removeRow = React.useCallback((sectionId: string, rowId: string) => {
     const updatedSections = sections.map(section =>
       section.id === sectionId
         ? { ...section, rows: section.rows.filter(row => row.id !== rowId) }
         : section
     );
     onDataChange(updatedSections);
-  };
+  }, [sections, onDataChange]);
 
-  const addSection = () => {
+  const addSection = React.useCallback(() => {
     const newSection: TableSection = {
       id: crypto.randomUUID(),
       title: 'Nueva Sección',
@@ -140,14 +140,14 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       rows: []
     };
     onDataChange([...sections, newSection]);
-  };
+  }, [sections, onDataChange]);
 
-  const removeSection = (sectionId: string) => {
+  const removeSection = React.useCallback((sectionId: string) => {
     onDataChange(sections.filter(section => section.id !== sectionId));
-  };
+  }, [sections, onDataChange]);
 
   // Helper to get computed value for any row type
-  const getRowComputedValue = (row: RowData, year: string, visitedIds: Set<string> = new Set()): number => {
+  const getRowComputedValue = React.useCallback((row: RowData, year: string, visitedIds: Set<string> = new Set()): number => {
     // Prevent circular dependencies
     if (visitedIds.has(row.id)) {
       return 0;
@@ -161,7 +161,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     if (row.type === 'percentage' && row.percentageOf) {
       const baseRow = sections.flatMap(s => s.rows).find(r => r.id === row.percentageOf);
       if (baseRow) {
-        const baseValue = getRowComputedValue(baseRow, year, new Set(visitedIds));
+        const baseValue = getRowComputedValue(baseRow, year, visitedIds);
         const percentage = row.values[year] || 0;
         return (baseValue * percentage) / 100;
       }
@@ -172,32 +172,50 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       const yearData: { [key: string]: number } = {};
       sections.forEach(section => {
         section.rows.forEach(r => {
-          yearData[r.id] = getRowComputedValue(r, year, new Set(visitedIds));
+          yearData[r.id] = getRowComputedValue(r, year, visitedIds);
         });
       });
       return row.formula(yearData);
     }
     
     return row.values[year] || 0;
-  };
+  }, [sections]);
 
-  const calculateRowValue = (row: RowData, year: string): number => {
-    return getRowComputedValue(row, year);
-  };
+  // Memoize computed values for performance
+  const computedValues = React.useMemo(() => {
+    const cache: { [key: string]: number } = {};
+    sections.forEach(section => {
+      section.rows.forEach(row => {
+        years.forEach(year => {
+          const cacheKey = `${row.id}-${year}`;
+          cache[cacheKey] = getRowComputedValue(row, year);
+        });
+      });
+    });
+    return cache;
+  }, [sections, years, getRowComputedValue]);
 
-  const calculatePercentageValue = (row: RowData, year: string): number => {
+  const getCachedValue = React.useCallback((rowId: string, year: string) => 
+    computedValues[`${rowId}-${year}`] || 0,
+  [computedValues]);
+
+  const calculateRowValue = React.useCallback((row: RowData, year: string): number => {
+    return getCachedValue(row.id, year);
+  }, [getCachedValue]);
+
+  const calculatePercentageValue = React.useCallback((row: RowData, year: string): number => {
     if (row.type === 'percentage' && row.percentageOf) {
       const baseRow = sections
         .flatMap(s => s.rows)
         .find(r => r.id === row.percentageOf);
       if (baseRow) {
-        const baseValue = getRowComputedValue(baseRow, year);
+        const baseValue = getCachedValue(baseRow.id, year);
         const percentage = row.values[year] || 0;
         return (baseValue * percentage) / 100;
       }
     }
     return 0;
-  };
+  }, [sections, getCachedValue]);
 
   return (
     <div className="w-full space-y-4">
@@ -348,13 +366,13 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                           <div className="flex items-center gap-1 justify-end w-full">
                             <Input
                               type="text"
-                              value={row.values[year] || ''}
+                              value={formatNumber(row.values[year] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
                               className="font-mono h-9 w-24 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                             />
                             <span className="text-xs">%</span>
                             <span className="font-mono text-sm ml-2 w-20 text-right">
-                              {formatNumber(calculatePercentageValue(row, year))}
+                              {formatNumber(getCachedValue(row.id, year))}
                             </span>
                           </div>
                         ) : row.type === 'calculated' ? (
@@ -375,8 +393,8 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                         {(() => {
                           const lastYear = years[years.length - 1];
                           const prevYear = years[years.length - 2];
-                          const currentValue = getRowComputedValue(row, lastYear);
-                          const prevValue = getRowComputedValue(row, prevYear);
+                          const currentValue = getCachedValue(row.id, lastYear);
+                          const prevValue = getCachedValue(row.id, prevYear);
                           const variation = calculateVariation(currentValue, prevValue);
                           
                           if (variation === 0) return null;
