@@ -51,10 +51,12 @@ serve(async (req) => {
     console.log(`[admin-delete-user] Request from user: ${user.email}`);
 
     // Check if user has superadmin role
-    const { data: roles, error: rolesError } = await supabaseClient
+    const { data: roles, error: rolesError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
+
+    console.log(`[admin-delete-user] User roles for ${user.email}:`, roles);
 
     if (rolesError || !roles || !roles.some(r => r.role === 'superadmin')) {
       console.error('[admin-delete-user] User is not superadmin:', user.email);
