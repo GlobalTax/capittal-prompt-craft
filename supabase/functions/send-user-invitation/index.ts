@@ -169,10 +169,9 @@ serve(async (req) => {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
       
       // IMPORTANT: For production, verify your domain at resend.com/domains
-      // and use: 'Invitaciones <invitaciones@tudominio.com>'
-      // For now, using the verified email from your Resend account
+      // Using verified email as sender
       const { error: resendError } = await resend.emails.send({
-        from: 'Invitaciones <s.navarro@obn.es>',
+        from: 'Invitaciones <samuel@capittal.es>',
         to: [cleanEmail],
         subject: 'Invitación a la plataforma',
         html: `
