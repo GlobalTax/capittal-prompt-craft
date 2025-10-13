@@ -59,12 +59,14 @@ export default function TemplateManagement() {
         .insert({
           name: formData.name,
           description: formData.description,
-          file_path: filePath,
-          file_url: publicUrl,
-          format: fileExt?.toUpperCase() || 'UNKNOWN',
-          category: formData.category,
-          size_bytes: formData.file.size,
-          uploaded_by: user?.id
+          template_type: formData.category,
+          content: {
+            file_path: filePath,
+            file_url: publicUrl,
+            format: fileExt?.toUpperCase() || 'UNKNOWN',
+            size_bytes: formData.file.size
+          },
+          created_by: user?.id
         });
 
       if (dbError) throw dbError;
@@ -211,39 +213,42 @@ export default function TemplateManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {templates?.map((template) => (
-                <TableRow key={template.id}>
-                  <TableCell className="font-medium">{template.name}</TableCell>
-                  <TableCell>{template.category}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{template.format}</Badge>
-                  </TableCell>
-                  <TableCell>{template.download_count}</TableCell>
-                  <TableCell>
-                    <Badge variant={template.is_active ? "default" : "secondary"}>
-                      {template.is_active ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toggleTemplate.mutate({ id: template.id, isActive: template.is_active })}
-                      >
-                        {template.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteTemplate.mutate({ id: template.id, filePath: template.file_path })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {templates?.map((template) => {
+                const content = template.content as any;
+                return (
+                  <TableRow key={template.id}>
+                    <TableCell className="font-medium">{template.name}</TableCell>
+                    <TableCell>{template.template_type}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{content?.format || 'N/A'}</Badge>
+                    </TableCell>
+                    <TableCell>0</TableCell>
+                    <TableCell>
+                      <Badge variant={template.is_active ? "default" : "secondary"}>
+                        {template.is_active ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleTemplate.mutate({ id: template.id, isActive: template.is_active })}
+                        >
+                          {template.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteTemplate.mutate({ id: template.id, filePath: content?.file_path || '' })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
