@@ -36,13 +36,16 @@ serve(async (req) => {
       });
     }
 
-    const { data: roleData } = await supabaseClient
+    // Obtener TODOS los roles del usuario (puede tener múltiples roles)
+    const { data: roles } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', user.id);
 
-    if (!roleData || !['admin', 'superadmin'].includes(roleData.role)) {
+    // Verificar si tiene rol admin o superadmin
+    const hasAdminAccess = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+    if (!hasAdminAccess) {
       return new Response(JSON.stringify({ error: 'Permisos insuficientes' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

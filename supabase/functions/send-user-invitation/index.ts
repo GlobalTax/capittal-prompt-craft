@@ -35,13 +35,16 @@ serve(async (req) => {
       });
     }
 
-    const { data: roleData } = await supabaseClient
+    // Obtener TODOS los roles del usuario (puede tener múltiples roles)
+    const { data: roles } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', user.id);
 
-    if (!roleData || roleData.role !== 'superadmin') {
+    // Verificar si tiene rol superadmin
+    const isSuperAdmin = roles?.some(r => r.role === 'superadmin');
+
+    if (!isSuperAdmin) {
       return new Response(JSON.stringify({ error: 'Solo superadmins pueden invitar usuarios' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
