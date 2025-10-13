@@ -47,9 +47,9 @@ interface UserData {
   last_name?: string;
 }
 
-export default function UserManagement() {
+// Componente interno que contiene toda la lógica y hooks
+function AdminUsersPanel() {
   const queryClient = useQueryClient();
-  const { isAdmin, loading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -62,10 +62,10 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
 
-  // Fetch users with all details - solo si es admin
+  // Fetch users with all details
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
-    enabled: isAdmin && !roleLoading,
+    enabled: true,
     queryFn: async () => {
       // Llamar a la Edge Function en lugar de auth.admin.listUsers()
       const { data: authUsersData, error: authError } = await supabase.functions.invoke('admin-list-users');
@@ -116,10 +116,9 @@ export default function UserManagement() {
     admins: users?.filter(u => u.role === 'admin' || u.role === 'superadmin').length || 0
   };
 
-  // Verify user mutation - solo para admins
+  // Verify user mutation
   const verifyUser = useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
-      if (!isAdmin) throw new Error('No autorizado');
       const { error } = await supabase
         .from('user_verification_status')
         .update({ 
@@ -143,10 +142,9 @@ export default function UserManagement() {
     }
   });
 
-  // Change role mutation - solo para admins
+  // Change role mutation
   const changeRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      if (!isAdmin) throw new Error('No autorizado');
       // Delete existing role
       await supabase.from('user_roles').delete().eq('user_id', userId);
       
@@ -168,10 +166,9 @@ export default function UserManagement() {
     }
   });
 
-  // Invite user mutation - solo para superadmins
+  // Invite user mutation
   const inviteUser = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
-      if (!isAdmin) throw new Error('No autorizado');
       
       // Validar y limpiar email
       const cleanEmail = email.trim().toLowerCase();
@@ -244,30 +241,6 @@ export default function UserManagement() {
       default: return 'outline';
     }
   };
-
-  // Early returns after all hooks
-  if (roleLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Verificando permisos...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Acceso Denegado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>No tienes permisos para acceder a esta página.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Nunca';
@@ -649,4 +622,34 @@ export default function UserManagement() {
       </Dialog>
     </div>
   );
+}
+
+// Componente principal con manejo de permisos
+export default function UserManagement() {
+  const { isAdmin, loading: roleLoading } = useUserRole();
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Verificando permisos...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive">Acceso Denegado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No tienes permisos para acceder a esta página.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return <AdminUsersPanel />;
 }
