@@ -132,7 +132,8 @@ serve(async (req) => {
           });
         }
         
-        const invitationUrl = `${Deno.env.get('SUPABASE_URL')}/invite?token=${existing.token}`;
+        const frontendUrl = Deno.env.get('FRONTEND_URL') || 'http://localhost:5173';
+        const invitationUrl = `${frontendUrl}/invite?token=${existing.token}`;
         console.log(`[${requestId}] Existing invitation returned for ${cleanEmail}`);
         
         return new Response(JSON.stringify({ 
@@ -158,7 +159,9 @@ serve(async (req) => {
       });
     }
 
-    const invitationUrl = `${Deno.env.get('SUPABASE_URL')}/invite?token=${data}`;
+    // Use frontend URL for invitation links
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'http://localhost:5173';
+    const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
 
     // Send email via Resend
