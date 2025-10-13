@@ -625,7 +625,7 @@ function AdminUsersPanel() {
 }
 
 // Componente principal con manejo de permisos
-export default function UserManagement() {
+export default function AdminUsersPage() {
   const { isAdmin, loading: roleLoading } = useUserRole();
 
   if (roleLoading) {

@@ -22,7 +22,7 @@ import DocumentTemplates from "./pages/DocumentTemplates";
 import SellBusinessContact from "./pages/SellBusinessContact";
 import FeeCalculator from "./pages/FeeCalculator";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserManagement from "./pages/admin/UserManagement";
+import AdminUsersPage from "./pages/admin/UserManagement";
 import TemplateManagement from "./pages/admin/TemplateManagement";
 
 const queryClient = new QueryClient();
@@ -58,7 +58,7 @@ const App = () => {
                   
                   {/* Admin routes */}
                   <Route path="admin" element={<AdminDashboard />} />
-                  <Route path="admin/users" element={<UserManagement />} />
+                  <Route path="admin/users" element={<AdminUsersPage />} />
                   <Route path="admin/templates" element={<TemplateManagement />} />
                 </Route>
               </Route>
