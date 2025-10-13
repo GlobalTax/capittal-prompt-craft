@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2, BarChart3 } from "lucide-react";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2, BarChart3, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -110,6 +110,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   
   // Debounced data for charts to prevent jumping
   const [debouncedData, setDebouncedData] = useState<FinancialData>(data);
+  
+  // State to control alert visibility
+  const [alertsVisible, setAlertsVisible] = useState(true);
   
   // Valuation configuration state
   const [valuationConfig, setValuationConfig] = useState<ValuationConfig>({
@@ -796,9 +799,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           <div className="space-y-6">
               <div className="space-y-6 max-w-[95vw] mx-auto px-4">
                 {/* Validation Alerts - Fixed position to prevent layout shifts */}
-                {validateData().length > 0 && (
+                {validateData().length > 0 && alertsVisible && (
                   <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4 animate-in slide-in-from-top-5">
-                    <Alert className="border-warning shadow-lg bg-card/95 backdrop-blur">
+                    <Alert className="border-warning shadow-lg bg-card/95 backdrop-blur relative">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
                         <strong>Advertencias detectadas:</strong>
@@ -808,6 +811,14 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                           ))}
                         </ul>
                       </AlertDescription>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-6 w-6"
+                        onClick={() => setAlertsVisible(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </Alert>
                   </div>
                 )}
