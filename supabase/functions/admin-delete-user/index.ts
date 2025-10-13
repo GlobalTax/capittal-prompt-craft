@@ -91,6 +91,18 @@ serve(async (req) => {
 
     console.log(`[admin-delete-user] Attempting to delete user: ${targetEmail} (${user_id})`);
 
+    // Safety net: Pre-clean valuation_reports to avoid FK constraint errors
+    console.log('[admin-delete-user] Pre-cleaning valuation_reports for user:', user_id);
+    const { error: cleanError } = await supabaseAdmin
+      .from('valuation_reports')
+      .delete()
+      .eq('generated_by', user_id);
+    
+    if (cleanError) {
+      console.error('[admin-delete-user] Error cleaning valuation_reports:', cleanError);
+      // Continue anyway - the CASCADE should handle it after migration
+    }
+
     // Delete the user using admin client
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
