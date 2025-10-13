@@ -48,6 +48,19 @@ interface UserData {
   last_name?: string;
 }
 
+interface PendingInvitation {
+  id: string;
+  email: string;
+  role: string;
+  invited_by: string | null;
+  created_at: string;
+  expires_at: string | null;
+  used_at: string | null;
+  user_id: string | null;
+  accepted_at: string | null;
+  token: string;
+}
+
 // Componente interno que contiene toda la lógica y hooks
 function AdminUsersPanel() {
   const queryClient = useQueryClient();
@@ -80,6 +93,22 @@ function AdminUsersPanel() {
       }
     };
     checkStorage();
+  });
+
+  // Fetch pending invitations
+  const { data: pendingInvitations, isLoading: isLoadingInvitations } = useQuery({
+    queryKey: ['pending-invitations'],
+    enabled: isSuperAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pending_invitations')
+        .select('*')
+        .is('used_at', null)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []) as PendingInvitation[];
+    }
   });
 
   // Fetch users with all details
@@ -129,11 +158,16 @@ function AdminUsersPanel() {
   });
 
   // Statistics
+  const activeInvitations = pendingInvitations?.filter(inv => 
+    inv.expires_at && new Date(inv.expires_at) > new Date()
+  ).length || 0;
+  
   const stats = {
     total: users?.length || 0,
     pending: users?.filter(u => u.verification_status === 'pending').length || 0,
     approved: users?.filter(u => u.verification_status === 'approved').length || 0,
-    admins: users?.filter(u => u.role === 'admin' || u.role === 'superadmin').length || 0
+    admins: users?.filter(u => u.role === 'admin' || u.role === 'superadmin').length || 0,
+    invitations: activeInvitations
   };
 
   // Verify user mutation
@@ -212,6 +246,10 @@ function AdminUsersPanel() {
       const invitationUrl = data?.invitation_url;
       const emailSent = data?.email_sent;
       const emailError = data?.email_error;
+      
+      // Refresh both users and invitations
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
       
       setShowInviteDialog(false);
       setInviteEmail("");
@@ -319,6 +357,54 @@ function AdminUsersPanel() {
     });
   };
 
+  // Resend invitation mutation
+  const resendInvitation = useMutation({
+    mutationFn: async (invitation: PendingInvitation) => {
+      const { data, error } = await supabase.functions.invoke('send-user-invitation', {
+        body: { email: invitation.email, role: invitation.role }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
+      toast.success('Invitación reenviada correctamente');
+    },
+    onError: () => {
+      toast.error('Error al reenviar invitación');
+    }
+  });
+
+  // Cancel invitation mutation
+  const cancelInvitation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      const { error } = await supabase
+        .from('pending_invitations')
+        .delete()
+        .eq('id', invitationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
+      toast.success('Invitación cancelada');
+    },
+    onError: () => {
+      toast.error('Error al cancelar invitación');
+    }
+  });
+
+  const copyInvitationLink = (token: string) => {
+    const baseUrl = window.location.origin;
+    const invitationUrl = `${baseUrl}/register?invitation=${token}`;
+    navigator.clipboard.writeText(invitationUrl);
+    toast.success('Link de invitación copiado');
+  };
+
+  const isInvitationExpired = (expiresAt: string | null) => {
+    if (!expiresAt) return false;
+    return new Date(expiresAt) < new Date();
+  };
+
   const exportToCSV = () => {
     if (!filteredUsers) return;
     
@@ -402,7 +488,7 @@ function AdminUsersPanel() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
@@ -411,6 +497,17 @@ function AdminUsersPanel() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
             <p className="text-xs text-muted-foreground mt-1">Registrados en total</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Invitaciones</CardTitle>
+            <Mail className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.invitations}</div>
+            <p className="text-xs text-muted-foreground mt-1">Pendientes de aceptar</p>
           </CardContent>
         </Card>
 
@@ -596,6 +693,123 @@ function AdminUsersPanel() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pending Invitations Table */}
+      {isSuperAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Invitaciones Pendientes ({pendingInvitations?.length || 0})</CardTitle>
+            <CardDescription>
+              Gestiona las invitaciones enviadas que aún no han sido aceptadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Rol</TableHead>
+                  <TableHead>Fecha de invitación</TableHead>
+                  <TableHead>Expira</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingInvitations ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      Cargando invitaciones...
+                    </TableCell>
+                  </TableRow>
+                ) : pendingInvitations && pendingInvitations.length > 0 ? (
+                  pendingInvitations.map((invitation) => {
+                    const isExpired = isInvitationExpired(invitation.expires_at);
+                    return (
+                      <TableRow key={invitation.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            {invitation.email}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeVariant(invitation.role)}>
+                            {invitation.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(invitation.created_at)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {formatDate(invitation.expires_at)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {isExpired ? (
+                            <Badge variant="destructive">Expirada</Badge>
+                          ) : invitation.accepted_at ? (
+                            <Badge variant="default">Aceptada</Badge>
+                          ) : (
+                            <Badge variant="secondary">Pendiente</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => copyInvitationLink(invitation.token)}
+                              title="Copiar link de invitación"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            {!isExpired && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => resendInvitation.mutate(invitation)}
+                                disabled={resendInvitation.isPending}
+                                title="Reenviar invitación"
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                if (confirm('¿Estás seguro de cancelar esta invitación?')) {
+                                  cancelInvitation.mutate(invitation.id);
+                                }
+                              }}
+                              disabled={cancelInvitation.isPending}
+                              title="Cancelar invitación"
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No hay invitaciones pendientes
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Verify Dialog */}
       <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
