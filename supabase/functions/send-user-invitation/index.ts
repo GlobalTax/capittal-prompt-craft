@@ -163,6 +163,7 @@ serve(async (req) => {
     const frontendUrl = app_url || req.headers.get('origin') || Deno.env.get('FRONTEND_URL') || 'http://localhost:5173';
     const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
+    console.log(`[${requestId}] Invitation URL: ${invitationUrl}`);
 
     // Send email via Resend
     let emailSent = false;
@@ -179,37 +180,156 @@ serve(async (req) => {
         subject: 'Invitación a la plataforma',
         html: `
           <!DOCTYPE html>
-          <html>
+          <html lang="es">
             <head>
               <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <link rel="preconnect" href="https://fonts.googleapis.com">
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+              <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
               <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: #3b82f6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-                .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
-                .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-                .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-                .link { color: #3b82f6; word-break: break-all; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+                  line-height: 1.6; 
+                  color: #1e293b;
+                  background-color: #f8fafc;
+                  padding: 20px;
+                }
+                .email-wrapper { 
+                  max-width: 600px; 
+                  margin: 0 auto; 
+                  background: #ffffff;
+                  border-radius: 12px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                }
+                .header { 
+                  background: linear-gradient(135deg, #0B6FF3 0%, #0956b8 100%);
+                  padding: 40px 30px;
+                  text-align: center;
+                }
+                .header h1 { 
+                  color: #ffffff; 
+                  font-size: 28px; 
+                  font-weight: 600;
+                  margin: 0;
+                  letter-spacing: -0.5px;
+                }
+                .content { 
+                  padding: 40px 30px;
+                  background: #ffffff;
+                }
+                .content p { 
+                  margin: 0 0 16px 0;
+                  font-size: 16px;
+                  color: #475569;
+                }
+                .role-badge {
+                  display: inline-block;
+                  background: #f1f5f9;
+                  color: #0B6FF3;
+                  padding: 6px 12px;
+                  border-radius: 6px;
+                  font-weight: 600;
+                  font-size: 14px;
+                  text-transform: capitalize;
+                  margin: 8px 0;
+                }
+                .cta-container { 
+                  text-align: center; 
+                  margin: 32px 0;
+                }
+                .button { 
+                  display: inline-block; 
+                  background: #0B6FF3;
+                  color: #ffffff !important;
+                  padding: 16px 32px;
+                  text-decoration: none;
+                  border-radius: 8px;
+                  font-weight: 600;
+                  font-size: 16px;
+                  transition: background-color 0.2s;
+                  box-shadow: 0 4px 6px -1px rgba(11, 111, 243, 0.3);
+                }
+                .button:hover { 
+                  background: #0956b8;
+                }
+                .divider {
+                  margin: 32px 0;
+                  border-top: 1px solid #e2e8f0;
+                }
+                .link-section {
+                  background: #f8fafc;
+                  padding: 20px;
+                  border-radius: 8px;
+                  margin: 24px 0;
+                }
+                .link-section p {
+                  font-size: 14px;
+                  color: #64748b;
+                  margin-bottom: 8px;
+                }
+                .link { 
+                  color: #0B6FF3;
+                  word-break: break-all;
+                  font-size: 14px;
+                  text-decoration: none;
+                }
+                .footer { 
+                  text-align: center;
+                  padding: 30px;
+                  background: #f8fafc;
+                  border-top: 1px solid #e2e8f0;
+                }
+                .footer p { 
+                  color: #94a3b8;
+                  font-size: 14px;
+                  margin: 0;
+                }
+                .security-note {
+                  margin-top: 32px;
+                  padding-top: 24px;
+                  border-top: 1px solid #e2e8f0;
+                  font-size: 13px;
+                  color: #64748b;
+                }
+                @media only screen and (max-width: 600px) {
+                  body { padding: 10px; }
+                  .header { padding: 30px 20px; }
+                  .header h1 { font-size: 24px; }
+                  .content { padding: 30px 20px; }
+                  .button { padding: 14px 24px; font-size: 15px; }
+                }
               </style>
             </head>
             <body>
-              <div class="container">
+              <div class="email-wrapper">
                 <div class="header">
-                  <h1>Has sido invitado</h1>
+                  <h1>✉️ Has sido invitado</h1>
                 </div>
                 <div class="content">
-                  <p>Hola,</p>
-                  <p>Has sido invitado a unirte a nuestra plataforma con el rol de <strong>${role}</strong>.</p>
-                  <p>Para completar tu registro, haz clic en el siguiente botón:</p>
-                  <div style="text-align: center;">
-                    <a href="${invitationUrl}" class="button">Aceptar invitación</a>
+                  <p style="font-size: 18px; color: #1e293b; font-weight: 500;">¡Bienvenido!</p>
+                  <p>Has sido invitado a unirte a nuestra plataforma. Tu cuenta ha sido configurada con el siguiente rol:</p>
+                  <div style="text-align: center; margin: 24px 0;">
+                    <span class="role-badge">${role}</span>
                   </div>
-                  <p>O copia y pega este enlace en tu navegador:</p>
-                  <p class="link">${invitationUrl}</p>
-                  <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">Si no esperabas esta invitación, puedes ignorar este correo.</p>
+                  <p>Para completar tu registro y establecer tu contraseña, haz clic en el botón de abajo:</p>
+                  <div class="cta-container">
+                    <a href="${invitationUrl}" class="button">Aceptar invitación →</a>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="link-section">
+                    <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                    <a href="${invitationUrl}" class="link">${invitationUrl}</a>
+                  </div>
+                  <div class="security-note">
+                    <p>🔒 <strong>Nota de seguridad:</strong> Este enlace es único y personal. No lo compartas con nadie. Si no esperabas esta invitación, puedes ignorar este correo de forma segura.</p>
+                  </div>
                 </div>
                 <div class="footer">
-                  <p>Este es un correo automático, por favor no respondas.</p>
+                  <p>Este es un correo automático generado por el sistema.</p>
+                  <p style="margin-top: 8px;">Por favor, no respondas a este mensaje.</p>
                 </div>
               </div>
             </body>
