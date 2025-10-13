@@ -18,7 +18,10 @@ import {
   Settings,
   BarChart3,
   Target,
-  FileBarChart
+  FileBarChart,
+  FileDown,
+  Handshake,
+  DollarSign
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -79,6 +82,27 @@ export function AppSidebar() {
     }
   ];
 
+  const resourceItems = [
+    {
+      title: t('sidebar.documentTemplates'),
+      url: "/resources/templates",
+      icon: FileDown,
+      description: "Plantillas descargables"
+    },
+    {
+      title: t('sidebar.sellBusiness'),
+      url: "/resources/sell-business",
+      icon: Handshake,
+      description: "Colaboración en venta"
+    },
+    {
+      title: t('sidebar.feeCalculator'),
+      url: "/resources/fee-calculator",
+      icon: DollarSign,
+      description: "Calcular honorarios"
+    }
+  ];
+
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
@@ -133,6 +157,16 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {renderMenuItems(advancedItems)}
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Resources */}
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+            {t('sidebar.resources')}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            {renderMenuItems(resourceItems)}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

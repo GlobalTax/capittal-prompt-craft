@@ -10,7 +10,11 @@
     "advancedFeatures": "Advanced Features",
     "budget": "Monthly Budget",
     "multiplesComparables": "Comparable Multiples",
-    "settings": "Settings"
+    "settings": "Settings",
+    "resources": "Resources",
+    "documentTemplates": "Document Templates",
+    "sellBusiness": "Sell my Business",
+    "feeCalculator": "Fee Calculator"
   },
   "dashboard": {
     "title": "Executive Dashboard",

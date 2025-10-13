@@ -10,7 +10,11 @@
     "advancedFeatures": "Funcions Avançades",
     "budget": "Pressupost Mensual",
     "multiplesComparables": "Múltiples Comparables",
-    "settings": "Configuració"
+    "settings": "Configuració",
+    "resources": "Recursos",
+    "documentTemplates": "Models de Documents",
+    "sellBusiness": "Vendre la meva Empresa",
+    "feeCalculator": "Calculadora d'Honoraris"
   },
   "dashboard": {
     "title": "Dashboard Executiu",

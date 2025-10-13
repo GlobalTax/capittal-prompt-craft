@@ -18,6 +18,9 @@ import ComparableMultiples from "@/components/ComparableMultiples";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import DocumentTemplates from "./pages/DocumentTemplates";
+import SellBusinessContact from "./pages/SellBusinessContact";
+import FeeCalculator from "./pages/FeeCalculator";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +49,9 @@ const App = () => {
                   <Route path="advanced/budget" element={<MonthlyBudget />} />
                   <Route path="advanced/multiples" element={<ComparableMultiples />} />
                   <Route path="settings" element={<AdvancedSettings />} />
+                  <Route path="resources/templates" element={<DocumentTemplates />} />
+                  <Route path="resources/sell-business" element={<SellBusinessContact />} />
+                  <Route path="resources/fee-calculator" element={<FeeCalculator />} />
                 </Route>
               </Route>
 

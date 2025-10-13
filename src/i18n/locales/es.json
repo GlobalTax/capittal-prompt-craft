@@ -10,7 +10,11 @@
     "advancedFeatures": "Funciones Avanzadas",
     "budget": "Presupuesto Mensual",
     "multiplesComparables": "Múltiplos Comparables",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "resources": "Recursos",
+    "documentTemplates": "Modelos de Documentos",
+    "sellBusiness": "Vender mi Empresa",
+    "feeCalculator": "Calculadora de Honorarios"
   },
   "dashboard": {
     "title": "Dashboard Ejecutivo",
