@@ -26,6 +26,10 @@ export function ValuationEditor() {
   const [loading, setLoading] = useState(true);
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  
+  // Determinar si estamos en modo asesor o cliente basado en la URL de origen
+  const isAdvisorMode = window.location.pathname.includes('/valuations/advisor') || 
+                        document.referrer.includes('/valuations/advisor');
 
   useEffect(() => {
     if (id) fetchValuation();
@@ -140,7 +144,11 @@ export function ValuationEditor() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
         <div className="container max-w-7xl flex items-center justify-between h-16 px-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/valuation')}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients')}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Input
@@ -170,17 +178,25 @@ export function ValuationEditor() {
 
       {/* Content */}
       <div className="container max-w-7xl py-6 px-4 space-y-6">
-        {/* Selector de Tipo de Valoración */}
-        <div className="space-y-2">
-          <Label>Tipo de Valoración</Label>
-          <ValuationTypeSelector
-            value={valuation.valuation_type || 'own_business'}
-            onChange={(type) => updateField('valuation_type', type)}
-          />
-        </div>
+        {/* Selector de Tipo de Valoración - Solo si no está forzado por la ruta */}
+        {!isAdvisorMode && (
+          <div className="space-y-2">
+            <Label>Tipo de Valoración</Label>
+            <ValuationTypeSelector
+              value={valuation.valuation_type || 'client_business'}
+              onChange={(type) => updateField('valuation_type', type)}
+            />
+          </div>
+        )}
 
-        {/* Formulario de Contexto (Cliente/Objetivo) */}
-        <ClientInfoForm valuation={valuation} onUpdate={updateField} />
+        {/* Formulario de Contexto - Forzar tipo según ruta */}
+        <ClientInfoForm 
+          valuation={{
+            ...valuation,
+            valuation_type: isAdvisorMode ? 'own_business' : (valuation.valuation_type || 'client_business')
+          }} 
+          onUpdate={updateField} 
+        />
 
         {/* Notas Privadas */}
         <Collapsible>
