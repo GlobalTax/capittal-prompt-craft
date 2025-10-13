@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ValuationCalculator from '@/components/ValuationCalculator';
 import { generateValuationPDF } from '@/components/reports/ValuationPDFExporter';
+import { isUuid } from '@/utils/isUuid';
 
 export function ValuationEditor() {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +33,17 @@ export function ValuationEditor() {
                         document.referrer.includes('/valuations/advisor');
 
   useEffect(() => {
-    if (id) fetchValuation();
+    // Validar UUID antes de cualquier fetch
+    if (!id || !isUuid(id)) {
+      toast({
+        title: 'ID inválido',
+        description: 'El identificador de valoración no es válido',
+        variant: 'destructive',
+      });
+      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
+      return;
+    }
+    fetchValuation();
   }, [id]);
 
   const fetchValuation = async () => {
