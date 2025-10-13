@@ -175,13 +175,16 @@ function AdminUsersPanel() {
     mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
       const { error } = await supabase
         .from('user_verification_status')
-        .update({ 
+        .upsert({ 
+          user_id: userId,
           verification_status: status,
           verified_by: (await supabase.auth.getUser()).data.user?.id,
           verified_at: new Date().toISOString(),
-          notes: verificationNotes
-        })
-        .eq('user_id', userId);
+          notes: verificationNotes,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
       
       if (error) throw error;
     },
