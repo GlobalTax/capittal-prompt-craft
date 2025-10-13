@@ -9105,6 +9105,7 @@ export type Database = {
       }
       pending_invitations: {
         Row: {
+          accepted_at: string | null
           created_at: string | null
           email: string
           expires_at: string | null
@@ -9116,6 +9117,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string | null
           email: string
           expires_at?: string | null
@@ -9127,6 +9129,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string | null
           email?: string
           expires_at?: string | null
@@ -14694,10 +14697,12 @@ export type Database = {
         Returns: undefined
       }
       create_user_invitation: {
-        Args: {
-          p_email: string
-          p_role?: Database["public"]["Enums"]["app_role"]
-        }
+        Args:
+          | { p_email: string; p_role: string }
+          | {
+              p_email: string
+              p_role?: Database["public"]["Enums"]["app_role"]
+            }
         Returns: string
       }
       create_user_with_role_secure: {
