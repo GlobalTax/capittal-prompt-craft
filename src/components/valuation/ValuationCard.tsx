@@ -53,7 +53,7 @@ export const ValuationCard = React.memo(function ValuationCard({ valuation, onTo
 
   return (
     <Card
-      className={`group hover:scale-[1.02] transition-all duration-200 hover:shadow-lg cursor-pointer ${className}`}
+      className={`group transition-all duration-200 cursor-pointer ${className}`}
       style={style}
       onClick={() => navigate(`/valuation/${valuation.id}`)}
     >
@@ -65,7 +65,6 @@ export const ValuationCard = React.memo(function ValuationCard({ valuation, onTo
               onToggleComplete(valuation.id, checked as boolean);
             }}
             onClick={(e) => e.stopPropagation()}
-            className="transition-transform group-hover:scale-110"
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">

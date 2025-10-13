@@ -52,10 +52,9 @@ export function ValuationTypeSelector({ value, onChange, allowedTypes }: Valuati
             onClick={() => onChange(type.value)}
             className={cn(
               'relative flex flex-col items-start p-4 rounded-lg border-2 transition-all',
-              'hover:shadow-md',
               isSelected
                 ? type.color + ' border-2'
-                : 'bg-card border-border hover:border-muted-foreground/50'
+                : 'bg-card border-border'
             )}
           >
             <div className="flex items-center gap-3 mb-2">

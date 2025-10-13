@@ -260,14 +260,14 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                 <div className="flex flex-col items-end justify-end gap-1.5">
                   <div className="flex items-center justify-end gap-2">
                     {years.length > 2 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onYearRemove(index)}
-                        className="h-7 w-7 p-0 hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onYearRemove(index)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                     )}
                     <span>{year}</span>
                   </div>
@@ -298,7 +298,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                         <Input
                           value={section.title}
                           onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                          className="font-bold text-sm bg-transparent border-b border-dotted border-muted-foreground/50 hover:border-muted-foreground focus:border-primary rounded-none p-1 h-auto w-fit max-w-md"
+                          className="font-bold text-sm bg-transparent border-b border-dotted border-muted-foreground/50 focus:border-primary rounded-none p-1 h-auto w-fit max-w-md"
                         />
                       ) : (
                         <span className="font-bold text-sm px-1">{section.title}</span>
@@ -308,7 +308,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                           variant="ghost"
                           size="sm"
                           onClick={() => addRow(section.id, 'bottom')}
-                          className="h-7 w-7 p-0 hover:bg-primary/10"
+                          className="h-7 w-7 p-0"
                           title="Añadir fila"
                         >
                           <Plus className="h-4 w-4" />
@@ -318,7 +318,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                             variant="ghost"
                             size="sm"
                             onClick={() => removeSection(section.id)}
-                            className="h-7 w-7 p-0 hover:bg-destructive/10"
+                            className="h-7 w-7 p-0"
                             title="Eliminar sección"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -331,20 +331,20 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
 
                 {/* Section Rows */}
                 {section.rows.map((row) => (
-                  <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
+                  <tr key={row.id} className="border-t transition-colors">
                     {/* Row Label */}
                     <td className={`p-3 text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                       <div className="flex items-center gap-2">
                         <Input
                           value={row.label}
                           onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
-                          className="bg-transparent border-b border-dotted border-muted-foreground/30 hover:border-muted-foreground/60 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
+                          className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                         />
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeRow(section.id, row.id)}
-                          className="h-6 w-6 p-0 opacity-0 hover:opacity-100 flex-shrink-0 hover:bg-destructive/10"
+                          className="h-6 w-6 p-0 opacity-60 flex-shrink-0"
                           title="Eliminar fila"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -360,7 +360,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                             type="text"
                             value={formatNumber(row.values[year] || 0)}
                             onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                            className="font-mono h-9 w-full text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                            className="font-mono h-9 w-full text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
                           />
                         ) : row.type === 'percentage' ? (
                           <div className="flex items-center gap-1 justify-end w-full">
@@ -368,7 +368,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                               type="text"
                               value={formatNumber(row.values[year] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                              className="font-mono h-9 w-24 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                              className="font-mono h-9 w-24 text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
                             />
                             <span className="text-xs">%</span>
                             <span className="font-mono text-sm ml-2 w-20 text-right">

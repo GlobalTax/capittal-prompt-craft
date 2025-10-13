@@ -203,7 +203,7 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
                   style={{ animationDelay: `${index * 50}ms` }}
                   className="animate-fade-in"
                 />
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 opacity-60 transition-opacity">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-8 w-8 bg-card/80 backdrop-blur">
