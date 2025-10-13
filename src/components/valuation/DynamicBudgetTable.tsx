@@ -155,8 +155,8 @@ export function DynamicBudgetTable({
   const sumByCategory = (category: 'income' | 'expense', month: string, visitedIds: Set<string> = new Set()): number => {
     return sections
       .flatMap(s => s.rows)
-      .filter(r => r.category === category && r.type === 'input')
-      .reduce((sum, r) => sum + (r.values[month] || 0), 0);
+      .filter(r => r.category === category)
+      .reduce((sum, r) => sum + getRowComputedValue(r, month, visitedIds), 0);
   };
 
   // Helper: get the computed value for any row
@@ -363,6 +363,20 @@ export function DynamicBudgetTable({
                             onChange={(e) => updateRowValue(section.id, row.id, month, e.target.value)}
                             className="font-mono h-9 w-full text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
                           />
+                        ) : row.type === 'percentage' ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <Input
+                              type="text"
+                              value={formatNumber(row.values[month] || 0)}
+                              onChange={(e) => updateRowValue(section.id, row.id, month, e.target.value)}
+                              className="font-mono h-9 w-16 text-right border-muted-foreground/30 hover:border-muted-foreground focus:border-primary bg-muted/20"
+                              placeholder="0"
+                            />
+                            <span className="text-xs text-muted-foreground">%</span>
+                            <span className="font-mono text-sm ml-1 text-muted-foreground">
+                              = {formatNumber(calculatePercentageValue(row, month))}
+                            </span>
+                          </div>
                         ) : row.type === 'calculated' ? (
                           <span className={`font-mono text-sm font-semibold ${getCategoryColor(row.category)}`}>
                             {formatNumber(calculateRowValue(row, month))}

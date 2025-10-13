@@ -32,9 +32,9 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
     title: 'GASTOS FIJOS',
     editable: false,
     rows: [
-      { id: 'rent', label: 'Alquiler', type: 'input', category: 'expense', indented: false, values: createMonthValues(months) },
-      { id: 'salaries', label: 'Nóminas', type: 'input', category: 'expense', indented: false, values: createMonthValues(months) },
-      { id: 'insurance', label: 'Seguros', type: 'input', category: 'expense', indented: false, values: createMonthValues(months) }
+      { id: 'rent', label: 'Alquiler', type: 'percentage', category: 'expense', indented: false, values: createMonthValues(months), percentageOf: 'sales' },
+      { id: 'salaries', label: 'Nóminas', type: 'percentage', category: 'expense', indented: false, values: createMonthValues(months), percentageOf: 'sales' },
+      { id: 'insurance', label: 'Seguros', type: 'percentage', category: 'expense', indented: false, values: createMonthValues(months), percentageOf: 'sales' }
     ]
   },
   {
@@ -42,8 +42,8 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
     title: 'GASTOS VARIABLES',
     editable: false,
     rows: [
-      { id: 'supplies', label: 'Suministros', type: 'input', category: 'expense', indented: false, values: createMonthValues(months) },
-      { id: 'marketing', label: 'Marketing', type: 'input', category: 'expense', indented: false, values: createMonthValues(months) }
+      { id: 'supplies', label: 'Suministros', type: 'percentage', category: 'expense', indented: false, values: createMonthValues(months), percentageOf: 'sales' },
+      { id: 'marketing', label: 'Marketing', type: 'percentage', category: 'expense', indented: false, values: createMonthValues(months), percentageOf: 'sales' }
     ]
   },
   {
