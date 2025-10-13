@@ -150,13 +150,22 @@ const AcceptInvitation = () => {
 
       toast({
         title: "¡Éxito!",
-        description: "Cuenta creada correctamente. Redirigiendo al login...",
+        description: "Cuenta creada correctamente. Accediendo a la calculadora...",
       });
 
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
+      // Auto login y redirección a Calculadora de Honorarios
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: invitationData!.email,
+        password,
+      });
+
+      if (signInError) {
+        // Si falla el login automático, enviar al login
         navigate("/login");
-      }, 2000);
+        return;
+      }
+
+      navigate("/resources/fee-calculator");
 
     } catch (err: any) {
       console.error("Unexpected error:", err);
