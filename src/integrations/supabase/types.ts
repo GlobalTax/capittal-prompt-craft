@@ -14987,20 +14987,12 @@ export type Database = {
         Returns: string
       }
       log_security_event: {
-        Args:
-          | {
-              p_description: string
-              p_event_type: string
-              p_metadata?: Json
-              p_severity: string
-              p_user_id?: string
-            }
-          | {
-              p_description?: string
-              p_event_type: string
-              p_metadata?: Json
-              p_severity?: string
-            }
+        Args: {
+          p_description?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_severity?: string
+        }
         Returns: string
       }
       log_security_event_enhanced: {
