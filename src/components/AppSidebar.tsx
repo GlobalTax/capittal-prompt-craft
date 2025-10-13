@@ -21,9 +21,13 @@ import {
   FileBarChart,
   FileDown,
   Handshake,
-  DollarSign
+  DollarSign,
+  ShieldCheck,
+  Users,
+  FolderOpen
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useUserRole } from "@/hooks/useUserRole";
 
 
 export function AppSidebar() {
@@ -32,6 +36,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const { isAdmin, loading } = useUserRole();
 
   const menuItems = [
     {
@@ -103,6 +108,27 @@ export function AppSidebar() {
     }
   ];
 
+  const adminItems = [
+    {
+      title: "Panel de Administración",
+      url: "/admin",
+      icon: ShieldCheck,
+      description: "Dashboard administrativo"
+    },
+    {
+      title: "Gestión de Usuarios",
+      url: "/admin/users",
+      icon: Users,
+      description: "Verificar y gestionar usuarios"
+    },
+    {
+      title: "Gestión de Documentos",
+      url: "/admin/templates",
+      icon: FolderOpen,
+      description: "Administrar recursos"
+    }
+  ];
+
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
@@ -169,6 +195,18 @@ export function AppSidebar() {
             {renderMenuItems(resourceItems)}
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Administration (only for admins) */}
+        {!loading && isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
+              Administración
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              {renderMenuItems(adminItems)}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
