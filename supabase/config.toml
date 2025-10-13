@@ -3,6 +3,9 @@ project_id = "nbvvdaprcecaqvvkqcto"
 [functions.admin-list-users]
 verify_jwt = false
 
+[functions.admin-delete-user]
+verify_jwt = true
+
 [functions.send-user-invitation]
 verify_jwt = false
 

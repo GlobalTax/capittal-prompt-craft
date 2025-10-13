@@ -23,7 +23,8 @@ import {
   Users,
   UserPlus,
   AlertCircle,
-  Copy
+  Copy,
+  Trash2
 } from "lucide-react";
 import {
   Dialog,
@@ -72,6 +73,8 @@ function AdminUsersPanel() {
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState("");
   const [newRole, setNewRole] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -396,6 +399,30 @@ function AdminUsersPanel() {
     }
   });
 
+  // Delete user mutation
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { user_id: userId }
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('Usuario eliminado correctamente');
+      setShowDeleteDialog(false);
+      setSelectedUser(null);
+      setDeleteConfirmed(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Error al eliminar usuario');
+    }
+  });
+
   const copyInvitationLink = (token: string) => {
     const baseUrl = window.location.origin;
     const invitationUrl = `${baseUrl}/invite?token=${token}`;
@@ -681,6 +708,24 @@ function AdminUsersPanel() {
                         >
                           <Shield className="h-4 w-4" />
                         </Button>
+                        {isSuperAdmin && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={async () => {
+                              const { data: { user: currentUser } } = await supabase.auth.getUser();
+                              if (currentUser?.id === user.id) {
+                                toast.error('No puedes eliminarte a ti mismo');
+                                return;
+                              }
+                              setSelectedUser(user);
+                              setShowDeleteDialog(true);
+                            }}
+                            title="Eliminar usuario"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -951,6 +996,90 @@ function AdminUsersPanel() {
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Enviar Invitación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+        setShowDeleteDialog(open);
+        if (!open) {
+          setDeleteConfirmed(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Eliminar Usuario
+            </DialogTitle>
+            <DialogDescription>
+              Esta acción es <strong className="text-destructive">irreversible</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
+              <p className="text-sm font-medium mb-2">Vas a eliminar a:</p>
+              <div className="space-y-1">
+                <p className="text-sm">
+                  <strong>Nombre:</strong> {selectedUser?.first_name || selectedUser?.last_name 
+                    ? `${selectedUser?.first_name || ''} ${selectedUser?.last_name || ''}`.trim()
+                    : 'Sin nombre'}
+                </p>
+                <p className="text-sm">
+                  <strong>Email:</strong> {selectedUser?.email}
+                </p>
+                <p className="text-sm">
+                  <strong>Rol:</strong> <Badge variant={getRoleBadgeVariant(selectedUser?.role || 'user')}>
+                    {selectedUser?.role}
+                  </Badge>
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <strong>⚠️ Advertencia:</strong> Se eliminarán todos los datos asociados a este usuario:
+              </p>
+              <ul className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 space-y-1 list-disc list-inside">
+                <li>Perfil de usuario</li>
+                <li>Roles y permisos</li>
+                <li>Registros de actividad</li>
+                <li>Datos relacionados en cascada</li>
+              </ul>
+            </div>
+
+            <div className="flex items-start gap-3 p-3 border rounded-lg">
+              <input
+                type="checkbox"
+                id="delete-confirm"
+                checked={deleteConfirmed}
+                onChange={(e) => setDeleteConfirmed(e.target.checked)}
+                className="mt-1"
+              />
+              <label htmlFor="delete-confirm" className="text-sm cursor-pointer select-none">
+                Entiendo que esta acción es <strong>irreversible</strong> y todos los datos del usuario serán eliminados permanentemente
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setDeleteConfirmed(false);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => selectedUser && deleteUser.mutate(selectedUser.id)}
+              disabled={!deleteConfirmed || deleteUser.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {deleteUser.isPending ? 'Eliminando...' : 'Eliminar Usuario'}
             </Button>
           </DialogFooter>
         </DialogContent>
