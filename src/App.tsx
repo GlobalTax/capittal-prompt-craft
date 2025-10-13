@@ -39,7 +39,8 @@ const App = () => {
               <Route element={<ProtectedRoute />}>
                 <Route element={<ProtectedLayout />}>
                   <Route index element={<ExecutiveDashboard />} />
-                  <Route path="valuation" element={<ValuationList />} />
+                  <Route path="valuations/advisor" element={<ValuationList filterType="own_business" />} />
+                  <Route path="valuations/clients" element={<ValuationList filterType="client_business" />} />
                   <Route path="valuation/:id" element={<ValuationEditor />} />
                   <Route path="reports" element={<ReportGenerator />} />
                   <Route path="advanced/budget" element={<MonthlyBudget />} />

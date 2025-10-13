@@ -38,10 +38,16 @@ export function AppSidebar() {
       description: "Resumen ejecutivo"
     },
     {
-      title: t('sidebar.valuations'),
-      url: "/valuation",
+      title: "Mis Valoraciones",
+      url: "/valuations/advisor",
       icon: Calculator,
-      description: "Calculadora principal"
+      description: "Valoración del despacho"
+    },
+    {
+      title: "Valoraciones Clientes",
+      url: "/valuations/clients",
+      icon: Target,
+      description: "Valoraciones de clientes"
     },
     {
       title: t('sidebar.reports'),

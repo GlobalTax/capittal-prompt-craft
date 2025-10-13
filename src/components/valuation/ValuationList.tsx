@@ -26,15 +26,19 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { generateValuationPDF } from '@/components/reports/ValuationPDFExporter';
 
-export function ValuationList() {
+interface ValuationListProps {
+  filterType?: ValuationType;
+}
+
+export function ValuationList({ filterType }: ValuationListProps = {}) {
   const { valuations, loading, createValuation, updateValuation, deleteValuation } = useValuations();
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>(filterType || 'all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const [newType, setNewType] = useState<ValuationType>('own_business');
+  const [newType, setNewType] = useState<ValuationType>(filterType || 'own_business');
   const [generatingPDF, setGeneratingPDF] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -110,7 +114,9 @@ export function ValuationList() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container flex items-center justify-between h-16 px-4">
-          <h1 className="text-2xl font-semibold">Valoraciones</h1>
+          <h1 className="text-2xl font-semibold">
+            {filterType === 'own_business' ? 'Mis Valoraciones' : filterType === 'client_business' ? 'Valoraciones de Clientes' : 'Valoraciones'}
+          </h1>
           <Button onClick={() => setShowNewDialog(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Nueva Valoración
@@ -132,25 +138,27 @@ export function ValuationList() {
           </div>
         </div>
         
-        {/* Type Filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground self-center mr-2">Tipo:</span>
-          {[
-            { value: 'all', label: 'Todas' },
-            { value: 'own_business', label: 'Mi Negocio' },
-            { value: 'client_business', label: 'Clientes' },
-            { value: 'potential_acquisition', label: 'Objetivos' }
-          ].map((type) => (
-            <Button
-              key={type.value}
-              variant={typeFilter === type.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTypeFilter(type.value)}
-            >
-              {type.label}
-            </Button>
-          ))}
-        </div>
+        {/* Type Filter - Solo mostrar si no hay filtro predefinido */}
+        {!filterType && (
+          <div className="flex flex-wrap gap-2">
+            <span className="text-sm text-muted-foreground self-center mr-2">Tipo:</span>
+            {[
+              { value: 'all', label: 'Todas' },
+              { value: 'own_business', label: 'Mi Negocio' },
+              { value: 'client_business', label: 'Clientes' },
+              { value: 'potential_acquisition', label: 'Objetivos' }
+            ].map((type) => (
+              <Button
+                key={type.value}
+                variant={typeFilter === type.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTypeFilter(type.value)}
+              >
+                {type.label}
+              </Button>
+            ))}
+          </div>
+        )}
         
         {/* Status Filter */}
         <div className="flex flex-wrap gap-2">
