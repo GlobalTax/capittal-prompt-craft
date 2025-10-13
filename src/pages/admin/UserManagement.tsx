@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 import { 
   UserCheck, 
   UserX, 
@@ -48,6 +49,7 @@ interface UserData {
 
 export default function UserManagement() {
   const queryClient = useQueryClient();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -60,14 +62,46 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
 
-  // Fetch users with all details
+  // Renderizar loading o 403 si no es admin
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Verificando permisos...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive">Acceso Denegado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No tienes permisos para acceder a esta página.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Fetch users with all details - solo si es admin
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
+    enabled: isAdmin,
     queryFn: async () => {
       // Llamar a la Edge Function en lugar de auth.admin.listUsers()
       const { data: authUsersData, error: authError } = await supabase.functions.invoke('admin-list-users');
       
-      if (authError) throw authError;
+      if (authError) {
+        // Manejar errores de autenticación/autorización
+        if (authError.message?.includes('401') || authError.message?.includes('403')) {
+          toast.error('Acceso denegado: No tienes permisos para listar usuarios.');
+          return [];
+        }
+        throw authError;
+      }
       if (!authUsersData?.users) throw new Error('No se pudieron obtener usuarios');
 
       const userIds = authUsersData.users.map((u: any) => u.id);
@@ -106,9 +140,10 @@ export default function UserManagement() {
     admins: users?.filter(u => u.role === 'admin' || u.role === 'superadmin').length || 0
   };
 
-  // Verify user mutation
+  // Verify user mutation - solo para admins
   const verifyUser = useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
+      if (!isAdmin) throw new Error('No autorizado');
       const { error } = await supabase
         .from('user_verification_status')
         .update({ 
@@ -132,9 +167,10 @@ export default function UserManagement() {
     }
   });
 
-  // Change role mutation
+  // Change role mutation - solo para admins
   const changeRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      if (!isAdmin) throw new Error('No autorizado');
       // Delete existing role
       await supabase.from('user_roles').delete().eq('user_id', userId);
       
@@ -156,14 +192,28 @@ export default function UserManagement() {
     }
   });
 
-  // Invite user mutation
+  // Invite user mutation - solo para superadmins
   const inviteUser = useMutation({
     mutationFn: async ({ email, role }: { email: string; role: string }) => {
+      if (!isAdmin) throw new Error('No autorizado');
+      
+      // Validar y limpiar email
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail || !cleanEmail.includes('@')) {
+        throw new Error('Email inválido');
+      }
       const { data, error } = await supabase.functions.invoke('send-user-invitation', {
-        body: { email, role }
+        body: { email: cleanEmail, role }
       });
       
-      if (error) throw error;
+      if (error) {
+        // Manejar errores de autenticación/autorización
+        if (error.message?.includes('401') || error.message?.includes('403')) {
+          toast.error('Acceso denegado: No tienes permisos para invitar usuarios.');
+          return null;
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: (data) => {
