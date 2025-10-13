@@ -22,7 +22,8 @@ import {
   TrendingUp,
   Users,
   UserPlus,
-  AlertCircle
+  AlertCircle,
+  Copy
 } from "lucide-react";
 import {
   Dialog,
@@ -208,29 +209,67 @@ function AdminUsersPanel() {
     },
     retry: false,
     onSuccess: (data) => {
-      toast.success(data?.message || 'Invitación enviada correctamente');
+      const invitationUrl = data?.invitation_url;
+      const emailSent = data?.email_sent;
+      const emailError = data?.email_error;
+      
       setShowInviteDialog(false);
       setInviteEmail("");
       setInviteRole("user");
       
-      // Show invitation URL with copy action
-      if (data?.invitation_url) {
-        toast.info(
+      // Show different messages based on email status
+      if (emailSent) {
+        // Email sent successfully
+        toast.success('Invitación enviada por email correctamente');
+        
+        // Also show the link as backup
+        if (invitationUrl) {
+          toast.info(
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold">Link de invitación (respaldo)</p>
+              <p className="text-xs break-all">{invitationUrl}</p>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  navigator.clipboard.writeText(invitationUrl);
+                  toast.success('Link copiado al portapapeles');
+                }}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copiar link
+              </Button>
+            </div>,
+            { duration: 10000 }
+          );
+        }
+      } else {
+        // Email failed - show warning with link
+        toast.error(
           <div className="flex flex-col gap-2">
-            <p className="font-semibold">Link de invitación creado</p>
-            <p className="text-xs break-all">{data.invitation_url}</p>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                navigator.clipboard.writeText(data.invitation_url);
-                toast.success('Link copiado al portapapeles');
-              }}
-            >
-              Copiar link
-            </Button>
+            <p className="font-semibold text-amber-600">⚠️ No se pudo enviar el email</p>
+            <p className="text-xs">Comparte este enlace manualmente con el usuario:</p>
+            {invitationUrl && (
+              <>
+                <p className="text-xs break-all bg-muted p-2 rounded">{invitationUrl}</p>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(invitationUrl);
+                    toast.success('Link copiado al portapapeles');
+                  }}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copiar link
+                </Button>
+              </>
+            )}
+            {emailError && (
+              <p className="text-xs text-muted-foreground">Error: {emailError}</p>
+            )}
           </div>,
-          { duration: 10000 }
+          { duration: 15000 }
         );
       }
     },
