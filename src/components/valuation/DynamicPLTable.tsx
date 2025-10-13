@@ -331,7 +331,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
 
                 {/* Section Rows */}
                 {section.rows.map((row) => (
-                  <tr key={row.id} className="border-t transition-colors">
+                  <tr key={row.id} className="border-t hover:bg-transparent">
                     {/* Row Label */}
                     <td className={`p-3 text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                       <div className="flex items-center gap-2">
