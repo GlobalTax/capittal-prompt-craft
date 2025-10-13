@@ -152,42 +152,52 @@ export function DynamicBudgetTable({
   };
 
   // Helper: sum all rows of a given category for a specific month
-  const sumByCategory = (category: 'income' | 'expense', month: string): number => {
+  const sumByCategory = (category: 'income' | 'expense', month: string, visitedIds: Set<string> = new Set()): number => {
     return sections
       .flatMap(s => s.rows)
-      .filter(r => r.category === category && (r.type === 'input' || r.type === 'percentage'))
-      .reduce((sum, r) => sum + getRowComputedValue(r, month), 0);
+      .filter(r => r.category === category && r.type === 'input')
+      .reduce((sum, r) => sum + (r.values[month] || 0), 0);
   };
 
   // Helper: get the computed value for any row
-  const getRowComputedValue = (row: BudgetRowData, month: string): number => {
+  const getRowComputedValue = (row: BudgetRowData, month: string, visitedIds: Set<string> = new Set()): number => {
+    // Detect circular dependency
+    if (visitedIds.has(row.id)) {
+      console.warn(`Circular dependency detected for row ${row.id}`);
+      return 0;
+    }
+    
+    visitedIds.add(row.id);
+    
     if (row.type === 'input') {
       return row.values[month] || 0;
     }
     if (row.type === 'percentage') {
-      return calculatePercentageValue(row, month);
+      return calculatePercentageValue(row, month, visitedIds);
     }
     if (row.type === 'calculated') {
-      return calculateRowValue(row, month);
+      return calculateRowValue(row, month, visitedIds);
     }
     return 0;
   };
 
-  const calculateRowValue = (row: BudgetRowData, month: string): number => {
+  const calculateRowValue = (row: BudgetRowData, month: string, visitedIds: Set<string> = new Set()): number => {
     if (row.type === 'percentage') {
-      return calculatePercentageValue(row, month);
+      return calculatePercentageValue(row, month, visitedIds);
     }
     
     if (row.type === 'calculated') {
       // Dynamic calculation based on row ID
       if (row.id === 'total-income') {
-        return sumByCategory('income', month);
+        return sumByCategory('income', month, visitedIds);
       }
       if (row.id === 'total-expenses') {
-        return sumByCategory('expense', month);
+        return sumByCategory('expense', month, visitedIds);
       }
       if (row.id === 'net-result') {
-        return sumByCategory('income', month) - sumByCategory('expense', month);
+        const income = sumByCategory('income', month, visitedIds);
+        const expenses = sumByCategory('expense', month, visitedIds);
+        return income - expenses;
       }
       
       // Backward compatibility: use formula if exists
@@ -195,7 +205,7 @@ export function DynamicBudgetTable({
         const monthData: { [key: string]: number } = {};
         sections.forEach(section => {
           section.rows.forEach(r => {
-            monthData[r.id] = getRowComputedValue(r, month);
+            monthData[r.id] = getRowComputedValue(r, month, visitedIds);
           });
         });
         return row.formula(monthData);
@@ -207,13 +217,13 @@ export function DynamicBudgetTable({
     return row.values[month] || 0;
   };
 
-  const calculatePercentageValue = (row: BudgetRowData, month: string): number => {
+  const calculatePercentageValue = (row: BudgetRowData, month: string, visitedIds: Set<string> = new Set()): number => {
     if (row.type === 'percentage' && row.percentageOf) {
       const baseRow = sections
         .flatMap(s => s.rows)
         .find(r => r.id === row.percentageOf);
       if (baseRow) {
-        const baseValue = getRowComputedValue(baseRow, month);
+        const baseValue = getRowComputedValue(baseRow, month, visitedIds);
         const percentage = row.values[month] || 0;
         return (baseValue * percentage) / 100;
       }
@@ -322,7 +332,7 @@ export function DynamicBudgetTable({
 
                 {/* Section Rows */}
                 {section.rows.map((row) => (
-                  <tr key={`${row.id}-${JSON.stringify(row.values)}`} className="border-t hover:bg-muted/20 transition-colors">
+                  <tr key={row.id} className="border-t hover:bg-muted/20 transition-colors">
                     {/* Row Label */}
                     <td className={`p-3 text-sm border-r min-w-[200px] w-[200px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
                       <div className="flex items-center gap-2">
