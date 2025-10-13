@@ -795,10 +795,10 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         <div className="container mx-auto p-6 space-y-6">
           <div className="space-y-6">
               <div className="space-y-6 max-w-[95vw] mx-auto px-4">
-                {/* Validation Alerts - Fixed height to prevent layout shifts */}
-                <div className="min-h-14">
-                  {validateData().length > 0 && (
-                    <Alert className="border-warning">
+                {/* Validation Alerts - Fixed position to prevent layout shifts */}
+                {validateData().length > 0 && (
+                  <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4 animate-in slide-in-from-top-5">
+                    <Alert className="border-warning shadow-lg bg-card/95 backdrop-blur">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
                         <strong>Advertencias detectadas:</strong>
@@ -809,8 +809,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                         </ul>
                       </AlertDescription>
                     </Alert>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* P&L Comparativo - Dynamic Table */}
                 <div className="w-full">
