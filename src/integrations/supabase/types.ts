@@ -14697,12 +14697,7 @@ export type Database = {
         Returns: undefined
       }
       create_user_invitation: {
-        Args:
-          | { p_email: string; p_role: string }
-          | {
-              p_email: string
-              p_role?: Database["public"]["Enums"]["app_role"]
-            }
+        Args: { p_email: string; p_role: string }
         Returns: string
       }
       create_user_with_role_secure: {
