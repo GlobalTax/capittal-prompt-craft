@@ -5,9 +5,10 @@ import { cn } from '@/lib/utils';
 interface ValuationTypeSelectorProps {
   value: ValuationType;
   onChange: (type: ValuationType) => void;
+  allowedTypes?: ValuationType[];
 }
 
-export function ValuationTypeSelector({ value, onChange }: ValuationTypeSelectorProps) {
+export function ValuationTypeSelector({ value, onChange, allowedTypes }: ValuationTypeSelectorProps) {
   const types = [
     {
       value: 'own_business' as ValuationType,
@@ -32,9 +33,16 @@ export function ValuationTypeSelector({ value, onChange }: ValuationTypeSelector
     },
   ];
 
+  const filteredTypes = allowedTypes 
+    ? types.filter(t => allowedTypes.includes(t.value))
+    : types;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {types.map((type) => {
+    <div className={cn(
+      "grid grid-cols-1 gap-4",
+      filteredTypes.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+    )}>
+      {filteredTypes.map((type) => {
         const Icon = type.icon;
         const isSelected = value === type.value;
 

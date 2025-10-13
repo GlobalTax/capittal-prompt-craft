@@ -38,7 +38,9 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
   const [typeFilter, setTypeFilter] = useState<string>(filterType || 'all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const [newType, setNewType] = useState<ValuationType>(filterType || 'own_business');
+  const [newType, setNewType] = useState<ValuationType>(
+    filterType === 'client_business' ? 'client_business' : 'own_business'
+  );
   const [generatingPDF, setGeneratingPDF] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -62,7 +64,7 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
     if (newValuation) {
       setShowNewDialog(false);
       setNewTitle('');
-      setNewType('own_business');
+      setNewType(filterType === 'client_business' ? 'client_business' : 'own_business');
       navigate(`/valuation/${newValuation.id}`);
     }
   };
@@ -254,7 +256,17 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <Label>Tipo de Valoración</Label>
-              <ValuationTypeSelector value={newType} onChange={setNewType} />
+              <ValuationTypeSelector 
+                value={newType} 
+                onChange={setNewType}
+                allowedTypes={
+                  filterType === 'own_business' 
+                    ? ['own_business', 'potential_acquisition']
+                    : filterType === 'client_business'
+                    ? ['client_business', 'potential_acquisition']
+                    : undefined
+                }
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="title">Nombre de la Valoración</Label>
