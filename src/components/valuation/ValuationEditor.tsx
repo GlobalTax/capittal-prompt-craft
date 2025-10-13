@@ -51,7 +51,7 @@ export function ValuationEditor() {
         description: error.message,
         variant: 'destructive',
       });
-      navigate('/valuation');
+      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ export function ValuationEditor() {
       if (error) throw error;
       
       toast({ title: 'Valoración eliminada' });
-      navigate('/valuation');
+      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
     } catch (error: any) {
       toast({
         title: 'Error al eliminar',
