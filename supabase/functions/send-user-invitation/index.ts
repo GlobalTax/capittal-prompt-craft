@@ -172,12 +172,12 @@ serve(async (req) => {
     try {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
       
-      // IMPORTANT: For production, verify your domain at resend.com/domains
-      // Using verified email as sender
+      const fromEmail = Deno.env.get('EMAIL_FROM') || 'Algopasa <invitaciones@algopasa.com>';
+      
       const { error: resendError } = await resend.emails.send({
-        from: 'Invitaciones <samuel@capittal.es>',
+        from: fromEmail,
         to: [cleanEmail],
-        subject: 'Invitación a la plataforma',
+        subject: 'Invitación a Algopasa',
         html: `
           <!DOCTYPE html>
           <html lang="es">

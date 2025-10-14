@@ -261,10 +261,18 @@ function AdminUsersPanel() {
       setInviteEmail("");
       setInviteRole("user");
       
+      // Extract domain from URL for verification
+      const invitationDomain = invitationUrl ? new URL(invitationUrl).origin : '';
+      
       // Show different messages based on email status
       if (emailSent) {
-        // Email sent successfully
-        toast.success('Invitación enviada por email correctamente');
+        // Email sent successfully with domain verification
+        toast.success(
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold">✅ Invitación enviada correctamente</p>
+            <p className="text-xs text-muted-foreground">Dominio: {invitationDomain}</p>
+          </div>
+        );
         
         // Also show the link as backup
         if (invitationUrl) {
