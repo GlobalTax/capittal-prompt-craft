@@ -555,21 +555,10 @@ function AdminUsersPanel() {
           <h1 className="text-3xl font-bold mb-2">Gestión de Usuarios</h1>
           <p className="text-muted-foreground">Administrar permisos, verificaciones y accesos</p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => setShowInviteDialog(true)} 
-            className="gap-2"
-            disabled={!isSuperAdmin}
-            title={!isSuperAdmin ? 'Solo superadministradores pueden invitar usuarios' : ''}
-          >
-            <UserPlus className="h-4 w-4" />
-            Invitar Usuario
-          </Button>
-          <Button onClick={exportToCSV} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Exportar CSV
-          </Button>
-        </div>
+        <Button onClick={exportToCSV} variant="outline" className="gap-2">
+          <Download className="h-4 w-4" />
+          Exportar CSV
+        </Button>
       </div>
 
       {/* Statistics Cards */}
