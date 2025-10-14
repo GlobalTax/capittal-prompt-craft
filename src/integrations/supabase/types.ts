@@ -15145,6 +15145,16 @@ export type Database = {
             }
         Returns: string
       }
+      log_security_event_safe: {
+        Args: {
+          p_description?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_severity?: string
+          p_user_id?: string
+        }
+        Returns: string
+      }
       mark_engine_task_notified: {
         Args: { p_kind: string; p_task_id: string }
         Returns: undefined

@@ -410,15 +410,43 @@ function AdminUsersPanel() {
   // Delete user mutation
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
+      // Check if in iframe and no session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isEmbedded = window.self !== window.top;
+      
+      if (isEmbedded && !sessionData.session) {
+        // Open in new tab if embedded without session
+        window.open(window.location.href, '_blank');
+        throw new Error('Por favor, completa la acción en la nueva pestaña');
+      }
+
       const { data, error } = await supabase.functions.invoke('admin-delete-user', {
         body: { user_id: userId }
       });
       
+      // Handle 403 errors (iframe session issues)
+      if (error && error.message?.includes('403')) {
+        window.open(window.location.href, '_blank');
+        throw new Error('Sesión no disponible en vista embebida. Abre en nueva pestaña.');
+      }
+      
+      // Handle rate limit (429)
+      if (error && error.message?.includes('429')) {
+        throw new Error('Demasiados intentos. Intenta de nuevo en 1 hora.');
+      }
+      
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (data?.error) {
+        // Check if error mentions rate limit
+        if (data.error.includes('hora')) {
+          throw new Error(data.error);
+        }
+        throw new Error(data.error);
+      }
       
       return data;
     },
+    retry: false,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success('Usuario eliminado correctamente');
@@ -427,6 +455,7 @@ function AdminUsersPanel() {
       setDeleteConfirmed(false);
     },
     onError: (error: any) => {
+      console.error('Delete user error:', error);
       toast.error(error.message || 'Error al eliminar usuario');
     }
   });

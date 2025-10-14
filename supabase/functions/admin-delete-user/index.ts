@@ -133,7 +133,6 @@ serve(async (req) => {
     
     const precleanTables = [
       'valuation_reports',
-      'security_logs', 
       'pending_invitations',
       'user_verification_status',
       'user_profiles',
@@ -144,7 +143,20 @@ serve(async (req) => {
       'team_members',
       'alert_rules',
       'automation_rules',
-      'availability_patterns'
+      'availability_patterns',
+      'document_notifications',
+      'document_permissions',
+      'document_presence',
+      'document_shares',
+      'document_comments',
+      'document_approvals',
+      'proposals',
+      'automated_followups',
+      'lead_task_engine',
+      'commissions',
+      'commission_calculations',
+      'collaborators',
+      'system_notifications'
     ];
 
     for (const table of precleanTables) {
@@ -193,22 +205,19 @@ serve(async (req) => {
       );
     }
 
-    // Log the deletion in security logs (ip_address: null for Edge Function compatibility)
+    // Log the deletion using safe function (handles inet type properly)
     await supabaseAdmin
-      .from('security_logs')
-      .insert({
-        event_type: 'user_deleted',
-        severity: 'high',
-        description: `Usuario ${redactedTargetEmail} eliminado por ${redactEmail(user.email || 'unknown')}`,
-        user_id: user.id,
-        user_email: user.email,
-        ip_address: null, // Edge Functions don't have direct DB access, set explicitly
-        metadata: {
+      .rpc('log_security_event_safe', {
+        p_event_type: 'user_deleted',
+        p_severity: 'high',
+        p_description: `Usuario ${redactedTargetEmail} eliminado por ${redactEmail(user.email || 'unknown')}`,
+        p_metadata: {
           deleted_user_id: user_id,
           deleted_user_email: redactedTargetEmail,
           source: 'edge_function',
           function_name: 'admin-delete-user'
         },
+        p_user_id: user.id
       });
 
     console.log(`[admin-delete-user] Successfully deleted user: ${redactedTargetEmail}`);
