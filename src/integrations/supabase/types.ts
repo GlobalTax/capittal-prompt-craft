@@ -13181,6 +13181,8 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          advisory_type: string | null
+          city: string | null
           company: string | null
           created_at: string
           first_name: string | null
@@ -13188,10 +13190,14 @@ export type Database = {
           last_name: string | null
           onboarding_complete: boolean | null
           phone: string | null
+          professional_number: string | null
+          tax_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          advisory_type?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           first_name?: string | null
@@ -13199,10 +13205,14 @@ export type Database = {
           last_name?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
+          professional_number?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          advisory_type?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           first_name?: string | null
@@ -13210,6 +13220,8 @@ export type Database = {
           last_name?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
+          professional_number?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_id?: string
         }

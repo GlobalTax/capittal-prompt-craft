@@ -15,6 +15,12 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [advisoryType, setAdvisoryType] = useState('');
+  const [taxId, setTaxId] = useState('');
+  const [professionalNumber, setProfessionalNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuthContext();
   const navigate = useNavigate();
@@ -29,7 +35,17 @@ const Register = () => {
     e.preventDefault();
 
     if (!firstName.trim() || !lastName.trim()) {
-      toast.error('Por favor, completa todos los campos');
+      toast.error('Por favor, completa todos los campos obligatorios');
+      return;
+    }
+
+    if (!company.trim()) {
+      toast.error('El nombre de la asesoría es obligatorio');
+      return;
+    }
+
+    if (!phone.trim()) {
+      toast.error('El teléfono es obligatorio');
       return;
     }
 
@@ -45,7 +61,18 @@ const Register = () => {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password, firstName, lastName);
+    const { error } = await signUp(
+      email, 
+      password, 
+      firstName, 
+      lastName,
+      company,
+      phone,
+      city || undefined,
+      advisoryType || undefined,
+      taxId || undefined,
+      professionalNumber || undefined
+    );
 
     setLoading(false);
 
@@ -62,67 +89,161 @@ const Register = () => {
           <CardDescription>{t('auth.registerSubtitle')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Nombre</Label>
-              <Input
-                id="firstName"
-                type="text"
-                placeholder="Tu nombre"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                autoFocus
-                disabled={loading}
-              />
+          <CardContent className="space-y-6">
+            {/* Datos Personales */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Datos Personales</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Nombre *</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="Tu nombre"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    autoFocus
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Apellidos *</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Tus apellidos"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('auth.email')} *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Apellidos</Label>
-              <Input
-                id="lastName"
-                type="text"
-                placeholder="Tus apellidos"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                disabled={loading}
-              />
+
+            {/* Datos Profesionales */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Datos de la Asesoría</h3>
+              <div className="space-y-2">
+                <Label htmlFor="company">Nombre de la Asesoría *</Label>
+                <Input
+                  id="company"
+                  type="text"
+                  placeholder="Nombre del despacho o asesoría"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+34 600 000 000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ciudad/Provincia</Label>
+                  <Input
+                    id="city"
+                    type="text"
+                    placeholder="Madrid, Barcelona..."
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="advisoryType">Tipo de Asesoría</Label>
+                  <select
+                    id="advisoryType"
+                    value={advisoryType}
+                    onChange={(e) => setAdvisoryType(e.target.value)}
+                    disabled={loading}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Selecciona un tipo</option>
+                    <option value="fiscal">Fiscal</option>
+                    <option value="laboral">Laboral</option>
+                    <option value="contable">Contable</option>
+                    <option value="juridica">Jurídica</option>
+                    <option value="integral">Integral</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="taxId">NIF/CIF</Label>
+                  <Input
+                    id="taxId"
+                    type="text"
+                    placeholder="B12345678"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="professionalNumber">Número de Colegiado</Label>
+                <Input
+                  id="professionalNumber"
+                  type="text"
+                  placeholder="Número de colegiado (opcional)"
+                  value={professionalNumber}
+                  onChange={(e) => setProfessionalNumber(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+
+            {/* Seguridad */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Seguridad</h3>
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('auth.password')} *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">

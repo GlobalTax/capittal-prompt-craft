@@ -45,7 +45,18 @@ export const useAuth = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = async (
+    email: string, 
+    password: string, 
+    firstName?: string, 
+    lastName?: string,
+    company?: string,
+    phone?: string,
+    city?: string,
+    advisoryType?: string,
+    taxId?: string,
+    professionalNumber?: string
+  ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -56,7 +67,13 @@ export const useAuth = () => {
           emailRedirectTo: redirectUrl,
           data: {
             first_name: firstName,
-            last_name: lastName
+            last_name: lastName,
+            company,
+            phone,
+            city,
+            advisory_type: advisoryType,
+            tax_id: taxId,
+            professional_number: professionalNumber
           }
         }
       });
