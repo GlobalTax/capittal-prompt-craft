@@ -76,20 +76,20 @@ serve(async (req) => {
       );
     }
 
-    // Rate limiting: 5 intentos por 15 minutos (F05)
+    // Rate limiting: 20 intentos por 60 minutos (F05)
     const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
       .rpc('check_rate_limit', {
         p_identifier: user.id,
         p_action_type: 'delete_user',
-        p_max_attempts: 5,
-        p_window_minutes: 15
+        p_max_attempts: 20,
+        p_window_minutes: 60
       });
 
     if (rateLimitError || !rateLimitOk) {
       console.error('[admin-delete-user] Rate limit exceeded for:', redactEmail(user.email || 'unknown'));
       return new Response(
         JSON.stringify({ 
-          error: 'Demasiados intentos. Intenta de nuevo en 15 minutos.' 
+          error: 'Demasiados intentos de eliminación. Intenta de nuevo en 1 hora.' 
         }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
