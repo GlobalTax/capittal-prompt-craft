@@ -149,7 +149,7 @@ export function AppSidebar() {
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild className="h-9 mx-2 rounded-md">
-            <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
+            <NavLink to={item.url} end className={getNavCls}>
               <item.icon className="h-4 w-4 shrink-0" />
               {!collapsed && (
                 <span className="text-base font-medium truncate">{item.title}</span>
