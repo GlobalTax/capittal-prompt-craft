@@ -27,6 +27,7 @@ import FeeCalculator from "./pages/FeeCalculator";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsersPage from "./pages/admin/UserManagement";
 import TemplateManagement from "./pages/admin/TemplateManagement";
+import SecuritySettings from "./pages/SecuritySettings";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => {
                   <Route path="advanced/budget" element={<MonthlyBudget />} />
                   <Route path="advanced/multiples" element={<ComparableMultiples />} />
                   <Route path="settings" element={<AdvancedSettings />} />
+                  <Route path="security" element={<SecuritySettings />} />
                   <Route path="resources/templates" element={<DocumentTemplates />} />
                   <Route path="resources/sell-business" element={<SellBusinessContact />} />
                   <Route path="resources/fee-calculator" element={<FeeCalculator />} />

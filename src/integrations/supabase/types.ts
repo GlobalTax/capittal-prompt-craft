@@ -13086,6 +13086,39 @@ export type Database = {
           },
         ]
       }
+      user_mfa_factors: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string | null
+          factor_type: string
+          id: string
+          is_verified: boolean | null
+          last_used_at: string | null
+          secret: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          factor_type?: string
+          id?: string
+          is_verified?: boolean | null
+          last_used_at?: string | null
+          secret: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          factor_type?: string
+          id?: string
+          is_verified?: boolean | null
+          last_used_at?: string | null
+          secret?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notification_settings: {
         Row: {
           alert_frequency: string | null
@@ -13239,6 +13272,48 @@ export type Database = {
           user_id?: string | null
           view_name?: string
           view_type?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          last_activity: string | null
+          location_city: string | null
+          location_country: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address: unknown
+          is_active?: boolean | null
+          last_activity?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -14759,6 +14834,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Json
       }
+      detect_suspicious_ip_change: {
+        Args: { p_new_ip: unknown; p_user_id: string }
+        Returns: Json
+      }
       diagnostico_net_queue: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -14807,6 +14886,10 @@ export type Database = {
       fn_recalcular_score_lead: {
         Args: { p_lead_id: string }
         Returns: undefined
+      }
+      generate_backup_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
       }
       generate_booking_slug: {
         Args: { base_title: string; user_id: string }

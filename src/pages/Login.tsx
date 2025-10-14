@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { useAuthContext } from '@/components/auth/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MFAVerification } from '@/components/auth/MFAVerification';
 import { useTranslation } from 'react-i18next';
 
 const Login = () => {
@@ -12,6 +15,8 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showMFAModal, setShowMFAModal] = useState(false);
+  const [tempUserId, setTempUserId] = useState<string | null>(null);
   const { signIn, user } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,13 +35,39 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const { error, data } = await signIn(email, password);
+
+    if (error) {
+      setLoading(false);
+      return;
+    }
+
+    // Check if MFA is enabled for this user
+    const userId = data?.user?.id;
+    if (userId) {
+      const { data: mfaEnabled } = await supabase
+        .from('user_mfa_factors')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('is_verified', true)
+        .maybeSingle();
+
+      if (mfaEnabled) {
+        // Show MFA verification modal
+        setTempUserId(userId);
+        setShowMFAModal(true);
+        setLoading(false);
+        return;
+      }
+    }
 
     setLoading(false);
+    navigate(from, { replace: true });
+  };
 
-    if (!error) {
-      navigate(from, { replace: true });
-    }
+  const handleMFASuccess = () => {
+    setShowMFAModal(false);
+    navigate(from, { replace: true });
   };
 
   return (
@@ -95,6 +126,24 @@ const Login = () => {
           </CardFooter>
         </form>
       </Card>
+
+      <Dialog open={showMFAModal} onOpenChange={setShowMFAModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verificación de Dos Factores</DialogTitle>
+            <DialogDescription>
+              Ingresa el código de tu aplicación de autenticación
+            </DialogDescription>
+          </DialogHeader>
+          {tempUserId && (
+            <MFAVerification
+              userId={tempUserId}
+              onSuccess={handleMFASuccess}
+              onCancel={() => setShowMFAModal(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
