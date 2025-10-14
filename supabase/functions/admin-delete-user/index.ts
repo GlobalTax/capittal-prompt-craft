@@ -154,7 +154,7 @@ serve(async (req) => {
       );
     }
 
-    // Log the deletion in security logs (emails redacted - F04)
+    // Log the deletion in security logs (ip_address: null for Edge Function compatibility)
     await supabaseAdmin
       .from('security_logs')
       .insert({
@@ -163,9 +163,12 @@ serve(async (req) => {
         description: `Usuario ${redactedTargetEmail} eliminado por ${redactEmail(user.email || 'unknown')}`,
         user_id: user.id,
         user_email: user.email,
+        ip_address: null, // Edge Functions don't have direct DB access, set explicitly
         metadata: {
           deleted_user_id: user_id,
           deleted_user_email: redactedTargetEmail,
+          source: 'edge_function',
+          function_name: 'admin-delete-user'
         },
       });
 
