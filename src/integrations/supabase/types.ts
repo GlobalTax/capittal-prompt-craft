@@ -11305,6 +11305,7 @@ export type Database = {
           metadata: Json | null
           severity: string
           user_agent: string | null
+          user_email: string | null
           user_id: string | null
         }
         Insert: {
@@ -11316,6 +11317,7 @@ export type Database = {
           metadata?: Json | null
           severity: string
           user_agent?: string | null
+          user_email?: string | null
           user_id?: string | null
         }
         Update: {
@@ -11327,6 +11329,7 @@ export type Database = {
           metadata?: Json | null
           severity?: string
           user_agent?: string | null
+          user_email?: string | null
           user_id?: string | null
         }
         Relationships: []
