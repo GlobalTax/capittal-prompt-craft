@@ -80,22 +80,27 @@ function AdminUsersPanel() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [showStorageWarning, setShowStorageWarning] = useState(false);
+  const [isEmbedded, setIsEmbedded] = useState(false);
 
-  // Detect iframe/storage blocking
+  // Detect iframe/storage blocking on mount
   useState(() => {
-    const checkStorage = async () => {
+    const checkEnvironment = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const isEmbedded = window.self !== window.top;
+        const embedded = window.self !== window.top;
+        setIsEmbedded(embedded);
         
-        if (!data.session && isEmbedded) {
+        // Check session availability
+        const { data } = await supabase.auth.getSession();
+        
+        if (embedded && !data.session) {
           setShowStorageWarning(true);
         }
       } catch (error) {
-        console.error('Storage check failed:', error);
+        console.error('Environment check failed:', error);
+        setShowStorageWarning(true);
       }
     };
-    checkStorage();
+    checkEnvironment();
   });
 
   // Fetch pending invitations
@@ -412,33 +417,45 @@ function AdminUsersPanel() {
     mutationFn: async (userId: string) => {
       // Check if in iframe and no session
       const { data: sessionData } = await supabase.auth.getSession();
-      const isEmbedded = window.self !== window.top;
+      const embedded = window.self !== window.top;
       
-      if (isEmbedded && !sessionData.session) {
+      if (embedded && !sessionData.session) {
         // Open in new tab if embedded without session
         window.open(window.location.href, '_blank');
-        throw new Error('Por favor, completa la acción en la nueva pestaña');
+        throw new Error('Sesión no disponible. Por favor, completa la acción en la nueva pestaña.');
       }
 
       const { data, error } = await supabase.functions.invoke('admin-delete-user', {
         body: { user_id: userId }
       });
       
-      // Handle 403 errors (iframe session issues)
-      if (error && error.message?.includes('403')) {
-        window.open(window.location.href, '_blank');
-        throw new Error('Sesión no disponible en vista embebida. Abre en nueva pestaña.');
+      // Handle specific error status codes
+      if (error) {
+        const errorMsg = error.message || '';
+        const statusCode = error.context?.status || error.status;
+        
+        // 403 - Session/authorization issues (iframe)
+        if (statusCode === 403 || errorMsg.includes('403') || errorMsg.includes('No autorizado')) {
+          window.open(window.location.href, '_blank');
+          throw new Error('Sesión no disponible en vista embebida. Abre en nueva pestaña.');
+        }
+        
+        // 429 - Rate limit
+        if (statusCode === 429 || errorMsg.includes('429') || errorMsg.includes('Demasiados intentos')) {
+          throw new Error('Demasiados intentos de eliminación. Intenta de nuevo en 1 hora.');
+        }
+        
+        // 500 - Server error
+        if (statusCode === 500 || errorMsg.includes('500')) {
+          throw new Error('Error del servidor al eliminar usuario. Se registró el incidente.');
+        }
+        
+        throw error;
       }
       
-      // Handle rate limit (429)
-      if (error && error.message?.includes('429')) {
-        throw new Error('Demasiados intentos. Intenta de nuevo en 1 hora.');
-      }
-      
-      if (error) throw error;
       if (data?.error) {
-        // Check if error mentions rate limit
-        if (data.error.includes('hora')) {
+        // Check for specific error messages
+        if (data.error.includes('hora') || data.error.includes('Demasiados')) {
           throw new Error(data.error);
         }
         throw new Error(data.error);
@@ -456,7 +473,8 @@ function AdminUsersPanel() {
     },
     onError: (error: any) => {
       console.error('Delete user error:', error);
-      toast.error(error.message || 'Error al eliminar usuario');
+      const errorMessage = error.message || 'Error al eliminar usuario';
+      toast.error(errorMessage, { duration: 5000 });
     }
   });
 
@@ -1056,6 +1074,31 @@ function AdminUsersPanel() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Embedded view warning */}
+            {isEmbedded && (
+              <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      Vista embebida detectada
+                    </p>
+                    <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                      Para eliminar usuarios, abre la aplicación en una nueva pestaña con tu sesión activa.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => window.open(window.location.href, '_blank')}
+                    >
+                      Abrir en nueva pestaña
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
               <p className="text-sm font-medium mb-2">Vas a eliminar a:</p>
               <div className="space-y-1">
@@ -1094,6 +1137,7 @@ function AdminUsersPanel() {
                 checked={deleteConfirmed}
                 onChange={(e) => setDeleteConfirmed(e.target.checked)}
                 className="mt-1"
+                disabled={isEmbedded}
               />
               <label htmlFor="delete-confirm" className="text-sm cursor-pointer select-none">
                 Entiendo que esta acción es <strong>irreversible</strong> y todos los datos del usuario serán eliminados permanentemente
@@ -1113,10 +1157,11 @@ function AdminUsersPanel() {
             <Button 
               variant="destructive"
               onClick={() => selectedUser && deleteUser.mutate(selectedUser.id)}
-              disabled={!deleteConfirmed || deleteUser.isPending}
+              disabled={!deleteConfirmed || deleteUser.isPending || isEmbedded}
+              title={isEmbedded ? 'Abre en nueva pestaña para eliminar' : ''}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {deleteUser.isPending ? 'Eliminando...' : 'Eliminar Usuario'}
+              {deleteUser.isPending ? 'Eliminando...' : isEmbedded ? 'No disponible en vista embebida' : 'Eliminar Usuario'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -60,7 +60,7 @@ serve(async (req) => {
 
     console.log(`[admin-delete-user] Request from user: ${user.email}`);
 
-    // Check if user has superadmin role
+    // Check user roles - Must be done BEFORE rate limiting
     const { data: roles, error: rolesError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
@@ -68,24 +68,28 @@ serve(async (req) => {
 
     console.log(`[admin-delete-user] User roles for ${user.email}:`, roles);
 
-    if (rolesError || !roles || !roles.some(r => r.role === 'superadmin')) {
-      console.error('[admin-delete-user] User is not superadmin:', user.email);
+    // Check if user has admin or superadmin role
+    const isSuperAdmin = roles?.some(r => r.role === 'superadmin') || false;
+    const isAdmin = roles?.some(r => r.role === 'admin' || r.role === 'superadmin') || false;
+
+    if (rolesError || !isAdmin) {
+      console.error('[admin-delete-user] User is not admin/superadmin:', user.email);
       return new Response(
-        JSON.stringify({ error: 'Solo los superadministradores pueden eliminar usuarios' }),
+        JSON.stringify({ error: 'Solo los administradores pueden eliminar usuarios' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Rate limiting: bypass para superadmin, 20/hora para admin (F05)
-    const isSuperAdmin = roles.some(r => r.role === 'superadmin');
-    
-    if (!isSuperAdmin) {
-      // Solo aplicar rate limit a admins (no superadmins)
+    // Rate limiting: bypass para superadmin, 20/hora para admin
+    if (isSuperAdmin) {
+      console.log('[admin-delete-user] Superadmin - bypassing rate limit');
+    } else {
+      // Apply rate limit only to non-superadmin admins
       const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
-        .rpc('check_rate_limit', {
+        .rpc('check_rate_limit_enhanced', {
+          p_operation: 'admin_delete_user',
           p_identifier: user.id,
-          p_action_type: 'delete_user',
-          p_max_attempts: 20,
+          p_max_requests: 20,
           p_window_minutes: 60
         });
 
@@ -98,8 +102,6 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    } else {
-      console.log('[admin-delete-user] Superadmin - bypassing rate limit');
     }
 
     // Get the user_id to delete from the request body
@@ -131,53 +133,63 @@ serve(async (req) => {
     // Extended pre-clean: Delete/nullify all user dependencies before auth deletion
     console.log('[admin-delete-user] Starting extended pre-clean for user:', user_id);
     
-    const precleanTables = [
-      'valuation_reports',
-      'pending_invitations',
-      'user_verification_status',
-      'user_profiles',
-      'advisor_profiles',
-      'booking_links',
-      'calendar_events',
-      'calendar_integrations',
-      'team_members',
-      'alert_rules',
-      'automation_rules',
-      'availability_patterns',
-      'document_notifications',
-      'document_permissions',
-      'document_presence',
-      'document_shares',
-      'document_comments',
-      'document_approvals',
-      'proposals',
-      'automated_followups',
-      'lead_task_engine',
-      'commissions',
-      'commission_calculations',
-      'collaborators',
-      'system_notifications'
+    // Pre-clean with different column possibilities
+    const precleanConfig = [
+      { table: 'security_logs', columns: ['user_id'] },
+      { table: 'pending_invitations', columns: ['user_id', 'invited_by'] },
+      { table: 'user_verification_status', columns: ['user_id'] },
+      { table: 'user_profiles', columns: ['id'] },
+      { table: 'advisor_profiles', columns: ['user_id'] },
+      { table: 'booking_links', columns: ['user_id'] },
+      { table: 'calendar_events', columns: ['user_id'] },
+      { table: 'calendar_integrations', columns: ['user_id'] },
+      { table: 'team_members', columns: ['user_id'] },
+      { table: 'alert_rules', columns: ['user_id'] },
+      { table: 'automation_rules', columns: ['created_by'] },
+      { table: 'availability_patterns', columns: ['user_id'] },
+      { table: 'document_notifications', columns: ['user_id'] },
+      { table: 'document_permissions', columns: ['user_id'] },
+      { table: 'document_presence', columns: ['user_id'] },
+      { table: 'document_shares', columns: ['created_by'] },
+      { table: 'document_comments', columns: ['created_by'] },
+      { table: 'document_mentions', columns: ['mentioned_user_id'] },
+      { table: 'document_approvals', columns: ['approver_id'] },
+      { table: 'document_workflow_instances', columns: ['started_by'] },
+      { table: 'document_status_history', columns: ['changed_by'] },
+      { table: 'document_versions', columns: ['created_by'] },
+      { table: 'proposals', columns: ['created_by'] },
+      { table: 'automated_followups', columns: ['created_by'] },
+      { table: 'lead_task_engine', columns: ['created_by', 'assigned_to'] },
+      { table: 'lead_task_engine_notifications', columns: [] }, // Will be cleaned by cascade
+      { table: 'commissions', columns: ['employee_id'] },
+      { table: 'commission_calculations', columns: [] }, // Will be cleaned by cascade
+      { table: 'collaborators', columns: ['user_id', 'created_by'] },
+      { table: 'system_notifications', columns: ['user_id'] }
     ];
 
-    for (const table of precleanTables) {
+    for (const config of precleanConfig) {
       try {
-        const { error } = await supabaseAdmin
-          .from(table)
-          .delete()
-          .eq('user_id', user_id);
-        
-        if (error) {
-          console.log(`[admin-delete-user] Note: Could not pre-clean ${table}:`, error.message);
-        } else {
-          console.log(`[admin-delete-user] Pre-cleaned ${table}`);
+        for (const column of config.columns) {
+          const { error } = await supabaseAdmin
+            .from(config.table)
+            .delete()
+            .eq(column, user_id);
+          
+          if (error && !error.message.includes('does not exist')) {
+            console.log(`[admin-delete-user] Note: Could not pre-clean ${config.table}.${column}:`, error.message);
+          } else if (!error) {
+            console.log(`[admin-delete-user] Pre-cleaned ${config.table}.${column}`);
+          }
         }
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-        console.log(`[admin-delete-user] Warning: Table ${table} pre-clean failed (may not exist):`, errorMsg);
+        if (!errorMsg.includes('does not exist')) {
+          console.log(`[admin-delete-user] Warning: Table ${config.table} pre-clean failed:`, errorMsg);
+        }
       }
     }
 
-    // Special case: user_roles (uses user_id FK)
+    // Special case: user_roles (must be deleted for target user)
     try {
       const { error: rolesError } = await supabaseAdmin
         .from('user_roles')
