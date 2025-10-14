@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 
 const Register = () => {
   const { t } = useTranslation();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,6 +28,11 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error('Por favor, completa todos los campos');
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error('Las contraseñas no coinciden');
       return;
@@ -38,7 +45,7 @@ const Register = () => {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, firstName, lastName);
 
     setLoading(false);
 
@@ -57,6 +64,31 @@ const Register = () => {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="firstName">Nombre</Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Tu nombre"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                autoFocus
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Apellidos</Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Tus apellidos"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
@@ -65,7 +97,6 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoFocus
                 disabled={loading}
               />
             </div>
