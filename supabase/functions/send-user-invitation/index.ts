@@ -163,7 +163,10 @@ serve(async (req) => {
     const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'http://localhost:5173';
     const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
-    console.log(`[${requestId}] Invitation URL: ${invitationUrl}`);
+    
+    // Redact token from logs for security (F10)
+    const redactedUrl = invitationUrl.replace(/token=([^&]+)/, 'token=[REDACTED]');
+    console.log(`[${requestId}] Invitation URL: ${redactedUrl}`);
 
     // Send email via Resend
     let emailSent = false;
