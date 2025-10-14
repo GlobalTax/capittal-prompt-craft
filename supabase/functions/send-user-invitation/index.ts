@@ -132,7 +132,7 @@ serve(async (req) => {
           });
         }
         
-        const frontendUrl = app_url || req.headers.get('origin') || Deno.env.get('FRONTEND_URL') || 'http://localhost:5173';
+        const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'http://localhost:5173';
         const invitationUrl = `${frontendUrl}/invite?token=${existing.token}`;
         console.log(`[${requestId}] Existing invitation returned for ${cleanEmail}`);
         
@@ -160,7 +160,7 @@ serve(async (req) => {
     }
 
     // Use frontend URL for invitation links
-    const frontendUrl = app_url || req.headers.get('origin') || Deno.env.get('FRONTEND_URL') || 'http://localhost:5173';
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'http://localhost:5173';
     const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
     console.log(`[${requestId}] Invitation URL: ${invitationUrl}`);
