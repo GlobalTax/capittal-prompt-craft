@@ -28,6 +28,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsersPage from "./pages/admin/UserManagement";
 import TemplateManagement from "./pages/admin/TemplateManagement";
 import SecuritySettings from "./pages/SecuritySettings";
+import SecurityDashboard from "./pages/admin/SecurityDashboard";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => {
                   <Route path="admin" element={<AdminDashboard />} />
                   <Route path="admin/users" element={<AdminUsersPage />} />
                   <Route path="admin/templates" element={<TemplateManagement />} />
+                  <Route path="admin/security-dashboard" element={<SecurityDashboard />} />
                 </Route>
               </Route>
 
