@@ -76,23 +76,30 @@ serve(async (req) => {
       );
     }
 
-    // Rate limiting: 20 intentos por 60 minutos (F05)
-    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
-      .rpc('check_rate_limit', {
-        p_identifier: user.id,
-        p_action_type: 'delete_user',
-        p_max_attempts: 20,
-        p_window_minutes: 60
-      });
+    // Rate limiting: bypass para superadmin, 20/hora para admin (F05)
+    const isSuperAdmin = roles.some(r => r.role === 'superadmin');
+    
+    if (!isSuperAdmin) {
+      // Solo aplicar rate limit a admins (no superadmins)
+      const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
+        .rpc('check_rate_limit', {
+          p_identifier: user.id,
+          p_action_type: 'delete_user',
+          p_max_attempts: 20,
+          p_window_minutes: 60
+        });
 
-    if (rateLimitError || !rateLimitOk) {
-      console.error('[admin-delete-user] Rate limit exceeded for:', redactEmail(user.email || 'unknown'));
-      return new Response(
-        JSON.stringify({ 
-          error: 'Demasiados intentos de eliminación. Intenta de nuevo en 1 hora.' 
-        }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (rateLimitError || !rateLimitOk) {
+        console.error('[admin-delete-user] Rate limit exceeded for:', redactEmail(user.email || 'unknown'));
+        return new Response(
+          JSON.stringify({ 
+            error: 'Demasiados intentos de eliminación. Intenta de nuevo en 1 hora.' 
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.log('[admin-delete-user] Superadmin - bypassing rate limit');
     }
 
     // Get the user_id to delete from the request body
@@ -121,26 +128,58 @@ serve(async (req) => {
 
     console.log(`[admin-delete-user] Attempting to delete user: ${redactedTargetEmail} (${user_id})`);
 
-    // Safety net: Pre-clean related tables to avoid FK constraint errors
-    console.log('[admin-delete-user] Pre-cleaning valuation_reports for user:', user_id);
-    const { error: reportsError } = await supabaseAdmin
-      .from('valuation_reports')
-      .delete()
-      .eq('generated_by', user_id);
+    // Extended pre-clean: Delete/nullify all user dependencies before auth deletion
+    console.log('[admin-delete-user] Starting extended pre-clean for user:', user_id);
     
-    if (reportsError) {
-      console.error('[admin-delete-user] Error cleaning valuation_reports:', reportsError);
+    const precleanTables = [
+      'valuation_reports',
+      'security_logs', 
+      'pending_invitations',
+      'user_verification_status',
+      'user_profiles',
+      'advisor_profiles',
+      'booking_links',
+      'calendar_events',
+      'calendar_integrations',
+      'team_members',
+      'alert_rules',
+      'automation_rules',
+      'availability_patterns'
+    ];
+
+    for (const table of precleanTables) {
+      try {
+        const { error } = await supabaseAdmin
+          .from(table)
+          .delete()
+          .eq('user_id', user_id);
+        
+        if (error) {
+          console.log(`[admin-delete-user] Note: Could not pre-clean ${table}:`, error.message);
+        } else {
+          console.log(`[admin-delete-user] Pre-cleaned ${table}`);
+        }
+      } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+        console.log(`[admin-delete-user] Warning: Table ${table} pre-clean failed (may not exist):`, errorMsg);
+      }
     }
 
-    // Pre-clean security_logs
-    console.log('[admin-delete-user] Pre-cleaning security_logs for user:', user_id);
-    const { error: logsError } = await supabaseAdmin
-      .from('security_logs')
-      .delete()
-      .eq('user_id', user_id);
-    
-    if (logsError) {
-      console.error('[admin-delete-user] Error cleaning security_logs:', logsError);
+    // Special case: user_roles (uses user_id FK)
+    try {
+      const { error: rolesError } = await supabaseAdmin
+        .from('user_roles')
+        .delete()
+        .eq('user_id', user_id);
+      
+      if (rolesError) {
+        console.log('[admin-delete-user] Note: Could not pre-clean user_roles:', rolesError.message);
+      } else {
+        console.log('[admin-delete-user] Pre-cleaned user_roles');
+      }
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+      console.log('[admin-delete-user] Warning: user_roles pre-clean failed:', errorMsg);
     }
 
     // Delete the user using admin client
