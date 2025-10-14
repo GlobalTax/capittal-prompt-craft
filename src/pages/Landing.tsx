@@ -1,9 +1,18 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, FileText, TrendingUp, Shield, Clock, Users } from 'lucide-react';
+import { BarChart3, FileText, TrendingUp, Shield, Clock, Users, LogOut } from 'lucide-react';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 
 const Landing = () => {
+  const { user, signOut } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/', { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -13,12 +22,26 @@ const Landing = () => {
             Capittal
           </h1>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link to="/login">Iniciar Sesión</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/register">Registrarse</Link>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/dashboard">Ir al Dashboard</Link>
+                </Button>
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Cerrar Sesión
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/login">Iniciar Sesión</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Registrarse</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>

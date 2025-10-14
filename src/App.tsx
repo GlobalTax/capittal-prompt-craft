@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PublicOnlyRoute } from "@/components/auth/PublicOnlyRoute";
 import { ProtectedLayout } from "@/components/layouts/ProtectedLayout";
 import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import { ValuationList } from "@/components/valuation/ValuationList";
@@ -45,11 +46,15 @@ const App = () => {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invite" element={<AcceptInvitation />} />
+              
+              {/* Auth routes - redirect to dashboard if already logged in */}
+              <Route element={<PublicOnlyRoute />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Route>
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
