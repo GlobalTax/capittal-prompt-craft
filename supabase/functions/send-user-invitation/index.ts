@@ -230,9 +230,8 @@ serve(async (req) => {
     try {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
       
-      const fromName = Deno.env.get('EMAIL_FROM_NAME') || 'Algopasa';
-      const fromAddress = Deno.env.get('EMAIL_FROM_ADDRESS') || 'invitaciones@algopasa.com';
-      const fromEmail = `${fromName} <${fromAddress}>`;
+      // TEMPORAL: Usando dominio de prueba de Resend hasta verificar algopasa.com
+      const fromEmail = Deno.env.get('EMAIL_FROM') || 'onboarding@resend.dev';
       
       const { error: resendError } = await resend.emails.send({
         from: fromEmail,
