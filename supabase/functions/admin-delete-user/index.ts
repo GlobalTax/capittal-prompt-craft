@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Función helper para redactar emails en logs (F04 - Seguridad)
+const redactEmail = (email: string): string => {
+  if (!email || !email.includes('@')) return 'unknown';
+  const [local, domain] = email.split('@');
+  const redactedLocal = local.length > 2 
+    ? `${local[0]}${'*'.repeat(local.length - 2)}${local[local.length - 1]}`
+    : '*'.repeat(local.length);
+  return `${redactedLocal}@${domain}`;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -66,6 +76,25 @@ serve(async (req) => {
       );
     }
 
+    // Rate limiting: 5 intentos por 15 minutos (F05)
+    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
+      .rpc('check_rate_limit', {
+        p_identifier: user.id,
+        p_action_type: 'delete_user',
+        p_max_attempts: 5,
+        p_window_minutes: 15
+      });
+
+    if (rateLimitError || !rateLimitOk) {
+      console.error('[admin-delete-user] Rate limit exceeded for:', redactEmail(user.email || 'unknown'));
+      return new Response(
+        JSON.stringify({ 
+          error: 'Demasiados intentos. Intenta de nuevo en 15 minutos.' 
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get the user_id to delete from the request body
     const { user_id } = await req.json();
 
@@ -85,11 +114,12 @@ serve(async (req) => {
       );
     }
 
-    // Get user email for logging
+    // Get user email for logging (redacted for security - F04)
     const { data: userData } = await supabaseAdmin.auth.admin.getUserById(user_id);
     const targetEmail = userData?.user?.email || 'unknown';
+    const redactedTargetEmail = redactEmail(targetEmail);
 
-    console.log(`[admin-delete-user] Attempting to delete user: ${targetEmail} (${user_id})`);
+    console.log(`[admin-delete-user] Attempting to delete user: ${redactedTargetEmail} (${user_id})`);
 
     // Safety net: Pre-clean related tables to avoid FK constraint errors
     console.log('[admin-delete-user] Pre-cleaning valuation_reports for user:', user_id);
@@ -124,22 +154,22 @@ serve(async (req) => {
       );
     }
 
-    // Log the deletion in security logs
+    // Log the deletion in security logs (emails redacted - F04)
     await supabaseAdmin
       .from('security_logs')
       .insert({
         event_type: 'user_deleted',
         severity: 'high',
-        description: `Usuario ${targetEmail} eliminado por ${user.email}`,
+        description: `Usuario ${redactedTargetEmail} eliminado por ${redactEmail(user.email || 'unknown')}`,
         user_id: user.id,
         user_email: user.email,
         metadata: {
           deleted_user_id: user_id,
-          deleted_user_email: targetEmail,
+          deleted_user_email: redactedTargetEmail,
         },
       });
 
-    console.log(`[admin-delete-user] Successfully deleted user: ${targetEmail}`);
+    console.log(`[admin-delete-user] Successfully deleted user: ${redactedTargetEmail}`);
 
     return new Response(
       JSON.stringify({ 

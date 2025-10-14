@@ -55,7 +55,7 @@ const ResetPassword = () => {
       return;
     }
 
-    // Validate password strength
+    // Validate password strength locally (quick feedback)
     const errors = validatePassword(password);
     if (errors.length > 0) {
       toast.error(`Contraseña débil. Requiere: ${errors.join(', ')}`);
@@ -65,6 +65,26 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
+      // Backend validation (F06 - Security)
+      const { data: validationResult, error: validationError } = await supabase.functions.invoke(
+        'validate-password',
+        { body: { password } }
+      );
+
+      if (validationError) {
+        console.error('Error validating password:', validationError);
+        toast.error('Error al validar la contraseña');
+        setLoading(false);
+        return;
+      }
+
+      if (!validationResult?.valid) {
+        toast.error(`Contraseña débil: ${validationResult?.errors?.join(', ') || 'Requisitos no cumplidos'}`);
+        setLoading(false);
+        return;
+      }
+
+      // Update password
       const { error } = await supabase.auth.updateUser({
         password: password
       });

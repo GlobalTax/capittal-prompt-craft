@@ -59,6 +59,30 @@ serve(async (req) => {
       });
     }
 
+    // Rate limiting: 10 invitaciones por hora (F05)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
+      .rpc('check_rate_limit', {
+        p_identifier: user.id,
+        p_action_type: 'send_invitation',
+        p_max_attempts: 10,
+        p_window_minutes: 60
+      });
+
+    if (rateLimitError || !rateLimitOk) {
+      console.error(`[${requestId}] Rate limit exceeded for user:`, user.email);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Demasiadas invitaciones enviadas. Intenta de nuevo en 1 hora.' 
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Input validation
     const { email, role, app_url } = await req.json();
     

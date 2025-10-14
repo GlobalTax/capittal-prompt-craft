@@ -10117,6 +10117,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_attempts: {
+        Row: {
+          action_type: string
+          attempt_count: number | null
+          created_at: string | null
+          id: string
+          identifier: string
+          window_start: string | null
+        }
+        Insert: {
+          action_type: string
+          attempt_count?: number | null
+          created_at?: string | null
+          id?: string
+          identifier: string
+          window_start?: string | null
+        }
+        Update: {
+          action_type?: string
+          attempt_count?: number | null
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           created_at: string
@@ -14613,11 +14640,18 @@ export type Database = {
         Returns: boolean
       }
       check_rate_limit: {
-        Args: {
-          p_identifier: string
-          p_max_requests?: number
-          p_window_minutes?: number
-        }
+        Args:
+          | {
+              p_action_type: string
+              p_identifier: string
+              p_max_attempts?: number
+              p_window_minutes?: number
+            }
+          | {
+              p_identifier: string
+              p_max_requests?: number
+              p_window_minutes?: number
+            }
         Returns: boolean
       }
       check_rate_limit_enhanced: {
@@ -14634,6 +14668,10 @@ export type Database = {
       check_session_timeout: {
         Args: { p_timeout_minutes?: number; p_user_id: string }
         Returns: boolean
+      }
+      cleanup_old_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       cleanup_old_presence: {
         Args: Record<PropertyKey, never>
