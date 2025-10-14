@@ -15,6 +15,7 @@ import ReportGenerator from "@/components/ReportGenerator";
 import AdvancedSettings from "@/components/AdvancedSettings";
 import MonthlyBudget from "@/components/MonthlyBudget";
 import ComparableMultiples from "@/components/ComparableMultiples";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -43,6 +44,7 @@ const App = () => {
             <AuthProvider>
             <Routes>
               {/* Public routes */}
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -52,7 +54,7 @@ const App = () => {
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<ProtectedLayout />}>
-                  <Route index element={<ExecutiveDashboard />} />
+                  <Route path="/dashboard" element={<ExecutiveDashboard />} />
                   <Route path="valuations/advisor" element={<ValuationList filterType="own_business" />} />
                   <Route path="valuations/clients" element={<ValuationList filterType="client_business" />} />
                   <Route path="valuation/:id" element={<ValuationEditor />} />

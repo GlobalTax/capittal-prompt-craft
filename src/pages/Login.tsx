@@ -23,7 +23,7 @@ const Login = () => {
   const [searchParams] = useSearchParams();
 
   const nextUrl = searchParams.get('next');
-  const from = nextUrl || location.state?.from?.pathname || '/valuation';
+  const from = nextUrl || location.state?.from?.pathname || '/dashboard';
 
   useEffect(() => {
     if (user) {
