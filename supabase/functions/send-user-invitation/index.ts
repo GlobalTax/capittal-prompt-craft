@@ -50,37 +50,59 @@ serve(async (req) => {
       .eq('user_id', user.id);
 
     const isSuperAdmin = roles?.some(r => r.role === 'superadmin');
+    const isAdmin = roles?.some(r => r.role === 'admin');
 
-    if (!isSuperAdmin) {
-      console.log(`[${requestId}] Permission denied for user ${user.email}`);
-      return new Response(JSON.stringify({ error: 'Solo superadministradores pueden invitar usuarios' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Rate limiting: 10 invitaciones por hora (F05)
+    // Admin client for RPC calls
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
-      .rpc('check_rate_limit', {
-        p_identifier: user.id,
-        p_action_type: 'send_invitation',
-        p_max_attempts: 10,
-        p_window_minutes: 60
+    // PRIORITY 1: Check if user has admin/superadmin role
+    if (!isSuperAdmin && !isAdmin) {
+      console.log(`[${requestId}] Permission denied for user ${user.email}`);
+      await supabaseAdmin.rpc('log_security_event_safe', {
+        p_event_type: 'unauthorized_invitation_attempt',
+        p_severity: 'high',
+        p_description: `User ${user.email} attempted to send invitation without admin role`,
+        p_metadata: {},
+        p_user_id: user.id
       });
+      return new Response(JSON.stringify({ error: 'Solo administradores y superadministradores pueden invitar usuarios' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    if (rateLimitError || !rateLimitOk) {
-      console.error(`[${requestId}] Rate limit exceeded for user:`, user.email);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Demasiadas invitaciones enviadas. Intenta de nuevo en 1 hora.' 
-        }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // PRIORITY 2: Rate limiting - ONLY for admins (superadmins bypass)
+    if (!isSuperAdmin) {
+      // Apply rate limit for regular admins: 10 invitations per hour
+      const { data: rateLimitOk, error: rateLimitError } = await supabaseAdmin
+        .rpc('check_rate_limit', {
+          p_identifier: user.id,
+          p_action_type: 'send_invitation',
+          p_max_attempts: 10,
+          p_window_minutes: 60
+        });
+
+      if (rateLimitError || !rateLimitOk) {
+        console.error(`[${requestId}] Rate limit exceeded for admin:`, user.email);
+        await supabaseAdmin.rpc('log_security_event_safe', {
+          p_event_type: 'rate_limit_exceeded',
+          p_severity: 'medium',
+          p_description: `Admin ${user.email} exceeded invitation rate limit`,
+          p_metadata: { action: 'send_invitation' },
+          p_user_id: user.id
+        });
+        return new Response(
+          JSON.stringify({ 
+            error: 'Demasiadas invitaciones enviadas. Intenta de nuevo en 1 hora.' 
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.log(`[${requestId}] [bypass] Superadmin ${user.email} can send unlimited invitations`);
     }
 
     // Input validation
@@ -188,6 +210,15 @@ serve(async (req) => {
     const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
     
+    // Log successful invitation with security event
+    await supabaseAdmin.rpc('log_security_event_safe', {
+      p_event_type: 'user_invitation_sent',
+      p_severity: 'low',
+      p_description: `${isSuperAdmin ? 'Superadmin' : 'Admin'} ${user.email} invited ${cleanEmail} as ${role}`,
+      p_metadata: { target_email: cleanEmail, role, is_superadmin: isSuperAdmin },
+      p_user_id: user.id
+    });
+    
     // Redact token from logs for security (F10)
     const redactedUrl = invitationUrl.replace(/token=([^&]+)/, 'token=[REDACTED]');
     console.log(`[${requestId}] Invitation URL: ${redactedUrl}`);
@@ -199,7 +230,9 @@ serve(async (req) => {
     try {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
       
-      const fromEmail = Deno.env.get('EMAIL_FROM') || 'Algopasa <invitaciones@algopasa.com>';
+      const fromName = Deno.env.get('EMAIL_FROM_NAME') || 'Algopasa';
+      const fromAddress = Deno.env.get('EMAIL_FROM_ADDRESS') || 'invitaciones@algopasa.com';
+      const fromEmail = `${fromName} <${fromAddress}>`;
       
       const { error: resendError } = await resend.emails.send({
         from: fromEmail,
