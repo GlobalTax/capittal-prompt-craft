@@ -13,12 +13,12 @@ const Landing = () => {
             Capittal
           </h1>
           <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost">Iniciar Sesión</Button>
-            </Link>
-            <Link to="/register">
-              <Button>Registrarse</Button>
-            </Link>
+            <Button variant="ghost" asChild>
+              <Link to="/login">Iniciar Sesión</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/register">Registrarse</Link>
+            </Button>
           </div>
         </div>
       </nav>
@@ -38,16 +38,12 @@ const Landing = () => {
               análisis de múltiplos y generación automática de informes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/register">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Comenzar Gratis
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  Ver Demo
-                </Button>
-              </Link>
+              <Button size="lg" className="w-full sm:w-auto" asChild>
+                <Link to="/register">Comenzar Gratis</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                <Link to="/login">Ver Demo</Link>
+              </Button>
             </div>
           </div>
           
@@ -221,11 +217,9 @@ const Landing = () => {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Únete a las asesorías que ya están optimizando su proceso de valoración
           </p>
-          <Link to="/register">
-            <Button size="lg" className="text-lg px-8">
-              Comenzar Ahora - Es Gratis
-            </Button>
-          </Link>
+          <Button size="lg" className="text-lg px-8" asChild>
+            <Link to="/register">Comenzar Ahora - Es Gratis</Link>
+          </Button>
         </div>
       </section>
 
