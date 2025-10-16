@@ -24,6 +24,7 @@ export default {
       },
       fontFamily: {
         sans: ['ABC Diatype', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+        heading: ['General Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
         tighter: '-0.02em',

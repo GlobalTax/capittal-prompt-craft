@@ -12,6 +12,15 @@
   font-display: swap;
 }
 
+/* General Sans Font */
+@font-face {
+  font-family: 'General Sans';
+  src: url('/fonts/GeneralSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Capittal - Herramienta de Valoración de Despachos Design System 
    Apollo.io inspired color palette with ABC Diatype typography.
    All colors MUST be HSL.
@@ -193,6 +202,11 @@
     line-height: 1.428571429; /* 20px / 14px */
     font-weight: 400;
     letter-spacing: -0.01em;
+  }
+
+  h1, h2 {
+    font-family: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-weight: 400;
   }
 }
 
