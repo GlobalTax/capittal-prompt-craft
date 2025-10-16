@@ -28,21 +28,21 @@ export const ValuationCard = React.memo(function ValuationCard({ valuation, onTo
         return {
           icon: Users,
           label: 'Cliente',
-          color: 'text-success border-success bg-success/10',
+          color: 'text-success border-success',
           subtitle: valuation.client_company || valuation.client_name
         };
       case 'potential_acquisition':
         return {
           icon: Target,
           label: 'Objetivo',
-          color: 'text-accent border-accent bg-accent/10',
+          color: 'text-warning border-warning',
           subtitle: valuation.target_company_name
         };
       default:
         return {
           icon: Building2,
           label: 'Mi Negocio',
-          color: 'text-primary border-primary bg-primary/10',
+          color: 'text-primary border-primary',
           subtitle: null
         };
     }
@@ -53,11 +53,11 @@ export const ValuationCard = React.memo(function ValuationCard({ valuation, onTo
 
   return (
     <Card
-      className={`group transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02] border-l-4 ${typeConfig.color.split(' ')[1]} bg-gradient-to-br from-background to-muted/20 ${className}`}
+      className={`group transition-all duration-200 cursor-pointer ${className}`}
       style={style}
       onClick={() => navigate(`/valuation/${valuation.id}`)}
     >
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 bg-gradient-to-r from-primary/5 to-accent/5">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="flex items-center gap-3 flex-1">
           <Checkbox
             checked={valuation.completed}

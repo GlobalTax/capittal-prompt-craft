@@ -119,7 +119,7 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
           <h1 className="text-2xl font-semibold">
             {filterType === 'own_business' ? 'Mis Valoraciones' : filterType === 'client_business' ? 'Valoraciones de Clientes' : 'Valoraciones'}
           </h1>
-          <Button onClick={() => setShowNewDialog(true)} className="gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button onClick={() => setShowNewDialog(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Nueva Valoración
           </Button>
@@ -155,7 +155,6 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
                 variant={typeFilter === type.value ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setTypeFilter(type.value)}
-                className={typeFilter === type.value ? 'bg-primary text-primary-foreground shadow-md' : ''}
               >
                 {type.label}
               </Button>
@@ -172,7 +171,6 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
               variant={statusFilter === status ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter(status)}
-              className={statusFilter === status ? 'bg-primary text-primary-foreground shadow-md' : ''}
             >
               {status === 'all' ? 'Todas' : status === 'draft' ? 'Borradores' : status === 'in_progress' ? 'En Progreso' : 'Completadas'}
             </Button>
