@@ -218,3 +218,13 @@
   z-index: 50 !important;
   background: hsl(var(--background));
 }
+
+/* Landing Page Specific Styles - Inter Font */
+.landing-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  color: rgb(32, 33, 36);
+  font-style: normal;
+}
