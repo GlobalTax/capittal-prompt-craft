@@ -15,10 +15,32 @@ export function UserCounter({
   showBadge = true,
   showTrend = false 
 }: UserCounterProps) {
-  const fixedCount = 223;
+  // Función para calcular el número de asesores basado en la fecha
+  const calculateAdvisorCount = (): number => {
+    const BASE_COUNT = 223;
+    const START_DATE = new Date('2025-10-16');
+    const today = new Date();
+    
+    const diffTime = Math.abs(today.getTime() - START_DATE.getTime());
+    const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Crecimiento pseudo-aleatorio pero determinístico
+    let totalIncrement = 0;
+    for (let day = 1; day <= daysPassed; day++) {
+      // Usar el día como seed para pseudo-random
+      const seed = day * 9301 + 49297; // Números primos
+      const random = (seed % 233) / 233; // Valor entre 0-1
+      const dayIncrement = random < 0.3 ? 1 : 2; // 30% días +1, 70% días +2
+      totalIncrement += dayIncrement;
+    }
+    
+    return BASE_COUNT + totalIncrement;
+  };
+
+  const currentCount = calculateAdvisorCount();
 
   const { count } = useCountUp({
-    end: fixedCount,
+    end: currentCount,
     duration: 2500,
     start: 0,
   });
