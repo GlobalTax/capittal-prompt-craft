@@ -1,7 +1,8 @@
 import { useCountUp } from '@/hooks/useCountUp';
-import { Users, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import logoCapittal from '@/assets/logo-capittal.png';
 
 interface UserCounterProps {
   variant?: 'default' | 'hero' | 'compact';
@@ -26,7 +27,7 @@ export function UserCounter({
     return (
       <div className="inline-flex items-center gap-4 px-6 py-4 bg-background rounded-2xl border-2 border-border shadow-lg animate-fade-in">
         <div className="p-3 bg-muted rounded-full">
-          <Users className="w-8 h-8 text-primary" />
+          <img src={logoCapittal} alt="Capittal" className="w-8 h-8 object-contain" />
         </div>
         <div>
           <div className="flex items-baseline gap-2">
@@ -65,7 +66,7 @@ export function UserCounter({
               <p className="text-xs text-muted-foreground mt-1">usando Capittal</p>
             </div>
             <div className="p-3 bg-muted rounded-full">
-              <Users className="w-6 h-6 text-primary" />
+              <img src={logoCapittal} alt="Capittal" className="w-6 h-6 object-contain" />
             </div>
           </div>
         </CardContent>
@@ -75,7 +76,7 @@ export function UserCounter({
 
   return (
     <div className="inline-flex items-center gap-3 px-4 py-2 bg-muted rounded-lg border border-border">
-      <Users className="w-5 h-5 text-primary" />
+      <img src={logoCapittal} alt="Capittal" className="w-5 h-5 object-contain" />
       <div>
         <p className="text-2xl font-bold">{count.toLocaleString()}</p>
         <p className="text-xs text-muted-foreground">asesores</p>
