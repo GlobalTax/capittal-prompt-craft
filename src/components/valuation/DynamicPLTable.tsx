@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Euro, Plus, Trash2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Euro, Plus, Trash2, AlertTriangle, Percent } from "lucide-react";
 
 export interface RowData {
   id: string;
@@ -217,6 +218,79 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     return 0;
   }, [sections, getCachedValue]);
 
+  // Validate percentage rows sum
+  const validatePercentageRows = React.useCallback((baseRowId: string, year: string) => {
+    const percentageRows = sections
+      .flatMap(s => s.rows)
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId);
+    
+    const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
+    
+    return {
+      sum,
+      isValid: sum >= 95 && sum <= 105,
+      percentageRows
+    };
+  }, [sections]);
+
+  // Normalize percentage rows to sum exactly 100%
+  const normalizePercentageRows = React.useCallback((sectionId: string, baseRowId: string) => {
+    const percentageRows = sections
+      .flatMap(s => s.rows)
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId);
+    
+    if (percentageRows.length === 0) return;
+
+    // Calculate normalization for all years
+    years.forEach(year => {
+      const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
+      
+      if (sum === 0) return;
+      
+      const factor = 100 / sum;
+      
+      // Update all percentage rows proportionally
+      const updatedSections = sections.map(section => ({
+        ...section,
+        rows: section.rows.map(row => {
+          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId;
+          if (!isPercentageRow) return row;
+          
+          const currentValue = row.values[year] || 0;
+          const normalizedValue = currentValue * factor;
+          
+          return {
+            ...row,
+            values: {
+              ...row.values,
+              [year]: Math.round(normalizedValue * 100) / 100
+            }
+          };
+        })
+      }));
+      
+      onDataChange(updatedSections);
+    });
+  }, [sections, years, onDataChange]);
+
+  // Get validation info for INGRESOS section
+  const ingresosValidation = React.useMemo(() => {
+    const ingresosSection = sections.find(s => s.title === 'INGRESOS');
+    if (!ingresosSection) return null;
+
+    const facturacionRow = ingresosSection.rows.find(r => r.label === 'Facturación Total');
+    if (!facturacionRow) return null;
+
+    const validations = years.map(year => validatePercentageRows(facturacionRow.id, year));
+    
+    return {
+      sectionId: ingresosSection.id,
+      baseRowId: facturacionRow.id,
+      validations,
+      hasIssues: validations.some(v => !v.isValid)
+    };
+  }, [sections, years, validatePercentageRows]);
+
   return (
     <div className="w-full space-y-4">
       {/* Header flotante con título y botones */}
@@ -304,6 +378,18 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                         <span className="font-bold text-sm px-1">{section.title}</span>
                       )}
                       <div className="flex gap-1">
+                        {ingresosValidation?.sectionId === section.id && ingresosValidation.hasIssues && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => normalizePercentageRows(ingresosValidation.sectionId, ingresosValidation.baseRowId)}
+                            className="h-7 gap-1.5"
+                            title="Normalizar porcentajes al 100%"
+                          >
+                            <Percent className="h-3.5 w-3.5" />
+                            Normalizar al 100%
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -328,6 +414,26 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                     </div>
                   </td>
                 </tr>
+
+                {/* Validation Alert for INGRESOS */}
+                {ingresosValidation?.sectionId === section.id && ingresosValidation.hasIssues && (
+                  <tr>
+                    <td colSpan={years.length + 2} className="px-3 pt-2 pb-3">
+                      <Alert variant="destructive" className="py-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription className="text-xs flex items-center gap-2">
+                          <span>Los porcentajes de ingresos no suman 100%:</span>
+                          {ingresosValidation.validations.map((v, idx) => (
+                            <Badge key={years[idx]} variant={v.isValid ? "success" : "destructive"} className="text-xs">
+                              {years[idx]}: {v.sum.toFixed(1)}%
+                            </Badge>
+                          ))}
+                          <span className="text-muted-foreground">→ Usa el botón "Normalizar al 100%"</span>
+                        </AlertDescription>
+                      </Alert>
+                    </td>
+                  </tr>
+                )}
 
                 {/* Section Rows */}
                 {section.rows.map((row) => (
