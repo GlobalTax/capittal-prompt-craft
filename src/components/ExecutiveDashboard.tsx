@@ -96,29 +96,41 @@ const ExecutiveDashboard = () => {
     }
   ];
 
-  const renderKPICard = (kpi: any) => (
-    <Card key={kpi.title} className="relative overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-        <kpi.icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{kpi.value}</div>
-        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-          {kpi.trend === "up" ? (
-            <TrendingUp className="h-3 w-3 text-green-500" />
-          ) : (
-            <TrendingDown className="h-3 w-3 text-red-500" />
-          )}
-          <span className={kpi.trend === "up" ? "text-green-600" : "text-red-600"}>
-            {kpi.change}
-          </span>
-          <span>vs mes anterior</span>
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">{kpi.description}</p>
-      </CardContent>
-    </Card>
-  );
+  const renderKPICard = (kpi: any) => {
+    const iconColors = {
+      [DollarSign.name]: 'text-primary',
+      [BarChart3.name]: 'text-accent',
+      [Users.name]: 'text-success',
+      [Target.name]: 'text-warning'
+    };
+    const iconColor = iconColors[kpi.icon.name] || 'text-primary';
+    
+    return (
+      <Card key={kpi.title} className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5 border-l-4 border-primary hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+          <div className={`p-2 rounded-full bg-background/50 ${iconColor}`}>
+            <kpi.icon className="h-5 w-5" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{kpi.value}</div>
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            {kpi.trend === "up" ? (
+              <TrendingUp className="h-3 w-3 text-success" />
+            ) : (
+              <TrendingDown className="h-3 w-3 text-critical" />
+            )}
+            <span className={kpi.trend === "up" ? "text-success font-semibold" : "text-critical font-semibold"}>
+              {kpi.change}
+            </span>
+            <span>vs mes anterior</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{kpi.description}</p>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
@@ -184,11 +196,17 @@ const ExecutiveDashboard = () => {
                 <div className="w-full h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="valor" fill="hsl(var(--primary))" name="Valor (€K)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="month" stroke="hsl(var(--foreground))" />
+                      <YAxis stroke="hsl(var(--foreground))" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }} 
+                      />
+                      <Bar dataKey="valor" fill="hsl(var(--chart-1))" name="Valor (€K)" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -240,28 +258,36 @@ const ExecutiveDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="valoraciones" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      name="Nº Valoraciones"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="valor" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={2}
-                      name="Valor Promedio (€K)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="month" stroke="hsl(var(--foreground))" />
+                      <YAxis stroke="hsl(var(--foreground))" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }} 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="valoraciones" 
+                        stroke="hsl(var(--chart-1))" 
+                        strokeWidth={3}
+                        name="Nº Valoraciones"
+                        dot={{ fill: 'hsl(var(--chart-1))', r: 5 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="valor" 
+                        stroke="hsl(var(--chart-2))" 
+                        strokeWidth={3}
+                        name="Valor Promedio (€K)"
+                        dot={{ fill: 'hsl(var(--chart-2))', r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -269,23 +295,34 @@ const ExecutiveDashboard = () => {
 
         <TabsContent value="alerts" className="space-y-4">
           <div className="space-y-4">
-            {alertsData.map((alert, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start space-x-4">
-                    <AlertCircle className={`h-5 w-5 mt-0.5 ${
-                      alert.type === 'warning' ? 'text-yellow-500' :
-                      alert.type === 'info' ? 'text-blue-500' : 'text-green-500'
-                    }`} />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">{alert.title}</p>
-                      <p className="text-sm text-muted-foreground">{alert.description}</p>
-                      <p className="text-xs text-muted-foreground">{alert.time}</p>
+            {alertsData.map((alert, index) => {
+              const alertStyles = {
+                warning: 'bg-warning/10 border-l-4 border-warning',
+                info: 'bg-primary/10 border-l-4 border-primary',
+                success: 'bg-success/10 border-l-4 border-success'
+              };
+              const iconColors = {
+                warning: 'text-warning',
+                info: 'text-primary',
+                success: 'text-success'
+              };
+              return (
+                <Card key={index} className={`${alertStyles[alert.type as keyof typeof alertStyles]} hover:shadow-lg transition-shadow duration-300`}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-2 rounded-full bg-background ${iconColors[alert.type as keyof typeof iconColors]}`}>
+                        <AlertCircle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-semibold leading-none">{alert.title}</p>
+                        <p className="text-sm text-muted-foreground">{alert.description}</p>
+                        <p className="text-xs text-muted-foreground">{alert.time}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
       </Tabs>

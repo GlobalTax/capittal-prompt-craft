@@ -141,8 +141,8 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-accent text-accent-foreground font-medium" 
-      : "hover:bg-sidebar-accent text-sidebar-foreground";
+      ? "bg-gradient-to-r from-primary/10 to-accent/10 text-primary font-semibold border-l-4 border-primary shadow-sm" 
+      : "hover:bg-sidebar-accent text-sidebar-foreground hover:border-l-4 hover:border-primary/30 transition-all duration-200";
 
   const renderMenuItems = (items: typeof menuItems) => (
     <SidebarMenu>
