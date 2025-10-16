@@ -41,7 +41,7 @@ export function AppSidebar() {
   const menuItems = [
     {
       title: t('sidebar.dashboard'),
-      url: "/",
+      url: "/dashboard",
       icon: LayoutDashboard,
       description: "Resumen ejecutivo"
     },
