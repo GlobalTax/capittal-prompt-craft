@@ -40,8 +40,9 @@ export function DynamicBudgetTable({
   onMonthStatusToggle 
 }: DynamicBudgetTableProps) {
   const formatNumber = (value: number): string => {
-    if (value === undefined || value === null || isNaN(value)) return '0';
+    if (value === undefined || value === null || isNaN(value)) return '';
     const rounded = Math.round(value * 100) / 100;
+    if (rounded === 0) return '';
     return rounded.toLocaleString('es-ES', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
@@ -361,7 +362,7 @@ export function DynamicBudgetTable({
                             type="text"
                             value={formatNumber(row.values[month] || 0)}
                             onChange={(e) => updateRowValue(section.id, row.id, month, e.target.value)}
-                            className="font-mono h-9 w-full text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
+                            className="font-mono h-9 w-full text-right border-muted-foreground/50 focus:border-primary bg-background"
                           />
                         ) : row.type === 'percentage' ? (
                           <div className="flex items-center justify-end gap-1">
@@ -369,11 +370,11 @@ export function DynamicBudgetTable({
                               type="text"
                               value={formatNumber(row.values[month] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, month, e.target.value)}
-                              className="font-mono h-9 w-16 text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
+                              className="font-mono h-9 w-16 text-right border-muted-foreground/50 focus:border-primary bg-background"
                               placeholder="0"
                             />
-                            <span className="text-xs text-muted-foreground">%</span>
-                            <span className="font-mono text-sm ml-1 text-muted-foreground">
+                            <span className="text-xs text-muted-foreground font-medium">%</span>
+                            <span className="font-mono text-sm ml-1 font-semibold">
                               = {formatNumber(calculatePercentageValue(row, month))}
                             </span>
                           </div>

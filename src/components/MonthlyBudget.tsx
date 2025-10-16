@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DynamicBudgetTable, BudgetTableSection } from '@/components/valuation/DynamicBudgetTable';
 import { useMonthlyBudgets } from '@/hooks/useMonthlyBudgets';
@@ -87,6 +88,8 @@ export default function MonthlyBudget() {
   const [sections, setSections] = useState<BudgetTableSection[]>(() => DEFAULT_SECTIONS(MONTHS));
   const [monthStatuses, setMonthStatuses] = useState<('real' | 'presupuestado')[]>(Array(12).fill('presupuestado'));
   const [currentBudgetId, setCurrentBudgetId] = useState<string | null>(null);
+  const [saveTimeoutId, setSaveTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Generar años disponibles
   const currentYear = new Date().getFullYear();
@@ -103,7 +106,13 @@ export default function MonthlyBudget() {
       setMonthStatuses(Array(12).fill('presupuestado'));
       setCurrentBudgetId(null);
     }
-  }, [selectedYear, budgets]);
+    
+    return () => {
+      if (saveTimeoutId) {
+        clearTimeout(saveTimeoutId);
+      }
+    };
+  }, [selectedYear, budgets, saveTimeoutId]);
 
   const handleCreateBudget = async () => {
     if (!user) return;
@@ -128,14 +137,33 @@ export default function MonthlyBudget() {
 
   const handleSectionsChange = (newSections: BudgetTableSection[]) => {
     setSections(newSections);
+    setIsSaving(true);
     
-    // Debounce the save to avoid excessive writes
+    if (saveTimeoutId) {
+      clearTimeout(saveTimeoutId);
+    }
+    
     if (currentBudgetId) {
-      const timeoutId = setTimeout(() => {
-        updateBudget(currentBudgetId, { sections: newSections as any });
-      }, 800);
+      const newTimeoutId = setTimeout(async () => {
+        try {
+          await updateBudget(currentBudgetId, { sections: newSections as any });
+          toast({
+            title: "✓ Guardado",
+            description: "Cambios guardados automáticamente",
+            duration: 1500,
+          });
+        } catch (error) {
+          toast({
+            title: "Error al guardar",
+            description: "No se pudieron guardar los cambios",
+            variant: "destructive",
+          });
+        } finally {
+          setIsSaving(false);
+        }
+      }, 1000);
       
-      return () => clearTimeout(timeoutId);
+      setSaveTimeoutId(newTimeoutId);
     }
   };
 
@@ -243,16 +271,23 @@ export default function MonthlyBudget() {
             </Card>
           </div>
 
-          <Card className="p-6">
-            <DynamicBudgetTable
-              months={MONTHS}
-              monthStatuses={monthStatuses}
-              sections={sections}
-              year={selectedYear}
-              onDataChange={handleSectionsChange}
-              onMonthStatusToggle={handleMonthStatusToggle}
-            />
-          </Card>
+        <Card className="p-6 relative">
+          {isSaving && (
+            <div className="absolute top-2 right-2 z-30">
+              <Badge variant="secondary" className="animate-pulse">
+                Guardando...
+              </Badge>
+            </div>
+          )}
+          <DynamicBudgetTable
+            months={MONTHS}
+            monthStatuses={monthStatuses}
+            sections={sections}
+            year={selectedYear}
+            onDataChange={handleSectionsChange}
+            onMonthStatusToggle={handleMonthStatusToggle}
+          />
+        </Card>
         </>
       ) : (
         <Card className="p-12 text-center">
