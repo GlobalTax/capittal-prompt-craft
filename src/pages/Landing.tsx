@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, FileText, TrendingUp, Shield, Clock, Users, LogOut, Linkedin, Twitter } from 'lucide-react';
 import { useAuthContext } from '@/components/auth/AuthProvider';
+import logoCapittal from '@/assets/logo-capittal.png';
 
 const Landing = () => {
   const { user, signOut } = useAuthContext();
@@ -251,7 +252,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Columna Marca/Info */}
             <div>
-              <h3 className="font-bold text-lg mb-4 text-primary">Capittal</h3>
+              <img src={logoCapittal} alt="Capittal" className="h-8 mb-4" />
               <p className="text-muted-foreground mb-4">
                 Plataforma profesional de valoración de empresas para asesores financieros
               </p>
