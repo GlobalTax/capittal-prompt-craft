@@ -6,6 +6,7 @@ import { BarChart3, FileText, TrendingUp, Shield, Clock, Users, LogOut, Linkedin
 import { useAuthContext } from '@/components/auth/AuthProvider';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import logoCapittal from '@/assets/logo-capittal.png';
+import { UserCounter } from '@/components/UserCounter';
 
 const mockChartData = [
   { month: 'Ene', valoraciones: 18, valor: 1.8 },
@@ -222,6 +223,21 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Social Proof Section - User Counter */}
+      <section className="py-12 border-y bg-gradient-to-r from-background via-muted/20 to-background">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            <UserCounter variant="hero" showBadge showTrend />
+            <div className="text-center md:text-left max-w-md">
+              <h4 className="text-lg font-semibold mb-2">Únete a la comunidad</h4>
+              <p className="text-muted-foreground text-sm">
+                Profesionales de toda España ya optimizan sus valoraciones con Capittal
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto px-4">
@@ -354,6 +370,10 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="bg-primary/5 py-20">
         <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center mb-8">
+            <UserCounter variant="hero" showBadge={false} />
+          </div>
+          
           <h3 className="text-3xl lg:text-4xl font-bold mb-4">
             ¿Listo para transformar tu asesoría?
           </h3>
