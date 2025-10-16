@@ -1,9 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, FileText, TrendingUp, Shield, Clock, Users, LogOut, Linkedin, Twitter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { BarChart3, FileText, TrendingUp, Shield, Clock, Users, LogOut, Linkedin, Twitter, DollarSign, Building2, Zap, Activity } from 'lucide-react';
 import { useAuthContext } from '@/components/auth/AuthProvider';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import logoCapittal from '@/assets/logo-capittal.png';
+
+const mockChartData = [
+  { month: 'Ene', valoraciones: 18, valor: 1.8 },
+  { month: 'Feb', valoraciones: 20, valor: 2.1 },
+  { month: 'Mar', valoraciones: 22, valor: 2.3 },
+  { month: 'Abr', valoraciones: 19, valor: 2.0 },
+  { month: 'May', valoraciones: 24, valor: 2.4 },
+  { month: 'Jun', valoraciones: 26, valor: 2.7 },
+];
 
 const Landing = () => {
   const { user, signOut } = useAuthContext();
@@ -73,28 +84,137 @@ const Landing = () => {
           
           {/* Mockup Hero */}
           <div className="relative">
-            <Card className="relative shadow-2xl border-2">
-              <CardHeader>
+            {/* Background gradient effects */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 blur-3xl -z-10" />
+            
+            <Card className="relative shadow-2xl hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border-2 bg-gradient-to-br from-card via-card to-card/95 transition-all duration-300 hover:scale-[1.02] animate-fade-in">
+              <CardHeader className="space-y-4">
+                {/* Browser window decoration */}
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-destructive shadow-sm"></div>
+                  <div className="w-3 h-3 rounded-full bg-warning shadow-sm"></div>
+                  <div className="w-3 h-3 rounded-full bg-success shadow-sm"></div>
                 </div>
-                <CardTitle>Dashboard Ejecutivo</CardTitle>
+                
+                {/* Title and badges */}
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-xl">Dashboard Ejecutivo</CardTitle>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="success" className="text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success-foreground mr-1.5 animate-pulse"></span>
+                      En Tiempo Real
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Hace 2 min
+                    </Badge>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-primary/10 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Valoraciones</p>
+              
+              <CardContent className="space-y-6">
+                {/* KPIs Grid - 4 items */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 transition-all duration-300 hover:bg-primary/15 hover:scale-[1.02] group">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground">Valoraciones Activas</p>
+                      <BarChart3 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                    </div>
                     <p className="text-2xl font-bold">24</p>
+                    <p className="text-xs text-success flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3" />
+                      +12% vs mes anterior
+                    </p>
                   </div>
-                  <div className="p-4 bg-primary/10 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Valor Medio</p>
-                    <p className="text-2xl font-bold">€2.4M</p>
+                  
+                  <div className="p-4 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg border border-accent/20 transition-all duration-300 hover:bg-accent/15 hover:scale-[1.02] group">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground">Valor Total</p>
+                      <DollarSign className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-2xl font-bold">€8.7M</p>
+                    <p className="text-xs text-success flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3" />
+                      +18.5% ROI
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-gradient-to-br from-success/10 to-success/5 rounded-lg border border-success/20 transition-all duration-300 hover:bg-success/15 hover:scale-[1.02] group">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground">Clientes Activos</p>
+                      <Building2 className="w-4 h-4 text-success group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      4 sectores diferentes
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-gradient-to-br from-warning/10 to-warning/5 rounded-lg border border-warning/20 transition-all duration-300 hover:bg-warning/15 hover:scale-[1.02] group">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground">Valor Medio</p>
+                      <Activity className="w-4 h-4 text-warning group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-2xl font-bold">€2.7M</p>
+                    <p className="text-xs text-success flex items-center gap-1 mt-1">
+                      <TrendingUp className="w-3 h-3" />
+                      +8% este mes
+                    </p>
                   </div>
                 </div>
-                <div className="h-40 bg-muted rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-16 h-16 text-primary/40" />
+                
+                {/* Real Chart with Recharts */}
+                <div className="h-[200px] bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg p-4 border border-border/50">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={mockChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="valoraciones" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="valor" 
+                        stroke="hsl(var(--accent))" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--accent))', r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Bottom badges */}
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <Badge variant="outline" className="text-xs">
+                    <Zap className="w-3 h-3 mr-1 text-warning" />
+                    12 Valoraciones este mes
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <Activity className="w-3 h-3 mr-1" />
+                    Tendencia positiva
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
