@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUserRole } from "@/hooks/useUserRole";
-import logoCapittal from "@/assets/logo-capittal.png";
 
 
 export function AppSidebar() {
@@ -165,21 +164,6 @@ export function AppSidebar() {
   return (
     <Sidebar className="shrink-0 border-r border-sidebar-border bg-sidebar" collapsible="icon" style={{ "--sidebar-width": "16rem" } as React.CSSProperties}>
       <SidebarContent className="py-4 overflow-y-auto">
-        {/* Logo/Brand */}
-        <div className="px-4 pb-4 mb-2">
-          {collapsed ? (
-            <img src={logoCapittal} alt="Capittal" className="h-8 w-8 mx-auto" />
-          ) : (
-            <div>
-              <img src={logoCapittal} alt="Capittal" className="h-10 mb-2" />
-              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                <Calculator className="h-3 w-3" />
-                Herramienta de Valoración Despachos
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
