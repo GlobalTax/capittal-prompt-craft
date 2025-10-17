@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Zap, Send, Settings, Activity, CheckCircle, AlertCircle, Clock, ExternalLink } from 'lucide-react';
+import { Zap, Send, Settings, Activity, CheckCircle, AlertCircle, Clock, ExternalLink, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ZapierWebhook {
   id: string;
@@ -36,6 +38,8 @@ const ZapierIntegration = () => {
   const [webhooks, setWebhooks] = useState<ZapierWebhook[]>([]);
   const [triggerEvents, setTriggerEvents] = useState<TriggerEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [queueStats, setQueueStats] = useState({ pending: 0, sent: 0, failed: 0 });
   const [testWebhookUrl, setTestWebhookUrl] = useState('');
   const [selectedTrigger, setSelectedTrigger] = useState('');
 
@@ -103,9 +107,54 @@ const ZapierIntegration = () => {
   ];
 
   React.useEffect(() => {
+    loadQueueStats();
     setWebhooks(simulatedWebhooks);
     setTriggerEvents(simulatedEvents);
   }, []);
+
+  const loadQueueStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('zapier_webhook_queue')
+        .select('status');
+      
+      if (error) throw error;
+      
+      const stats = data.reduce((acc, item) => {
+        acc[item.status as keyof typeof acc]++;
+        return acc;
+      }, { pending: 0, sent: 0, failed: 0 });
+      
+      setQueueStats(stats);
+    } catch (error) {
+      console.error('[Zapier] Failed to load queue stats:', error);
+    }
+  };
+
+  const handleProcessQueue = async () => {
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('process-zapier-webhooks');
+      
+      if (error) throw error;
+      
+      await loadQueueStats();
+      
+      toast({
+        title: "Cola Procesada",
+        description: `Procesados ${data.processed} webhooks: ${data.successful} exitosos, ${data.failed} fallidos`,
+      });
+    } catch (error) {
+      console.error('[Zapier] Failed to process queue:', error);
+      toast({
+        title: "Error",
+        description: "Error al procesar la cola de webhooks",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const triggerTypes = [
     { value: 'valuation_completed', label: 'Valoración Completada' },
@@ -262,6 +311,26 @@ const ZapierIntegration = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>Estado de la Cola:</strong> {queueStats.pending} pendientes, {queueStats.sent} enviados, {queueStats.failed} fallidos
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleProcessQueue}
+                  disabled={isProcessing || queueStats.pending === 0}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
+                  Procesar Cola
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+          
           <Tabs defaultValue="webhooks" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
