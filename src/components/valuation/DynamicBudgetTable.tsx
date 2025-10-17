@@ -39,6 +39,26 @@ export function DynamicBudgetTable({
   onDataChange, 
   onMonthStatusToggle 
 }: DynamicBudgetTableProps) {
+  // Valid months in long format (Spanish)
+  const VALID_MONTHS = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  // Sanitize sections to ensure only valid month keys exist
+  const sanitizeSections = (sections: BudgetTableSection[]): BudgetTableSection[] => {
+    return sections.map(section => ({
+      ...section,
+      rows: section.rows.map(row => ({
+        ...row,
+        values: Object.fromEntries(
+          Object.entries(row.values)
+            .filter(([key]) => VALID_MONTHS.includes(key))
+        )
+      }))
+    }));
+  };
+
   const formatNumber = (value: number): string => {
     if (value === undefined || value === null || isNaN(value)) return '';
     const rounded = Math.round(value * 100) / 100;
@@ -70,10 +90,16 @@ export function DynamicBudgetTable({
           }
         : section
     );
-    onDataChange(updatedSections);
+    onDataChange(sanitizeSections(updatedSections));
   };
 
   const updateRowValue = (sectionId: string, rowId: string, month: string, value: string) => {
+    // Only update if month is valid
+    if (!VALID_MONTHS.includes(month)) {
+      console.warn(`Invalid month key: ${month}`);
+      return;
+    }
+    
     const numericValue = parseNumber(value);
     
     // Create deep copies to ensure change detection
@@ -96,14 +122,14 @@ export function DynamicBudgetTable({
       };
     });
     
-    onDataChange(updatedSections);
+    onDataChange(sanitizeSections(updatedSections));
   };
 
   const updateSectionTitle = (sectionId: string, newTitle: string) => {
     const updatedSections = sections.map(section =>
       section.id === sectionId ? { ...section, title: newTitle } : section
     );
-    onDataChange(updatedSections);
+    onDataChange(sanitizeSections(updatedSections));
   };
 
   const addRow = (sectionId: string, position: 'top' | 'bottom' = 'bottom') => {
@@ -126,7 +152,7 @@ export function DynamicBudgetTable({
           }
         : section
     );
-    onDataChange(updatedSections);
+    onDataChange(sanitizeSections(updatedSections));
   };
 
   const removeRow = (sectionId: string, rowId: string) => {
@@ -135,7 +161,7 @@ export function DynamicBudgetTable({
         ? { ...section, rows: section.rows.filter(row => row.id !== rowId) }
         : section
     );
-    onDataChange(updatedSections);
+    onDataChange(sanitizeSections(updatedSections));
   };
 
   const addSection = () => {
@@ -145,11 +171,11 @@ export function DynamicBudgetTable({
       editable: true,
       rows: []
     };
-    onDataChange([...sections, newSection]);
+    onDataChange(sanitizeSections([...sections, newSection]));
   };
 
   const removeSection = (sectionId: string) => {
-    onDataChange(sections.filter(section => section.id !== sectionId));
+    onDataChange(sanitizeSections(sections.filter(section => section.id !== sectionId)));
   };
 
   // Helper: sum all rows of a given category for a specific month
