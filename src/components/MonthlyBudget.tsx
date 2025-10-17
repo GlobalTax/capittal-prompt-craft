@@ -2,12 +2,21 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DynamicBudgetTable, BudgetTableSection } from '@/components/valuation/DynamicBudgetTable';
 import { useMonthlyBudgets } from '@/hooks/useMonthlyBudgets';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Loader2, Plus, TrendingUp, TrendingDown, DollarSign, WifiOff, AlertTriangle, RefreshCw } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -82,14 +91,27 @@ const DEFAULT_SECTIONS = (months: string[]): BudgetTableSection[] => [
 
 export default function MonthlyBudget() {
   const { user } = useAuth();
-  const { budgets, loading, createBudget, updateBudget } = useMonthlyBudgets();
+  const { 
+    budgets, 
+    loading, 
+    createBudget, 
+    updateBudget, 
+    refetch,
+    isOnline,
+    isSyncing,
+    lastError,
+    hasPending,
+    loadDraft,
+    clearDraft,
+    retrySync
+  } = useMonthlyBudgets();
   const { toast } = useToast();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [sections, setSections] = useState<BudgetTableSection[]>(() => DEFAULT_SECTIONS(MONTHS));
   const [monthStatuses, setMonthStatuses] = useState<('real' | 'presupuestado')[]>(Array(12).fill('presupuestado'));
   const [currentBudgetId, setCurrentBudgetId] = useState<string | null>(null);
-  const [saveTimeoutId, setSaveTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<any>(null);
 
   // Generar años disponibles
   const currentYear = new Date().getFullYear();
@@ -101,18 +123,30 @@ export default function MonthlyBudget() {
       setSections(yearBudget.sections);
       setMonthStatuses(yearBudget.month_statuses);
       setCurrentBudgetId(yearBudget.id);
+
+      const draft = loadDraft(selectedYear);
+      if (draft && draft.timestamp > new Date(yearBudget.updated_at).getTime()) {
+        setPendingDraft(draft);
+        setShowDraftDialog(true);
+      }
     } else {
       setSections(DEFAULT_SECTIONS(MONTHS));
       setMonthStatuses(Array(12).fill('presupuestado'));
       setCurrentBudgetId(null);
     }
-    
-    return () => {
-      if (saveTimeoutId) {
-        clearTimeout(saveTimeoutId);
+  }, [selectedYear, budgets]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasPending) {
+        e.preventDefault();
+        e.returnValue = '';
       }
     };
-  }, [selectedYear, budgets, saveTimeoutId]);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasPending]);
 
   const handleCreateBudget = async () => {
     if (!user) return;
@@ -137,34 +171,38 @@ export default function MonthlyBudget() {
 
   const handleSectionsChange = (newSections: BudgetTableSection[]) => {
     setSections(newSections);
-    setIsSaving(true);
-    
-    if (saveTimeoutId) {
-      clearTimeout(saveTimeoutId);
-    }
-    
     if (currentBudgetId) {
-      const newTimeoutId = setTimeout(async () => {
-        try {
-          await updateBudget(currentBudgetId, { sections: newSections as any });
-          toast({
-            title: "✓ Guardado",
-            description: "Cambios guardados automáticamente",
-            duration: 1500,
-          });
-        } catch (error) {
-          toast({
-            title: "Error al guardar",
-            description: "No se pudieron guardar los cambios",
-            variant: "destructive",
-          });
-        } finally {
-          setIsSaving(false);
-        }
-      }, 1000);
-      
-      setSaveTimeoutId(newTimeoutId);
+      updateBudget(currentBudgetId, { sections: newSections as any });
     }
+  };
+
+  const handleRestoreDraft = () => {
+    if (pendingDraft && currentBudgetId) {
+      setSections(pendingDraft.sections);
+      setMonthStatuses(pendingDraft.month_statuses);
+      updateBudget(currentBudgetId, { 
+        sections: pendingDraft.sections as any,
+        month_statuses: pendingDraft.month_statuses as any
+      });
+      toast({
+        title: "Draft restaurado",
+        description: "Cambios locales aplicados",
+      });
+    }
+    setShowDraftDialog(false);
+    setPendingDraft(null);
+  };
+
+  const handleDiscardDraft = () => {
+    if (pendingDraft) {
+      clearDraft(selectedYear);
+      toast({
+        title: "Draft descartado",
+        description: "Se mantienen los datos del servidor",
+      });
+    }
+    setShowDraftDialog(false);
+    setPendingDraft(null);
   };
 
   const handleMonthStatusToggle = async (monthIndex: number) => {
@@ -202,6 +240,25 @@ export default function MonthlyBudget() {
 
   return (
     <div className="space-y-6 p-6">
+      <Dialog open={showDraftDialog} onOpenChange={setShowDraftDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambios locales encontrados</DialogTitle>
+            <DialogDescription>
+              Tienes cambios sin sincronizar guardados localmente. ¿Quieres restaurarlos?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDiscardDraft}>
+              Descartar
+            </Button>
+            <Button onClick={handleRestoreDraft}>
+              Restaurar cambios
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Presupuesto Mensual</h1>
@@ -209,6 +266,13 @@ export default function MonthlyBudget() {
         </div>
         
         <div className="flex gap-4 items-center">
+          {currentBudgetId && (
+            <Button variant="outline" size="sm" onClick={refetch}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refrescar
+            </Button>
+          )}
+          
           <Select value={selectedYear.toString()} onValueChange={(val) => setSelectedYear(parseInt(val))}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -230,6 +294,29 @@ export default function MonthlyBudget() {
           )}
         </div>
       </div>
+
+      {!isOnline && (
+        <Alert>
+          <WifiOff className="h-4 w-4" />
+          <AlertTitle>Sin conexión</AlertTitle>
+          <AlertDescription>
+            Trabajando offline. Los cambios se guardarán cuando vuelva la conexión.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {lastError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error al sincronizar</AlertTitle>
+          <AlertDescription className="flex items-center justify-between">
+            <span>{lastError}</span>
+            <Button variant="outline" size="sm" onClick={retrySync}>
+              Reintentar ahora
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {currentBudgetId ? (
         <>
@@ -272,9 +359,10 @@ export default function MonthlyBudget() {
           </div>
 
         <Card className="p-6 relative">
-          {isSaving && (
+          {(isSyncing || hasPending) && (
             <div className="absolute top-2 right-2 z-30">
               <Badge variant="secondary" className="animate-pulse">
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                 Guardando...
               </Badge>
             </div>
