@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useValuations, ValuationType, Valuation } from '@/hooks/useValuations';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
 import { ValuationCard } from './ValuationCard';
@@ -37,6 +37,11 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>(filterType || 'all');
   const [showNewDialog, setShowNewDialog] = useState(false);
+
+  // Sincronizar typeFilter cuando cambia filterType (ej: navegación entre rutas)
+  useEffect(() => {
+    setTypeFilter(filterType || 'all');
+  }, [filterType]);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ValuationType>(
     filterType === 'client_business' ? 'client_business' : 'own_business'
