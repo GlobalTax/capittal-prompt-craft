@@ -178,7 +178,7 @@ const Landing = () => {
             
             <h2 className="text-4xl lg:text-6xl font-bold leading-tight">
               Genera{' '}
-              <span className="text-primary">más ingresos</span>
+              <span className="text-primary">€5K-15K extra al mes</span>
               {' '}colaborando con Capittal
             </h2>
             
@@ -200,11 +200,11 @@ const Landing = () => {
                 variant="outline" 
                 className="w-full sm:w-auto"
                 onClick={() => {
-                  document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById('testimonios')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Cómo Funciona
-                <ChevronDown className="ml-2 w-4 h-4" />
+                Ver Casos de Éxito
+                <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -296,12 +296,17 @@ const Landing = () => {
       <section className="py-12 border-y bg-gradient-to-r from-background via-muted/20 to-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <UserCounter variant="hero" showBadge showTrend />
-            <div className="text-center md:text-left max-w-md">
-              <h4 className="text-lg font-semibold mb-2">Red de Asesores Certificados</h4>
-              <p className="text-muted-foreground text-sm">
-                Profesionales colaborando en proyectos de valoración empresarial
+            <div className="text-center">
+              <div className="text-5xl font-bold text-primary mb-2">158</div>
+              <p className="text-sm text-muted-foreground mb-1">asesores han generado</p>
+              <p className="text-2xl font-semibold text-success">€2.7M en comisiones</p>
+              <p className="text-xs text-muted-foreground">este año</p>
+            </div>
+            <div className="text-center md:text-left max-w-md border-l-2 border-primary/20 pl-6">
+              <p className="text-lg italic text-muted-foreground mb-2">
+                "He triplicado mis ingresos en 6 meses"
               </p>
+              <p className="text-sm font-medium">— María G., Asesora Financiera</p>
             </div>
           </div>
         </div>
