@@ -6586,6 +6586,51 @@ export type Database = {
           },
         ]
       }
+      lead_funnel_analytics: {
+        Row: {
+          advisor_user_id: string | null
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          sell_business_lead_id: string | null
+          valuation_id: string | null
+        }
+        Insert: {
+          advisor_user_id?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          sell_business_lead_id?: string | null
+          valuation_id?: string | null
+        }
+        Update: {
+          advisor_user_id?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          sell_business_lead_id?: string | null
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_funnel_analytics_sell_business_lead_id_fkey"
+            columns: ["sell_business_lead_id"]
+            isOneToOne: false
+            referencedRelation: "sell_business_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_funnel_analytics_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_interactions: {
         Row: {
           created_at: string
@@ -11448,6 +11493,98 @@ export type Database = {
         }
         Relationships: []
       }
+      sell_business_leads: {
+        Row: {
+          advisor_user_id: string | null
+          annual_revenue: number
+          assigned_to: string | null
+          commission_paid: boolean | null
+          commission_paid_at: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          estimated_commission: number | null
+          id: string
+          last_contacted_at: string | null
+          message: string | null
+          metadata: Json | null
+          notes: string | null
+          reason_to_sell: string | null
+          sector: string
+          source: string | null
+          status: string
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          valuation_id: string | null
+        }
+        Insert: {
+          advisor_user_id?: string | null
+          annual_revenue: number
+          assigned_to?: string | null
+          commission_paid?: boolean | null
+          commission_paid_at?: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          estimated_commission?: number | null
+          id?: string
+          last_contacted_at?: string | null
+          message?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          reason_to_sell?: string | null
+          sector: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          valuation_id?: string | null
+        }
+        Update: {
+          advisor_user_id?: string | null
+          annual_revenue?: number
+          assigned_to?: string | null
+          commission_paid?: boolean | null
+          commission_paid_at?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          estimated_commission?: number | null
+          id?: string
+          last_contacted_at?: string | null
+          message?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          reason_to_sell?: string | null
+          sector?: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          valuation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sell_business_leads_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stage_actions: {
         Row: {
           action_config: Json
@@ -15128,6 +15265,16 @@ export type Database = {
           p_metadata?: Json
           p_session_duration?: number
           p_share_id?: string
+        }
+        Returns: string
+      }
+      log_funnel_event: {
+        Args: {
+          p_advisor_user_id?: string
+          p_event_data?: Json
+          p_event_type: string
+          p_sell_business_lead_id?: string
+          p_valuation_id?: string
         }
         Returns: string
       }
