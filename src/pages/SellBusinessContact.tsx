@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Building2, Mail, Phone, Handshake } from "lucide-react";
+import { toast } from "sonner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { Handshake, Mail, Phone, Building2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "El nombre de la empresa debe tener al menos 2 caracteres"),
@@ -16,17 +19,17 @@ const formSchema = z.object({
   revenue: z.string().min(1, "La facturación es requerida"),
   contactName: z.string().min(2, "El nombre de contacto es requerido"),
   contactEmail: z.string().email("Email inválido"),
-  contactPhone: z.string().min(9, "Teléfono debe tener al menos 9 dígitos"),
-  message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres")
+  contactPhone: z.string().min(9, "Teléfono inválido"),
+  message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres"),
 });
 
-type FormData = z.infer<typeof formSchema>;
+const SellBusinessContact = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+  const [searchParams] = useSearchParams();
+  const valuationId = searchParams.get("valuation");
 
-export default function SellBusinessContact() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<FormData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName: "",
@@ -35,30 +38,74 @@ export default function SellBusinessContact() {
       contactName: "",
       contactEmail: "",
       contactPhone: "",
-      message: ""
-    }
+      message: "",
+    },
   });
 
-  const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true);
+  useEffect(() => {
+    // Pre-fill form if coming from valuation
+    if (valuationId) {
+      fetchValuationData(valuationId);
+    }
+  }, [valuationId]);
+
+  const fetchValuationData = async (id: string) => {
     try {
-      // TODO: Implement edge function or Supabase insert
-      console.log("Form data:", data);
-      
-      toast({
-        title: "Solicitud enviada",
-        description: "Nos pondremos en contacto contigo pronto para discutir la venta de tu empresa.",
-      });
-      
-      form.reset();
+      const { data, error } = await supabase
+        .from("valuations")
+        .select("title")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        form.setValue("companyName", data.title || "");
+      }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo enviar la solicitud. Inténtalo de nuevo.",
-        variant: "destructive"
+      console.error("Error fetching valuation:", error);
+    }
+  };
+
+  const handleFormStart = () => {
+    if (!formStarted) {
+      setFormStarted(true);
+      trackFunnelEvent("form_started", { valuationId: valuationId || undefined });
+    }
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+
+    try {
+      // Get current user if authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Call edge function to create lead and send emails
+      const { data, error } = await supabase.functions.invoke("send-sell-business-lead", {
+        body: {
+          companyName: values.companyName,
+          sector: values.sector,
+          revenue: parseFloat(values.revenue.replace(/[^0-9.]/g, "")),
+          contactName: values.contactName,
+          contactEmail: values.contactEmail,
+          contactPhone: values.contactPhone,
+          message: values.message,
+          advisorUserId: user?.id || null,
+          valuationId: valuationId || null,
+        },
       });
+
+      if (error) throw error;
+
+      toast.success("¡Solicitud enviada con éxito! Nos pondremos en contacto pronto.");
+      form.reset();
+      setFormStarted(false);
+    } catch (error: any) {
+      console.error("Error submitting lead:", error);
+      toast.error("Error al enviar la solicitud. Por favor, intenta de nuevo.");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -98,7 +145,12 @@ export default function SellBusinessContact() {
                       <FormControl>
                         <div className="relative">
                           <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="Mi Empresa S.L." className="pl-9" {...field} />
+                          <Input 
+                            placeholder="Mi Empresa S.L." 
+                            className="pl-9" 
+                            {...field} 
+                            onFocus={handleFormStart}
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -128,7 +180,7 @@ export default function SellBusinessContact() {
                   <FormItem>
                     <FormLabel>Facturación Anual Aproximada</FormLabel>
                     <FormControl>
-                      <Input placeholder="2M €" {...field} />
+                      <Input placeholder="2000000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -209,8 +261,8 @@ export default function SellBusinessContact() {
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Enviando..." : "Enviar Solicitud"}
               </Button>
             </form>
           </Form>
@@ -218,4 +270,6 @@ export default function SellBusinessContact() {
       </Card>
     </div>
   );
-}
+};
+
+export default SellBusinessContact;

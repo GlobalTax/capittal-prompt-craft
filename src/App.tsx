@@ -31,6 +31,7 @@ import AdminUsersPage from "./pages/admin/UserManagement";
 import TemplateManagement from "./pages/admin/TemplateManagement";
 import SecuritySettings from "./pages/SecuritySettings";
 import SecurityDashboard from "./pages/admin/SecurityDashboard";
+import SellBusinessLeads from "./pages/admin/SellBusinessLeads";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => {
                   <Route path="/admin/users" element={<AdminUsersPage />} />
                   <Route path="/admin/templates" element={<TemplateManagement />} />
                   <Route path="/admin/security-dashboard" element={<SecurityDashboard />} />
+                  <Route path="/admin/sell-leads" element={<SellBusinessLeads />} />
                 </Route>
               </Route>
 
