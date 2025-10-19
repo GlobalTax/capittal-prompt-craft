@@ -60,23 +60,23 @@ const App = () => {
               <Route element={<ProtectedRoute />}>
                 <Route element={<ProtectedLayout />}>
                   <Route path="/dashboard" element={<ExecutiveDashboard />} />
-                  <Route path="valuations/advisor" element={<ValuationList filterType="own_business" />} />
-                  <Route path="valuations/clients" element={<ValuationList filterType="client_business" />} />
-                  <Route path="valuation/:id" element={<ValuationEditor />} />
-                  <Route path="reports" element={<ReportGenerator />} />
-                  <Route path="advanced/budget" element={<MonthlyBudget />} />
-                  <Route path="advanced/multiples" element={<ComparableMultiples />} />
-                  <Route path="settings" element={<AdvancedSettings />} />
-                  <Route path="security" element={<SecuritySettings />} />
-                  <Route path="resources/templates" element={<DocumentTemplates />} />
-                  <Route path="resources/sell-business" element={<SellBusinessContact />} />
-                  <Route path="resources/fee-calculator" element={<FeeCalculator />} />
+                  <Route path="/valuations/advisor" element={<ValuationList filterType="own_business" />} />
+                  <Route path="/valuations/clients" element={<ValuationList filterType="client_business" />} />
+                  <Route path="/valuation/:id" element={<ValuationEditor />} />
+                  <Route path="/reports" element={<ReportGenerator />} />
+                  <Route path="/advanced/budget" element={<MonthlyBudget />} />
+                  <Route path="/advanced/multiples" element={<ComparableMultiples />} />
+                  <Route path="/settings" element={<AdvancedSettings />} />
+                  <Route path="/security" element={<SecuritySettings />} />
+                  <Route path="/resources/templates" element={<DocumentTemplates />} />
+                  <Route path="/resources/sell-business" element={<SellBusinessContact />} />
+                  <Route path="/resources/fee-calculator" element={<FeeCalculator />} />
                   
                   {/* Admin routes */}
-                  <Route path="admin" element={<AdminDashboard />} />
-                  <Route path="admin/users" element={<AdminUsersPage />} />
-                  <Route path="admin/templates" element={<TemplateManagement />} />
-                  <Route path="admin/security-dashboard" element={<SecurityDashboard />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/admin/templates" element={<TemplateManagement />} />
+                  <Route path="/admin/security-dashboard" element={<SecurityDashboard />} />
                 </Route>
               </Route>
 
