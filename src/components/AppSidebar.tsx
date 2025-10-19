@@ -24,7 +24,8 @@ import {
   DollarSign,
   ShieldCheck,
   Users,
-  FolderOpen
+  FolderOpen,
+  TrendingUp
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -89,6 +90,12 @@ export function AppSidebar() {
 
   const resourceItems = [
     {
+      title: "Mis Referencias",
+      url: "/my-referrals",
+      icon: TrendingUp,
+      description: "Leads y comisiones"
+    },
+    {
       title: t('sidebar.documentTemplates'),
       url: "/resources/templates",
       icon: FileDown,
@@ -126,6 +133,24 @@ export function AppSidebar() {
       url: "/admin/templates",
       icon: FolderOpen,
       description: "Administrar recursos"
+    },
+    {
+      title: "Gestión de Leads",
+      url: "/admin/sell-leads",
+      icon: Users,
+      description: "Gestionar leads de venta"
+    },
+    {
+      title: "Analytics de Funnel",
+      url: "/admin/funnel-analytics",
+      icon: TrendingUp,
+      description: "Métricas de conversión"
+    },
+    {
+      title: "Comisiones",
+      url: "/admin/commissions",
+      icon: DollarSign,
+      description: "Gestionar comisiones"
     }
   ];
 

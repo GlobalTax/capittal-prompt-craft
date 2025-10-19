@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Valuation } from '@/hooks/useValuations';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
+import { trackFunnelEvent } from '@/lib/analytics';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
 import { ClientInfoForm } from './ClientInfoForm';
@@ -56,6 +57,9 @@ export function ValuationEditor() {
 
       if (error) throw error;
       setValuation(data as Valuation);
+      
+      // Track valuation viewed
+      await trackFunnelEvent('valuation_viewed', id);
     } catch (error: any) {
       toast({
         title: 'Error al cargar',

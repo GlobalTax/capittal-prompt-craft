@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { trackFunnelEvent } from "@/lib/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2, BarChart3, X } from "lucide-react";
+import { Calculator, TrendingUp, Users, Euro, AlertTriangle, Info, Plus, Trash2, BarChart3, X, Handshake, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -102,6 +104,7 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
 };
 
 const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) => {
+  const navigate = useNavigate();
   const [data, setData] = useState<FinancialData>(() => 
     mapValuationToFinancialData(valuation)
   );
@@ -1251,6 +1254,60 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                         </div>
                       </>
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Ayudar a Vender Button */}
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 rounded-lg bg-primary/10">
+                        <Handshake className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle>¿Tu Cliente Quiere Vender?</CardTitle>
+                        <CardDescription>
+                          Genera comisiones ayudándole a vender su empresa con Capittal
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-3">
+                      <div className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Comisión competitiva</p>
+                          <p className="text-muted-foreground">Hasta un 5% del valor de la operación</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Sin costes adicionales</p>
+                          <p className="text-muted-foreground">Solo cobras si la venta se cierra</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Proceso transparente</p>
+                          <p className="text-muted-foreground">Seguimiento en tiempo real del progreso</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      size="lg" 
+                      className="w-full"
+                      onClick={async () => {
+                        await trackFunnelEvent('sell_button_clicked', valuation.id);
+                        navigate(`/resources/sell-business?valuation=${valuation.id}`);
+                      }}
+                    >
+                      <Handshake className="mr-2 h-5 w-5" />
+                      Ayudar a Vender Esta Empresa
+                    </Button>
                   </CardContent>
                 </Card>
               </div>

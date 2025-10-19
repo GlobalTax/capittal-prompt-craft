@@ -2,12 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const trackFunnelEvent = async (
   eventType: string,
-  options?: {
+  valuationIdOrOptions?: string | {
     valuationId?: string;
     leadId?: string;
     metadata?: Record<string, any>;
   }
 ) => {
+  const options = typeof valuationIdOrOptions === 'string' 
+    ? { valuationId: valuationIdOrOptions }
+    : valuationIdOrOptions;
   try {
     const { data, error } = await supabase.rpc("log_funnel_event", {
       p_event_type: eventType,
