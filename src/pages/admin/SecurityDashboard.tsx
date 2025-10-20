@@ -98,13 +98,24 @@ export default function SecurityDashboard() {
     return <LoadingSkeleton />;
   }
 
+  // Verificar si hay datos (incluso con valores en 0)
+  const hasData = metrics && (
+    metrics.overview.failed_logins_24h > 0 ||
+    metrics.overview.suspicious_ips_24h > 0 ||
+    metrics.overview.active_sessions > 0 ||
+    metrics.overview.critical_events_7d > 0 ||
+    metrics.overview.high_events_7d > 0 ||
+    (metrics.recent_critical_events && metrics.recent_critical_events.length > 0) ||
+    (metrics.top_event_types && metrics.top_event_types.length > 0)
+  );
+
   if (!metrics) {
     return (
       <div className="container mx-auto p-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            No se pudieron cargar las métricas de seguridad
+            No se pudieron cargar las métricas de seguridad. Verifica que las funciones RPC estén creadas.
           </AlertDescription>
         </Alert>
       </div>
@@ -139,6 +150,16 @@ export default function SecurityDashboard() {
           Actualizar
         </button>
       </div>
+
+      {/* Info si no hay datos */}
+      {!hasData && (
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            El sistema de seguridad está activo pero aún no hay eventos registrados. Los datos aparecerán automáticamente cuando ocurran eventos de seguridad.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -213,7 +234,7 @@ export default function SecurityDashboard() {
       </Card>
 
       {/* Timeline Chart */}
-      {timeline.length > 0 && (
+      {timeline && timeline.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
