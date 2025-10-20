@@ -32,6 +32,8 @@ import TemplateManagement from "./pages/admin/TemplateManagement";
 import SecuritySettings from "./pages/SecuritySettings";
 import SecurityDashboard from "./pages/admin/SecurityDashboard";
 import SellBusinessLeads from './pages/admin/SellBusinessLeads';
+import AuditLogs from './pages/admin/AuditLogs';
+import AlertSettings from './pages/admin/AlertSettings';
 import FunnelAnalytics from './pages/admin/FunnelAnalytics';
 import CommissionSettings from './pages/admin/CommissionSettings';
 import MyReferredLeads from './pages/MyReferredLeads';
@@ -81,7 +83,9 @@ const App = () => {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/users" element={<AdminUsersPage />} />
                   <Route path="/admin/templates" element={<TemplateManagement />} />
-                  <Route path="/admin/security-dashboard" element={<SecurityDashboard />} />
+                  <Route path="/admin/security" element={<SecurityDashboard />} />
+                  <Route path="/admin/audit-logs" element={<AuditLogs />} />
+                  <Route path="/admin/alert-settings" element={<AlertSettings />} />
                   <Route path="/admin/sell-leads" element={<SellBusinessLeads />} />
                   <Route path="/admin/funnel-analytics" element={<FunnelAnalytics />} />
                   <Route path="/admin/commissions" element={<CommissionSettings />} />

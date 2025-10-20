@@ -1,10 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileCheck, Download, Activity } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Users, FileCheck, Download, Activity, AlertCircle, ShieldAlert } from "lucide-react";
 import { useCountUp } from "@/hooks/useCountUp";
+import { usePendingAlerts } from "@/hooks/usePendingAlerts";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const { data: alerts } = usePendingAlerts();
+  
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -62,6 +69,47 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold mb-2">Panel de Administración</h1>
         <p className="text-muted-foreground">Gestión y estadísticas del sistema</p>
       </div>
+
+      {/* Alertas Pendientes */}
+      {alerts && alerts.total > 0 && (
+        <Card className="col-span-full border-red-500 border-2 bg-red-50 dark:bg-red-950">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+                Acciones Pendientes
+              </CardTitle>
+              <Badge variant="destructive">{alerts.total}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Usuarios Pendientes</p>
+                <p className="text-2xl font-bold text-red-600">{alerts.pendingUsers}</p>
+                <Button size="sm" variant="outline" onClick={() => navigate('/admin/users?filter=pending')}>
+                  Revisar →
+                </Button>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Colaboradores Nuevos</p>
+                <p className="text-2xl font-bold text-orange-600">{alerts.recentCollaborators}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Leads Sospechosos</p>
+                <p className="text-2xl font-bold text-yellow-600">{alerts.suspiciousLeads}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Leads Sin Asignar</p>
+                <p className="text-2xl font-bold text-blue-600">{alerts.unassignedLeads}</p>
+                <Button size="sm" variant="outline" onClick={() => navigate('/admin/sell-leads')}>
+                  Ver →
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map((kpi) => (

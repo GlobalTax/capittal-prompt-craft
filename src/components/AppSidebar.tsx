@@ -25,8 +25,12 @@ import {
   ShieldCheck,
   Users,
   FolderOpen,
-  TrendingUp
+  TrendingUp,
+  ShieldAlert,
+  FileSearch,
+  Settings2
 } from "lucide-react";
+import { usePendingAlerts } from "@/hooks/usePendingAlerts";
 import { useTranslation } from "react-i18next";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -38,6 +42,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { isAdmin, isAdvisor, loading } = useUserRole();
+  const { data: alerts } = usePendingAlerts();
 
   const menuItems = [
     {
@@ -123,6 +128,13 @@ export function AppSidebar() {
       description: "Dashboard administrativo"
     },
     {
+      title: "Alertas de Seguridad",
+      url: "/admin/security",
+      icon: ShieldAlert,
+      description: "Monitoreo y control",
+      badge: alerts?.total || 0
+    },
+    {
       title: "Gestión de Usuarios",
       url: "/admin/users",
       icon: Users,
@@ -151,6 +163,18 @@ export function AppSidebar() {
       url: "/admin/commissions",
       icon: DollarSign,
       description: "Gestionar comisiones"
+    },
+    {
+      title: "Logs de Auditoría",
+      url: "/admin/audit-logs",
+      icon: FileSearch,
+      description: "Trazabilidad del sistema"
+    },
+    {
+      title: "Configuración de Alertas",
+      url: "/admin/alert-settings",
+      icon: Settings2,
+      description: "Personalizar notificaciones"
     }
   ];
 
@@ -169,7 +193,7 @@ export function AppSidebar() {
       ? "bg-accent text-accent-foreground font-medium" 
       : "hover:bg-sidebar-accent text-sidebar-foreground";
 
-  const renderMenuItems = (items: typeof menuItems) => (
+  const renderMenuItems = (items: any[]) => (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
@@ -177,7 +201,12 @@ export function AppSidebar() {
             <NavLink to={item.url} end className={getNavCls}>
               <item.icon className="h-4 w-4 shrink-0" />
               {!collapsed && (
-                <span className="text-base font-medium truncate">{item.title}</span>
+                <div className="flex items-center justify-between flex-1">
+                  <span className="text-base font-medium truncate">{item.title}</span>
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <Badge variant="destructive" className="ml-2">{item.badge}</Badge>
+                  )}
+                </div>
               )}
             </NavLink>
           </SidebarMenuButton>
