@@ -2,14 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ABC Diatype Font */
+/* Satoshi Variable Font - Regular */
 @font-face {
-  font-family: 'ABC Diatype';
-  src: url('/fonts/ABCDiatype-Regular.eot');
-  src: url('/fonts/ABCDiatype-Regular.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/ABCDiatype-Regular.woff2') format('woff2'),
-       url('/fonts/ABCDiatype-Regular.woff') format('woff'),
-       url('/fonts/ABCDiatype-Regular.ttf') format('truetype');
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Variable.woff2') format('woff2-variations'),
+       url('/fonts/Satoshi-Variable.woff') format('woff-variations');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Satoshi Variable Font - Italic */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-VariableItalic.woff2') format('woff2-variations');
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Satoshi Static Fallback - Regular */
+@font-face {
+  font-family: 'Satoshi Fallback';
+  src: url('/fonts/Satoshi-Regular.woff2') format('woff2'),
+       url('/fonts/Satoshi-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -200,7 +216,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'ABC Diatype', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Satoshi', 'Satoshi Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     font-size: 16px;
     line-height: 21px;
     font-weight: 400;

@@ -23,7 +23,7 @@ export default {
         '3xl': ['30px', { lineHeight: '36px', letterSpacing: '-0.02em' }],
       },
       fontFamily: {
-        sans: ['ABC Diatype', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Satoshi', 'Satoshi Fallback', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
         heading: ['General Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
