@@ -29,7 +29,7 @@ export function ValuationEditor() {
   const [loading, setLoading] = useState(true);
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [generatingPDF, setGeneratingPDF] = useState(false);
-  const { years: valuationYears } = useValuationYears(id || '');
+  const { years: valuationYears, loading: yearsLoading } = useValuationYears(id || '');
   
   // Determinar si estamos en modo asesor o cliente basado en la URL de origen
   const isAdvisorMode = window.location.pathname.includes('/valuations/advisor') || 
@@ -122,6 +122,16 @@ export function ValuationEditor() {
       return;
     }
 
+    // Verificar que los datos de años estén cargados
+    if (!valuationYears || valuationYears.length < 2) {
+      toast({
+        title: 'Datos incompletos',
+        description: 'Esperando a que se carguen los datos de la valoración. Por favor intenta de nuevo.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setGeneratingPDF(true);
       await generateValuationPDF(valuation, advisorProfile, valuationYears);
@@ -180,7 +190,7 @@ export function ValuationEditor() {
               variant="default" 
               size="sm"
               onClick={handleGeneratePDF}
-              disabled={generatingPDF || profileLoading}
+              disabled={generatingPDF || profileLoading || yearsLoading || !valuationYears || valuationYears.length < 2}
               className="gap-2"
             >
               <FileText className="h-4 w-4" />

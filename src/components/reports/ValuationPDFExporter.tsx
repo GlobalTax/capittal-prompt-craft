@@ -141,7 +141,15 @@ const ValuationPDFDocument = ({ valuation, profile, valuationYears }: PDFProps) 
   const styles = createStyles(brandColor);
 
   // Usar valuation_years si existen, sino usar campos legacy
-  const useLegacyData = !valuationYears || valuationYears.length === 0;
+  const useLegacyData = !valuationYears || 
+                        valuationYears.length < 2 || 
+                        !valuationYears[0] || 
+                        !valuationYears[1];
+
+  if (useLegacyData) {
+    console.warn('PDF usando datos legacy - los datos de valuation_years no están disponibles o incompletos');
+  }
+
   const year1Data = useLegacyData ? null : valuationYears[0];
   const year2Data = useLegacyData ? null : valuationYears[1];
 
