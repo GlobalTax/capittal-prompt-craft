@@ -3,122 +3,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, BarChart3, Users, AlertCircle, Target, Zap, Loader2 } from "lucide-react";
-import { useDashboardKPIs } from "@/hooks/useDashboardKPIs";
+import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar } from "lucide-react";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
 
 const ExecutiveDashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { kpis, loading } = useDashboardKPIs(user?.id);
+  const navigate = useNavigate();
+  const { stats, trends, typeDistribution, financialSummary, recentValuations, loading } = useDashboardStats(user?.id);
 
-  // Transform KPIs from database to display format
-  const kpiData = [
-    {
-      title: t('dashboard.totalValuations'),
-      value: kpis.find(k => k.metric_type === 'total_valuations')?.value.toLocaleString('es-ES') || "0",
-      change: kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage 
-        ? `${kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage}%` 
-        : "+0%",
-      trend: (kpis.find(k => k.metric_type === 'total_valuations')?.change_percentage || 0) >= 0 ? "up" : "down",
-      icon: DollarSign,
-      description: t('dashboard.totalValuationsDesc')
-    },
-    {
-      title: t('dashboard.averageValue'),
-      value: `${kpis.find(k => k.metric_type === 'avg_multiple')?.value.toFixed(1) || "0.0"}x`,
-      change: kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage 
-        ? `${kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage}%` 
-        : "0%",
-      trend: (kpis.find(k => k.metric_type === 'avg_multiple')?.change_percentage || 0) >= 0 ? "up" : "down",
-      icon: BarChart3,
-      description: t('dashboard.averageValueDesc')
-    },
-    {
-      title: t('dashboard.activeClients'),
-      value: kpis.find(k => k.metric_type === 'active_projects')?.value.toString() || "0",
-      change: kpis.find(k => k.metric_type === 'active_projects')?.change_percentage 
-        ? `${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage > 0 ? '+' : ''}${kpis.find(k => k.metric_type === 'active_projects')?.change_percentage}` 
-        : "+0",
-      trend: (kpis.find(k => k.metric_type === 'active_projects')?.change_percentage || 0) >= 0 ? "up" : "down",
-      icon: Users,
-      description: t('dashboard.activeClientsDesc')
-    },
-    {
-      title: t('dashboard.completionRate'),
-      value: `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.value.toFixed(0) || "0"}%`,
-      change: kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage 
-        ? `${kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage}%` 
-        : "+0%",
-      trend: (kpis.find(k => k.metric_type === 'prediction_accuracy')?.change_percentage || 0) >= 0 ? "up" : "down",
-      icon: Target,
-      description: t('dashboard.completionRateDesc')
-    }
+  // Type labels
+  const typeLabels: Record<string, string> = {
+    dcf: 'DCF',
+    multiples: 'Múltiplos',
+    mixed: 'Mixta'
+  };
+
+  // Status labels and colors
+  const statusLabels: Record<string, string> = {
+    draft: 'Borrador',
+    in_progress: 'En Progreso',
+    completed: 'Completada'
+  };
+
+  const statusColors: Record<string, string> = {
+    draft: 'bg-gray-500',
+    in_progress: 'bg-blue-500',
+    completed: 'bg-green-500'
+  };
+
+  // Colors for charts
+  const chartColors = [
+    'hsl(var(--primary))',
+    'hsl(var(--secondary))',
+    'hsl(var(--accent))',
   ];
-
-  const monthlyData = [
-    { month: 'Ene', valoraciones: 12, valor: 850 },
-    { month: 'Feb', valoraciones: 15, valor: 920 },
-    { month: 'Mar', valoraciones: 18, valor: 1100 },
-    { month: 'Abr', valoraciones: 22, valor: 1300 },
-    { month: 'May', valoraciones: 19, valor: 1150 },
-    { month: 'Jun', valoraciones: 25, valor: 1450 }
-  ];
-
-  const sectorData = [
-    { name: 'Consultoría', value: 35, color: 'hsl(var(--primary))' },
-    { name: 'Tecnología', value: 28, color: 'hsl(var(--secondary))' },
-    { name: 'Marketing', value: 20, color: 'hsl(var(--accent))' },
-    { name: 'Legal', value: 10, color: 'hsl(var(--muted))' },
-    { name: 'Otros', value: 7, color: 'hsl(var(--border))' }
-  ];
-
-  const alertsData = [
-    {
-      type: "warning",
-      title: "Múltiplo de Sector Actualizado",
-      description: "El múltiplo promedio para consultoría ha aumentado a 4.8x",
-      time: "hace 2 horas"
-    },
-    {
-      type: "info",
-      title: "Nueva Valoración Completada",
-      description: "Consultora ABC - Valoración final: €1.2M",
-      time: "hace 4 horas"
-    },
-    {
-      type: "success",
-      title: "Predicción Confirmada",
-      description: "El modelo predictivo tuvo 98% de precisión en la última valoración",
-      time: "hace 1 día"
-    }
-  ];
-
-  const renderKPICard = (kpi: any) => (
-    <Card key={kpi.title} className="relative overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-        <kpi.icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{kpi.value}</div>
-        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-          {kpi.trend === "up" ? (
-            <TrendingUp className="h-3 w-3 text-green-500" />
-          ) : (
-            <TrendingDown className="h-3 w-3 text-red-500" />
-          )}
-          <span className={kpi.trend === "up" ? "text-green-600" : "text-red-600"}>
-            {kpi.change}
-          </span>
-          <span>vs mes anterior</span>
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">{kpi.description}</p>
-      </CardContent>
-    </Card>
-  );
 
   if (loading) {
     return (
@@ -141,151 +66,339 @@ const ExecutiveDashboard = () => {
     );
   }
 
+  // Prepare data for charts
+  const statusData = [
+    { name: 'Borradores', value: stats?.draft || 0, color: chartColors[0] },
+    { name: 'En Progreso', value: stats?.in_progress || 0, color: chartColors[1] },
+    { name: 'Completadas', value: stats?.completed || 0, color: chartColors[2] },
+  ].filter(item => item.value > 0);
+
+  const typeData = (typeDistribution || []).map((item, index) => ({
+    name: typeLabels[item.type] || item.type,
+    value: item.count,
+    color: chartColors[index % chartColors.length]
+  }));
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
           <p className="text-muted-foreground">
-            {t('dashboard.subtitle')}
+            Resumen de tus valoraciones y actividad
           </p>
         </div>
         <Badge variant="outline" className="px-3 py-1">
           <Zap className="h-3 w-3 mr-1" />
-          Tiempo Real
+          Datos en Tiempo Real
         </Badge>
       </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {kpiData.map(renderKPICard)}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Valoraciones</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.total || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats?.completed || 0} completadas, {stats?.in_progress || 0} en progreso
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Total Valorado</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              €{((stats?.totalValue || 0) / 1000000).toFixed(1)}M
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Suma de todas las valoraciones
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes Activos</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.activeClients || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Clientes únicos en valoraciones
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tasa de Completitud</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.completionRate.toFixed(0) || 0}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Valoraciones completadas
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="analytics" className="space-y-4">
+      <Tabs defaultValue="activity" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="analytics">{t('dashboard.analyticsTab')}</TabsTrigger>
-          <TabsTrigger value="trends">{t('dashboard.trendsTab')}</TabsTrigger>
-          <TabsTrigger value="alerts">{t('dashboard.alertsTab')}</TabsTrigger>
+          <TabsTrigger value="activity">Actividad</TabsTrigger>
+          <TabsTrigger value="analytics">Analíticas</TabsTrigger>
+          <TabsTrigger value="financial">Resumen Financiero</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="analytics" className="space-y-4">
+        <TabsContent value="activity" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Monthly Performance */}
+            {/* Monthly Activity */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('dashboard.monthlyPerformance')}</CardTitle>
+                <CardTitle>Actividad Mensual</CardTitle>
                 <CardDescription>
-                  Valoraciones completadas y valor total por mes
+                  Valoraciones creadas en los últimos 6 meses
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="w-full h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="valor" fill="hsl(var(--primary))" name="Valor (€K)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {trends && trends.length > 0 ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={trends}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" name="Nº Valoraciones" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No hay datos de actividad aún
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Sector Distribution */}
+            {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('dashboard.sectorDistribution')}</CardTitle>
+                <CardTitle>Actividad Reciente</CardTitle>
                 <CardDescription>
-                  Porcentaje de valoraciones por sector
+                  Últimas valoraciones modificadas
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="w-full h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={sectorData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
+                {recentValuations && recentValuations.length > 0 ? (
+                  <div className="space-y-3">
+                    {recentValuations.map((valuation) => (
+                      <div
+                        key={valuation.id}
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/valuations/${valuation.id}`)}
                       >
-                        {sectorData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{valuation.client_name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {typeLabels[valuation.valuation_type]}
+                            </Badge>
+                            <Badge className={`text-xs ${statusColors[valuation.status]}`}>
+                              {statusLabels[valuation.status]}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <p className="text-sm font-medium">
+                            {(() => {
+                              const dcfValue = (valuation.dcf_results as any)?.enterpriseValue || 0;
+                              const multiplesValue = (valuation.comparable_multiples_results as any)?.enterpriseValue || 0;
+                              const value = Math.max(dcfValue, multiplesValue);
+                              return value > 0 ? `€${(value / 1000000).toFixed(1)}M` : '-';
+                            })()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(valuation.updated_at), { 
+                              addSuffix: true, 
+                              locale: es 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No hay valoraciones recientes
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="trends" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboard.temporalTrend')}</CardTitle>
-              <CardDescription>
-                Evolución temporal del número de valoraciones y valor promedio
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="valoraciones" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      name="Nº Valoraciones"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="valor" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={2}
-                      name="Valor Promedio (€K)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Type Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribución por Tipo</CardTitle>
+                <CardDescription>
+                  Valoraciones según metodología aplicada
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {typeData.length > 0 ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={typeData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {typeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No hay datos de distribución aún
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Status Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribución por Estado</CardTitle>
+                <CardDescription>
+                  Valoraciones según su estado actual
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {statusData.length > 0 ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={statusData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="hsl(var(--primary))" name="Cantidad">
+                          {statusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No hay datos de estado aún
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="alerts" className="space-y-4">
-          <div className="space-y-4">
-            {alertsData.map((alert, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start space-x-4">
-                    <AlertCircle className={`h-5 w-5 mt-0.5 ${
-                      alert.type === 'warning' ? 'text-yellow-500' :
-                      alert.type === 'info' ? 'text-blue-500' : 'text-green-500'
-                    }`} />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">{alert.title}</p>
-                      <p className="text-sm text-muted-foreground">{alert.description}</p>
-                      <p className="text-xs text-muted-foreground">{alert.time}</p>
-                    </div>
+        <TabsContent value="financial" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Financial Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Resumen Financiero</CardTitle>
+                <CardDescription>
+                  Métricas de valoraciones completadas
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">EBITDA Promedio</span>
+                    <span className="font-medium">
+                      €{((financialSummary?.avgEbitda || 0) / 1000).toFixed(0)}K
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Múltiplo Promedio</span>
+                    <span className="font-medium">
+                      {(financialSummary?.avgMultiple || 0).toFixed(1)}x
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Valor Promedio</span>
+                    <span className="font-medium">
+                      €{((financialSummary?.avgEnterpriseValue || 0) / 1000000).toFixed(2)}M
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-sm text-muted-foreground">Rango de Valores</span>
+                    <span className="font-medium">
+                      €{((financialSummary?.minValue || 0) / 1000000).toFixed(1)}M - 
+                      €{((financialSummary?.maxValue || 0) / 1000000).toFixed(1)}M
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trends Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tendencia de Valor</CardTitle>
+                <CardDescription>
+                  Evolución del valor total valorado por mes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {trends && trends.length > 0 ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trends}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={2}
+                          name="Valor (€K)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No hay datos de tendencia aún
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
