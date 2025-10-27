@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Valuation } from '@/hooks/useValuations';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
+import { useValuationYears } from '@/hooks/useValuationYears';
 import { trackFunnelEvent } from '@/lib/analytics';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
@@ -28,6 +29,7 @@ export function ValuationEditor() {
   const [loading, setLoading] = useState(true);
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const { years: valuationYears } = useValuationYears(id || '');
   
   // Determinar si estamos en modo asesor o cliente basado en la URL de origen
   const isAdvisorMode = window.location.pathname.includes('/valuations/advisor') || 
@@ -122,7 +124,7 @@ export function ValuationEditor() {
 
     try {
       setGeneratingPDF(true);
-      await generateValuationPDF(valuation, advisorProfile);
+      await generateValuationPDF(valuation, advisorProfile, valuationYears);
       toast({
         title: 'PDF generado',
         description: 'El informe se ha descargado correctamente',

@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from '@react-pdf/renderer';
 import { Valuation } from '@/hooks/useValuations';
 import { AdvisorProfile } from '@/hooks/useAdvisorProfile';
+import { ValuationYear } from '@/repositories/ValuationYearRepository';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -13,6 +14,7 @@ Font.register({
 interface PDFProps {
   valuation: Valuation;
   profile: AdvisorProfile;
+  valuationYears: ValuationYear[];
 }
 
 const createStyles = (brandColor: string) => StyleSheet.create({
@@ -134,9 +136,14 @@ const createStyles = (brandColor: string) => StyleSheet.create({
   },
 });
 
-const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
+const ValuationPDFDocument = ({ valuation, profile, valuationYears }: PDFProps) => {
   const brandColor = profile.brand_color || '#3b82f6';
   const styles = createStyles(brandColor);
+
+  // Usar valuation_years si existen, sino usar campos legacy
+  const useLegacyData = !valuationYears || valuationYears.length === 0;
+  const year1Data = useLegacyData ? null : valuationYears[0];
+  const year2Data = useLegacyData ? null : valuationYears[1];
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -162,30 +169,41 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
     return format(new Date(date), "d 'de' MMMM 'de' yyyy", { locale: es });
   };
 
-  // Cálculos derivados
-  const totalRevenue1 = (valuation.revenue_1 || 0) + 
-                         (valuation.fiscal_recurring_1 || 0) + 
-                         (valuation.accounting_recurring_1 || 0) + 
-                         (valuation.labor_recurring_1 || 0) + 
-                         (valuation.other_revenue_1 || 0);
+  // Cálculos derivados usando valuation_years o datos legacy
+  const totalRevenue1 = year1Data 
+    ? year1Data.revenue
+    : (valuation.revenue_1 || 0) + 
+      (valuation.fiscal_recurring_1 || 0) + 
+      (valuation.accounting_recurring_1 || 0) + 
+      (valuation.labor_recurring_1 || 0) + 
+      (valuation.other_revenue_1 || 0);
   
-  const totalRevenue2 = (valuation.revenue_2 || 0) + 
-                         (valuation.fiscal_recurring_2 || 0) + 
-                         (valuation.accounting_recurring_2 || 0) + 
-                         (valuation.labor_recurring_2 || 0) + 
-                         (valuation.other_revenue_2 || 0);
+  const totalRevenue2 = year2Data
+    ? year2Data.revenue
+    : (valuation.revenue_2 || 0) + 
+      (valuation.fiscal_recurring_2 || 0) + 
+      (valuation.accounting_recurring_2 || 0) + 
+      (valuation.labor_recurring_2 || 0) + 
+      (valuation.other_revenue_2 || 0);
 
-  const ebitda1 = totalRevenue1 - 
-                  (valuation.personnel_costs_1 || 0) - 
-                  (valuation.other_costs_1 || 0) - 
-                  (valuation.owner_salary_1 || 0);
+  const personnelCosts1 = year1Data ? year1Data.personnel_costs : (valuation.personnel_costs_1 || 0);
+  const personnelCosts2 = year2Data ? year2Data.personnel_costs : (valuation.personnel_costs_2 || 0);
+  const otherCosts1 = year1Data ? year1Data.other_costs : (valuation.other_costs_1 || 0);
+  const otherCosts2 = year2Data ? year2Data.other_costs : (valuation.other_costs_2 || 0);
+  const ownerSalary1 = year1Data ? year1Data.owner_salary : (valuation.owner_salary_1 || 0);
+  const ownerSalary2 = year2Data ? year2Data.owner_salary : (valuation.owner_salary_2 || 0);
 
-  const ebitda2 = totalRevenue2 - 
-                  (valuation.personnel_costs_2 || 0) - 
-                  (valuation.other_costs_2 || 0) - 
-                  (valuation.owner_salary_2 || 0);
+  // EBITDA Ajustado: suma el sueldo del propietario de vuelta
+  const ebitda1 = totalRevenue1 - personnelCosts1 - otherCosts1 + ownerSalary1;
+  const ebitda2 = totalRevenue2 - personnelCosts2 - otherCosts2 + ownerSalary2;
 
   const avgEbitda = (ebitda1 + ebitda2) / 2;
+  
+  // Obtener años reales o usar valores por defecto
+  const yearLabel1 = year1Data?.year || valuation.year_1 || 'Año 1';
+  const yearLabel2 = year2Data?.year || valuation.year_2 || 'Año 2';
+  const employees1 = year1Data ? year1Data.employees : (valuation.employees_1 || 0);
+  const employees2 = year2Data ? year2Data.employees : (valuation.employees_2 || 0);
   const estimatedMultiple = 5; // Múltiplo estándar, puede ser configurable
   const estimatedValuation = avgEbitda * estimatedMultiple;
 
@@ -266,15 +284,15 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
           <Text style={styles.sectionTitle}>Indicadores Clave</Text>
           
           <View style={styles.row}>
-            <Text style={styles.label}>EBITDA Promedio:</Text>
+            <Text style={styles.label}>EBITDA Ajustado Promedio:</Text>
             <Text style={styles.value}>{formatCurrency(avgEbitda)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>EBITDA Año 1:</Text>
+            <Text style={styles.label}>EBITDA Ajustado {yearLabel1}:</Text>
             <Text style={styles.value}>{formatCurrency(ebitda1)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>EBITDA Año 2:</Text>
+            <Text style={styles.label}>EBITDA Ajustado {yearLabel2}:</Text>
             <Text style={styles.value}>{formatCurrency(ebitda2)}</Text>
           </View>
           <View style={styles.row}>
@@ -282,20 +300,20 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
             <Text style={styles.value}>{estimatedMultiple}x</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Ingresos Año 1:</Text>
+            <Text style={styles.label}>Ingresos {yearLabel1}:</Text>
             <Text style={styles.value}>{formatCurrency(totalRevenue1)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Ingresos Año 2:</Text>
+            <Text style={styles.label}>Ingresos {yearLabel2}:</Text>
             <Text style={styles.value}>{formatCurrency(totalRevenue2)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Empleados Año 1:</Text>
-            <Text style={styles.value}>{valuation.employees_1 || '-'}</Text>
+            <Text style={styles.label}>Empleados {yearLabel1}:</Text>
+            <Text style={styles.value}>{employees1 || '-'}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Empleados Año 2:</Text>
-            <Text style={styles.value}>{valuation.employees_2 || '-'}</Text>
+            <Text style={styles.label}>Empleados {yearLabel2}:</Text>
+            <Text style={styles.value}>{employees2 || '-'}</Text>
           </View>
         </View>
 
@@ -340,8 +358,8 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={[styles.tableCol, { flex: 2 }]}>Concepto</Text>
-              <Text style={styles.tableCol}>Año 1</Text>
-              <Text style={styles.tableCol}>Año 2</Text>
+              <Text style={styles.tableCol}>{yearLabel1}</Text>
+              <Text style={styles.tableCol}>{yearLabel2}</Text>
             </View>
 
             <View style={styles.tableRow}>
@@ -352,24 +370,24 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
 
             <View style={styles.tableRow}>
               <Text style={[styles.tableCol, { flex: 2 }]}>Costes de Personal</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.personnel_costs_1)}</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.personnel_costs_2)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(personnelCosts1)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(personnelCosts2)}</Text>
             </View>
 
             <View style={styles.tableRow}>
               <Text style={[styles.tableCol, { flex: 2 }]}>Otros Costes</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.other_costs_1)}</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.other_costs_2)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(otherCosts1)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(otherCosts2)}</Text>
             </View>
 
             <View style={styles.tableRow}>
               <Text style={[styles.tableCol, { flex: 2 }]}>Salario del Propietario</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.owner_salary_1)}</Text>
-              <Text style={styles.tableCol}>{formatCurrency(valuation.owner_salary_2)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(ownerSalary1)}</Text>
+              <Text style={styles.tableCol}>{formatCurrency(ownerSalary2)}</Text>
             </View>
 
             <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={[styles.tableCol, { flex: 2 }]}>EBITDA</Text>
+              <Text style={[styles.tableCol, { flex: 2 }]}>EBITDA Ajustado</Text>
               <Text style={styles.tableCol}>{formatCurrency(ebitda1)}</Text>
               <Text style={styles.tableCol}>{formatCurrency(ebitda2)}</Text>
             </View>
@@ -387,8 +405,8 @@ const ValuationPDFDocument = ({ valuation, profile }: PDFProps) => {
   );
 };
 
-export async function generateValuationPDF(valuation: Valuation, profile: AdvisorProfile) {
-  const blob = await pdf(<ValuationPDFDocument valuation={valuation} profile={profile} />).toBlob();
+export async function generateValuationPDF(valuation: Valuation, profile: AdvisorProfile, valuationYears: ValuationYear[] = []) {
+  const blob = await pdf(<ValuationPDFDocument valuation={valuation} profile={profile} valuationYears={valuationYears} />).toBlob();
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -397,8 +415,8 @@ export async function generateValuationPDF(valuation: Valuation, profile: Adviso
   URL.revokeObjectURL(url);
 }
 
-export async function previewValuationPDF(valuation: Valuation, profile: AdvisorProfile) {
-  const blob = await pdf(<ValuationPDFDocument valuation={valuation} profile={profile} />).toBlob();
+export async function previewValuationPDF(valuation: Valuation, profile: AdvisorProfile, valuationYears: ValuationYear[] = []) {
+  const blob = await pdf(<ValuationPDFDocument valuation={valuation} profile={profile} valuationYears={valuationYears} />).toBlob();
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
   // Note: We don't revoke the URL immediately since the window needs it
