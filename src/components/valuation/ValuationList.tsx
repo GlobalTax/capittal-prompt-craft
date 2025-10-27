@@ -46,6 +46,9 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
   const [newType, setNewType] = useState<ValuationType>(
     filterType === 'client_business' ? 'client_business' : 'own_business'
   );
+  const currentYear = new Date().getFullYear();
+  const [closedYear, setClosedYear] = useState((currentYear - 1).toString());
+  const [projectedYear, setProjectedYear] = useState(currentYear.toString());
   const [generatingPDF, setGeneratingPDF] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -65,11 +68,28 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
 
   const handleCreateNew = async () => {
     if (!newTitle.trim()) return;
-    const newValuation = await createValuation(newTitle, [], newType);
+    
+    // Validar años
+    if (closedYear === projectedYear) {
+      toast({
+        title: 'Error en años',
+        description: 'Los años comparativos deben ser distintos',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const newValuation = await createValuation(newTitle, [], newType, {
+      closedYear,
+      projectedYear,
+    });
+    
     if (newValuation) {
       setShowNewDialog(false);
       setNewTitle('');
       setNewType(filterType === 'client_business' ? 'client_business' : 'own_business');
+      setClosedYear((currentYear - 1).toString());
+      setProjectedYear(currentYear.toString());
       navigate(`/valuation/${newValuation.id}`);
     }
   };
@@ -284,6 +304,33 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
                   if (e.key === 'Enter') handleCreateNew();
                 }}
               />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="closedYear">Año Cerrado (Comparativo)</Label>
+                <Input
+                  id="closedYear"
+                  type="number"
+                  min="2000"
+                  max={currentYear}
+                  value={closedYear}
+                  onChange={(e) => setClosedYear(e.target.value)}
+                  placeholder="2024"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="projectedYear">Año Estimado (En Curso)</Label>
+                <Input
+                  id="projectedYear"
+                  type="number"
+                  min="2000"
+                  max={currentYear + 5}
+                  value={projectedYear}
+                  onChange={(e) => setProjectedYear(e.target.value)}
+                  placeholder="2025"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>

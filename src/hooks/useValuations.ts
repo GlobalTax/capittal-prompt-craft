@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { valuationRepository } from '@/repositories/ValuationRepository';
+import { valuationYearRepository } from '@/repositories/ValuationYearRepository';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -88,21 +89,68 @@ export function useValuations() {
     fetchValuations();
   }, []);
 
-  const createValuation = async (title: string, tags: string[] = [], valuation_type: ValuationType = 'own_business') => {
+  const createValuation = async (
+    title: string, 
+    tags: string[] = [], 
+    valuation_type: ValuationType = 'own_business',
+    options?: { closedYear: string; projectedYear: string }
+  ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
-    const currentYear = new Date().getFullYear();
+      const currentYear = new Date().getFullYear();
+      const closedYear = options?.closedYear || (currentYear - 1).toString();
+      const projectedYear = options?.projectedYear || currentYear.toString();
 
-    const newValuation = await valuationRepository.create({ 
-      title, 
-      tags, 
-      user_id: user.id, 
-      valuation_type,
-      year_1: (currentYear - 2).toString(), // Año cerrado anterior
-      year_2: (currentYear - 1).toString(), // Último año cerrado
-    });
+      const newValuation = await valuationRepository.create({ 
+        title, 
+        tags, 
+        user_id: user.id, 
+        valuation_type,
+        year_1: closedYear,
+        year_2: projectedYear,
+      });
+
+      // Crear los dos registros en valuation_years
+      try {
+        await valuationYearRepository.create({
+          valuation_id: newValuation.id,
+          year: closedYear,
+          year_status: 'closed',
+          revenue: 0,
+          fiscal_recurring: 0,
+          accounting_recurring: 0,
+          labor_recurring: 0,
+          other_revenue: 0,
+          personnel_costs: 0,
+          other_costs: 0,
+          owner_salary: 0,
+          employees: 0,
+        });
+
+        await valuationYearRepository.create({
+          valuation_id: newValuation.id,
+          year: projectedYear,
+          year_status: 'projected',
+          revenue: 0,
+          fiscal_recurring: 0,
+          accounting_recurring: 0,
+          labor_recurring: 0,
+          other_revenue: 0,
+          personnel_costs: 0,
+          other_costs: 0,
+          owner_salary: 0,
+          employees: 0,
+        });
+      } catch (yearError: any) {
+        console.error('Error creating valuation years:', yearError);
+        toast({
+          title: 'Advertencia',
+          description: 'Valoración creada pero los años no se inicializaron correctamente',
+          variant: 'destructive',
+        });
+      }
 
       setValuations([newValuation, ...valuations]);
       toast({
