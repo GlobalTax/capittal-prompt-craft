@@ -14198,6 +14198,65 @@ export type Database = {
           },
         ]
       }
+      valuation_years: {
+        Row: {
+          accounting_recurring: number | null
+          created_at: string | null
+          employees: number | null
+          fiscal_recurring: number | null
+          id: string
+          labor_recurring: number | null
+          other_costs: number | null
+          other_revenue: number | null
+          owner_salary: number | null
+          personnel_costs: number | null
+          revenue: number | null
+          valuation_id: string
+          year: string
+          year_status: string | null
+        }
+        Insert: {
+          accounting_recurring?: number | null
+          created_at?: string | null
+          employees?: number | null
+          fiscal_recurring?: number | null
+          id?: string
+          labor_recurring?: number | null
+          other_costs?: number | null
+          other_revenue?: number | null
+          owner_salary?: number | null
+          personnel_costs?: number | null
+          revenue?: number | null
+          valuation_id: string
+          year: string
+          year_status?: string | null
+        }
+        Update: {
+          accounting_recurring?: number | null
+          created_at?: string | null
+          employees?: number | null
+          fiscal_recurring?: number | null
+          id?: string
+          labor_recurring?: number | null
+          other_costs?: number | null
+          other_revenue?: number | null
+          owner_salary?: number | null
+          personnel_costs?: number | null
+          revenue?: number | null
+          valuation_id?: string
+          year?: string
+          year_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_years_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       valuations: {
         Row: {
           accounting_recurring_1: number | null

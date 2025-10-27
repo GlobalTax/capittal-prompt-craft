@@ -100,8 +100,8 @@ export function useValuations() {
       tags, 
       user_id: user.id, 
       valuation_type,
-      year_1: (currentYear - 1).toString(),
-      year_2: currentYear.toString(),
+      year_1: (currentYear - 2).toString(), // Año cerrado anterior
+      year_2: (currentYear - 1).toString(), // Último año cerrado
     });
 
       setValuations([newValuation, ...valuations]);

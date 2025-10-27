@@ -14,6 +14,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { DynamicPLTable, type RowData, type TableSection } from "@/components/valuation/DynamicPLTable";
 import { Valuation } from "@/hooks/useValuations";
+import { useValuationYears } from "@/hooks/useValuationYears";
 
 
 interface YearData {
@@ -105,9 +106,32 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
 
 const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) => {
   const navigate = useNavigate();
-  const [data, setData] = useState<FinancialData>(() => 
-    mapValuationToFinancialData(valuation)
-  );
+  
+  // Hook para gestión de años dinámicos
+  const { years: valuationYears, loading: yearsLoading, addYear, deleteYear, updateYear } = useValuationYears(valuation.id);
+  
+  // Mapear años de la BD a formato local
+  const data: FinancialData = useMemo(() => {
+    if (valuationYears.length === 0) {
+      return mapValuationToFinancialData(valuation);
+    }
+    
+    return {
+      years: valuationYears.map(vy => ({
+        year: vy.year,
+        yearStatus: vy.year_status,
+        totalRevenue: vy.revenue,
+        fiscalRecurringPercent: vy.fiscal_recurring,
+        accountingRecurringPercent: vy.accounting_recurring,
+        laborRecurringPercent: vy.labor_recurring,
+        otherRevenuePercent: vy.other_revenue,
+        personnelCosts: vy.personnel_costs,
+        otherCosts: vy.other_costs,
+        ownerSalary: vy.owner_salary,
+        numberOfEmployees: vy.employees,
+      }))
+    };
+  }, [valuationYears, valuation]);
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
   
@@ -553,110 +577,50 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     return parseFloat(cleaned) || 0;
   };
 
-  const updateYearData = (yearIndex: number, field: keyof YearData, value: number) => {
-    setData(prev => ({
-      years: prev.years.map((year, index) =>
-        index === yearIndex ? { ...year, [field]: value } : year
-      )
-    }));
-  };
 
-  const handleInputChange = (yearIndex: number, field: keyof YearData, value: string) => {
-    const cleanValue = value.replace(/[^\d.]/g, '');
-    const numValue = parseNumber(cleanValue);
-    updateYearData(yearIndex, field, numValue);
-  };
-
-  const handlePercentageChange = (yearIndex: number, field: keyof YearData, value: string) => {
-    if (value === '') {
-      updateYearData(yearIndex, field, 0);
-      return;
-    }
-    
-    const cleanValue = value.replace(/[^\d.,]/g, '').replace(',', '.');
-    const numValue = parseFloat(cleanValue);
-    
-    if (!isNaN(numValue)) {
-      const cappedValue = Math.min(Math.max(numValue, 0), 100);
-      updateYearData(yearIndex, field, cappedValue);
-    }
-  };
-
-  const addFutureYear = () => {
+  const addFutureYear = async () => {
     const latestYear = data.years[data.years.length - 1];
     const newYear = (parseInt(latestYear.year) + 1).toString();
-    setData(prev => ({
-      years: [...prev.years, { ...latestYear, year: newYear, yearStatus: 'projected' }]
-    }));
+    await addYear(newYear, 'projected');
   };
 
-  const addPastYear = () => {
+  const addPastYear = async () => {
     const firstYear = data.years[0];
     const newYear = (parseInt(firstYear.year) - 1).toString();
-    setData(prev => ({
-      years: [{ ...firstYear, year: newYear, yearStatus: 'closed' }, ...prev.years]
-    }));
+    await addYear(newYear, 'closed');
   };
   
-  const toggleYearStatus = (yearIndex: number) => {
-    setData(prev => ({
-      years: prev.years.map((year, index) =>
-        index === yearIndex 
-          ? { ...year, yearStatus: year.yearStatus === 'closed' ? 'projected' : 'closed' }
-          : year
-      )
-    }));
-  };
-
-  const removeYear = (yearIndex: number) => {
-    if (data.years.length > 2) {
-      setData(prev => ({
-        years: prev.years.filter((_, index) => index !== yearIndex)
-      }));
+  const toggleYearStatus = async (yearIndex: number) => {
+    const yearToToggle = valuationYears[yearIndex];
+    if (yearToToggle) {
+      const newStatus = yearToToggle.year_status === 'closed' ? 'projected' : 'closed';
+      await updateYear(yearToToggle.id, { year_status: newStatus });
     }
   };
 
-  // Sincronizar cambios a Supabase
-  const syncToValuation = (updatedYears: YearData[]) => {
-    if (updatedYears.length >= 2) {
-      const year1 = updatedYears[0];
-      const year2 = updatedYears[1];
-      
-      onUpdate('year_1', year1.year);
-      onUpdate('revenue_1', year1.totalRevenue);
-      onUpdate('fiscal_recurring_1', year1.fiscalRecurringPercent);
-      onUpdate('accounting_recurring_1', year1.accountingRecurringPercent);
-      onUpdate('labor_recurring_1', year1.laborRecurringPercent);
-      onUpdate('other_revenue_1', year1.otherRevenuePercent);
-      onUpdate('personnel_costs_1', year1.personnelCosts);
-      onUpdate('other_costs_1', year1.otherCosts);
-      onUpdate('owner_salary_1', year1.ownerSalary);
-      onUpdate('employees_1', year1.numberOfEmployees);
-      
-      onUpdate('year_2', year2.year);
-      onUpdate('revenue_2', year2.totalRevenue);
-      onUpdate('fiscal_recurring_2', year2.fiscalRecurringPercent);
-      onUpdate('accounting_recurring_2', year2.accountingRecurringPercent);
-      onUpdate('labor_recurring_2', year2.laborRecurringPercent);
-      onUpdate('other_revenue_2', year2.otherRevenuePercent);
-      onUpdate('personnel_costs_2', year2.personnelCosts);
-      onUpdate('other_costs_2', year2.otherCosts);
-      onUpdate('owner_salary_2', year2.ownerSalary);
-      onUpdate('employees_2', year2.numberOfEmployees);
+  const removeYear = async (yearIndex: number) => {
+    const yearToRemove = valuationYears[yearIndex];
+    if (yearToRemove && data.years.length > 2) {
+      await deleteYear(yearToRemove.id);
     }
   };
 
-  // Sincronizar estado local cuando cambie la prop valuation
-  useEffect(() => {
-    setData(mapValuationToFinancialData(valuation));
-  }, [valuation]);
+  const calculateVariation = (currentValue: number, previousValue: number) => {
+    if (previousValue === 0) return 0;
+    return ((currentValue - previousValue) / previousValue) * 100;
+  };
 
   // Dynamic table handlers
-  const handleDynamicDataChange = (newSections: TableSection[]) => {
+  const handleDynamicDataChange = async (newSections: TableSection[]) => {
     setDynamicSections(newSections);
     
-    // Sync back to original data structure for calculations
-    const updatedYears = data.years.map(year => {
+    // Actualizar cada año en la base de datos
+    for (let i = 0; i < data.years.length; i++) {
+      const year = data.years[i];
+      const valuationYear = valuationYears[i];
+      
+      if (!valuationYear) continue;
+      
       const totalRevenueRow = newSections
         .flatMap(s => s.rows)
         .find(r => r.id === 'total-revenue');
@@ -691,24 +655,19 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       const otherCosts = totalRevenue * ((otherCostsRow?.values[year.year] || 0) / 100);
       const ownerSalary = totalRevenue * ((ownerSalaryRow?.values[year.year] || 0) / 100);
 
-      return {
-        ...year,
-        totalRevenue,
-        fiscalRecurringPercent: fiscalRow?.values[year.year] || 0,
-        accountingRecurringPercent: accountingRow?.values[year.year] || 0,
-        laborRecurringPercent: laborRow?.values[year.year] || 0,
-        otherRevenuePercent: otherRevenueRow?.values[year.year] || 0,
-        personnelCosts,
-        otherCosts,
-        ownerSalary,
-        numberOfEmployees: employeesRow?.values[year.year] || 0,
-      };
-    });
-
-    setData({ years: updatedYears });
-    
-    // Propagar cambios a Supabase
-    syncToValuation(updatedYears);
+      // Actualizar en la BD
+      await updateYear(valuationYear.id, {
+        revenue: totalRevenue,
+        fiscal_recurring: fiscalRow?.values[year.year] || 0,
+        accounting_recurring: accountingRow?.values[year.year] || 0,
+        labor_recurring: laborRow?.values[year.year] || 0,
+        other_revenue: otherRevenueRow?.values[year.year] || 0,
+        personnel_costs: personnelCosts,
+        other_costs: otherCosts,
+        owner_salary: ownerSalary,
+        employees: employeesRow?.values[year.year] || 0,
+      });
+    }
   };
 
   const handleYearAdd = (type: 'past' | 'future') => {
@@ -717,45 +676,29 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     } else {
       addPastYear();
     }
-    
-    // Update dynamic sections with new year
-    setTimeout(() => {
-      setDynamicSections(prevSections => 
-        prevSections.map(section => ({
-          ...section,
-          rows: section.rows.map(row => ({
-            ...row,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: row.values[y.year] || 0 }), {})
-          }))
-        }))
-      );
-    }, 0);
   };
 
   const handleYearRemove = (yearIndex: number) => {
     removeYear(yearIndex);
-    
-    // Update dynamic sections to remove year
-    setTimeout(() => {
-      const removedYear = data.years[yearIndex]?.year;
-      if (removedYear) {
-        setDynamicSections(prevSections =>
-          prevSections.map(section => ({
-            ...section,
-            rows: section.rows.map(row => {
-              const { [removedYear]: _, ...remainingValues } = row.values;
-              return { ...row, values: remainingValues };
-            })
-          }))
-        );
-      }
-    }, 0);
   };
 
-  const calculateVariation = (currentValue: number, previousValue: number) => {
-    if (previousValue === 0) return 0;
-    return ((currentValue - previousValue) / previousValue) * 100;
-  };
+  // Sincronizar dynamicSections cuando cambien los años
+  useEffect(() => {
+    if (data.years.length > 0) {
+      setDynamicSections(prevSections =>
+        prevSections.map(section => ({
+          ...section,
+          rows: section.rows.map(row => ({
+            ...row,
+            values: data.years.reduce((acc, y) => {
+              // Mantener valores existentes o inicializar a 0
+              return { ...acc, [y.year]: row.values[y.year] ?? 0 };
+            }, {})
+          }))
+        }))
+      );
+    }
+  }, [data.years.length]); // Solo cuando cambia el número de años
 
   const validateData = () => {
     const issues: string[] = [];
