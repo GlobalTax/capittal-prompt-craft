@@ -51,6 +51,9 @@
     "welcomeBack": "Benvingut de nou!",
     "createAccount": "Crear el teu compte",
     "loginSubtitle": "Introdueix les teves credencials per accedir",
-    "registerSubtitle": "Completa el formulari per començar"
+    "registerSubtitle": "Completa el formulari per començar",
+    "acceptTerms": "Accepto els Termes i Condicions d'ús *",
+    "termsRequired": "Has d'acceptar els termes i condicions",
+    "termsLink": "Termes i Condicions"
   }
 }

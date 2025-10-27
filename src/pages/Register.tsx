@@ -4,6 +4,7 @@ import { useAuthContext } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +22,7 @@ const Register = () => {
   const [advisoryType, setAdvisoryType] = useState('');
   const [taxId, setTaxId] = useState('');
   const [professionalNumber, setProfessionalNumber] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuthContext();
   const navigate = useNavigate();
@@ -56,6 +58,11 @@ const Register = () => {
 
     if (password.length < 6) {
       toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast.error('Debes aceptar los términos y condiciones para continuar');
       return;
     }
 
@@ -247,6 +254,21 @@ const Register = () => {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
+            <div className="flex items-start space-x-2 w-full">
+              <Checkbox 
+                id="terms" 
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                disabled={loading}
+              />
+              <Label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                Acepto los{' '}
+                <Link to="/terms" target="_blank" className="text-primary hover:underline font-medium">
+                  Términos y Condiciones
+                </Link>
+                {' '}de uso de la plataforma *
+              </Label>
+            </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t('auth.registering') : t('auth.registerButton')}
             </Button>

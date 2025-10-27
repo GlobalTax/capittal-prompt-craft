@@ -51,6 +51,9 @@
     "welcomeBack": "¡Bienvenido de nuevo!",
     "createAccount": "Crear tu cuenta",
     "loginSubtitle": "Ingresa tus credenciales para acceder",
-    "registerSubtitle": "Completa el formulario para comenzar"
+    "registerSubtitle": "Completa el formulario para comenzar",
+    "acceptTerms": "Acepto los Términos y Condiciones de uso *",
+    "termsRequired": "Debes aceptar los términos y condiciones",
+    "termsLink": "Términos y Condiciones"
   }
 }

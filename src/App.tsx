@@ -40,6 +40,7 @@ import CommissionSettings from './pages/admin/CommissionSettings';
 import MyReferredLeads from './pages/MyReferredLeads';
 import ClientLanding from './pages/ClientLanding';
 import OrganizationManagement from './pages/admin/OrganizationManagement';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invite" element={<AcceptInvitation />} />

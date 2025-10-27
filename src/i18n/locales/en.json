@@ -51,6 +51,9 @@
     "welcomeBack": "Welcome back!",
     "createAccount": "Create your account",
     "loginSubtitle": "Enter your credentials to access",
-    "registerSubtitle": "Complete the form to get started"
+    "registerSubtitle": "Complete the form to get started",
+    "acceptTerms": "I accept the Terms and Conditions *",
+    "termsRequired": "You must accept the terms and conditions",
+    "termsLink": "Terms and Conditions"
   }
 }
