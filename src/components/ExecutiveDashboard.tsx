@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar, Calculator } from "lucide-react";
+import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,7 +96,7 @@ const ExecutiveDashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Valoraciones</CardTitle>
@@ -141,21 +141,6 @@ const ExecutiveDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer hover:bg-accent/50 transition-colors"
-          onClick={() => navigate('/resources/fee-calculator')}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Calculadora de Honorarios</CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Calcular</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Estima honorarios rápidamente
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Content Tabs */}
