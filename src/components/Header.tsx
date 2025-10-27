@@ -11,7 +11,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-10">
+    <header className="bg-card border-b border-border sticky top-0 z-30">
       <div className="flex items-center justify-between h-14 px-4 sm:px-6">
         {/* Sidebar Trigger */}
         <div className="flex items-center gap-4">

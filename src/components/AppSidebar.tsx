@@ -81,12 +81,6 @@ export function AppSidebar() {
       url: "/resources/templates",
       icon: FileDown,
       description: "Plantillas descargables"
-    },
-    {
-      title: t('sidebar.feeCalculator'),
-      url: "/resources/fee-calculator",
-      icon: DollarSign,
-      description: "Calcular honorarios"
     }
   ];
 
