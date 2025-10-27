@@ -5996,6 +5996,27 @@ export type Database = {
         }
         Relationships: []
       }
+      global_admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hb_contacts: {
         Row: {
           created_at: string
@@ -9147,6 +9168,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      organizations: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          slug: string
+          subscription_expires_at: string | null
+          subscription_plan: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          slug: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          slug?: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       pending_invitations: {
         Row: {
@@ -13389,6 +13464,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           user_id: string
@@ -13396,6 +13472,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id: string
@@ -13403,11 +13480,20 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_saved_views: {
         Row: {
@@ -14279,6 +14365,7 @@ export type Database = {
           labor_recurring_2: number | null
           last_dcf_calculation: string | null
           last_multiples_calculation: string | null
+          organization_id: string | null
           other_costs_1: number | null
           other_costs_2: number | null
           other_revenue_1: number | null
@@ -14323,6 +14410,7 @@ export type Database = {
           labor_recurring_2?: number | null
           last_dcf_calculation?: string | null
           last_multiples_calculation?: string | null
+          organization_id?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null
           other_revenue_1?: number | null
@@ -14367,6 +14455,7 @@ export type Database = {
           labor_recurring_2?: number | null
           last_dcf_calculation?: string | null
           last_multiples_calculation?: string | null
+          organization_id?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null
           other_revenue_1?: number | null
@@ -14390,7 +14479,15 @@ export type Database = {
           year_1?: string | null
           year_2?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "valuations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       winback_attempts: {
         Row: {
@@ -15050,6 +15147,16 @@ export type Database = {
         Args: { lead_id: string; mandate_data: Json }
         Returns: Json
       }
+      create_organization_with_admin: {
+        Args: {
+          _company_id?: string
+          _email?: string
+          _org_name: string
+          _org_slug: string
+          _phone?: string
+        }
+        Returns: string
+      }
       create_proposal_from_lead: {
         Args: { p_lead_id: string }
         Returns: string
@@ -15149,6 +15256,7 @@ export type Database = {
           task_type: string
         }[]
       }
+      get_current_user_organization_id: { Args: never; Returns: string }
       get_current_user_role_safe: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -15231,6 +15339,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_organization: { Args: never; Returns: string }
       get_user_permissions: {
         Args: { _user_id: string }
         Returns: {
@@ -15284,6 +15393,7 @@ export type Database = {
       }
       is_admin_or_superadmin: { Args: never; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
+      is_global_admin: { Args: never; Returns: boolean }
       log_automation_event: {
         Args: {
           p_action_data?: Json
