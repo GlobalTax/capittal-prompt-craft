@@ -113,7 +113,7 @@ const AlertSystem = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="alerts" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="alerts">
                 Alertas Activas
                 {unreadCount > 0 && (
@@ -123,7 +123,6 @@ const AlertSystem = () => {
                 )}
               </TabsTrigger>
               <TabsTrigger value="rules">Reglas</TabsTrigger>
-              <TabsTrigger value="settings">Configuración</TabsTrigger>
             </TabsList>
 
             <TabsContent value="alerts" className="space-y-4">
@@ -251,136 +250,6 @@ const AlertSystem = () => {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-4">
-              <h3 className="text-lg font-semibold">Configuración de Notificaciones</h3>
-              
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Canales de Notificación</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Notificaciones en la aplicación</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Recibe alertas directamente en la interfaz
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Notificaciones por email</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Enviar alertas importantes por correo electrónico
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Webhooks</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Integración con Slack, Teams y otros servicios
-                        </p>
-                      </div>
-                      <Switch />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Configuración de Email</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email de notificaciones</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="tu@email.com"
-                          defaultValue="usuario@empresa.com"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="frequency">Frecuencia de resumen</Label>
-                        <Select defaultValue="daily">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="immediate">Inmediato</SelectItem>
-                            <SelectItem value="hourly">Cada hora</SelectItem>
-                            <SelectItem value="daily">Diario</SelectItem>
-                            <SelectItem value="weekly">Semanal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Umbrales Personalizados</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="market-threshold">Cambio en múltiplos (%)</Label>
-                        <Input
-                          id="market-threshold"
-                          type="number"
-                          defaultValue="10"
-                          min="1"
-                          max="100"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="debt-threshold">Ratio de deuda (%)</Label>
-                        <Input
-                          id="debt-threshold"
-                          type="number"
-                          defaultValue="70"
-                          min="1"
-                          max="100"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="valuation-threshold">Cambio en valoración (%)</Label>
-                        <Input
-                          id="valuation-threshold"
-                          type="number"
-                          defaultValue="15"
-                          min="1"
-                          max="100"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="review-days">Días para revisión</Label>
-                        <Input
-                          id="review-days"
-                          type="number"
-                          defaultValue="30"
-                          min="1"
-                          max="365"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="flex justify-end">
-                  <Button>
-                    Guardar Configuración
-                  </Button>
-                </div>
               </div>
             </TabsContent>
           </Tabs>
