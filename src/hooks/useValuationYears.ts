@@ -89,11 +89,21 @@ export function useValuationYears(valuationId: string) {
     }
   };
 
-  const updateYear = async (id: string, updates: Partial<ValuationYear>) => {
+  const updateYear = async (id: string, updates: Partial<ValuationYear>, skipRefetch = false) => {
     try {
-      await valuationYearRepository.update(id, updates);
+      // Optimistic update first
       setYears(years.map(y => y.id === id ? { ...y, ...updates } : y));
+      
+      // Then persist to database
+      await valuationYearRepository.update(id, updates);
+      
+      // Only refetch if not skipped (to avoid conflicts during active editing)
+      if (!skipRefetch) {
+        setTimeout(() => fetchYears(), 300);
+      }
     } catch (error: any) {
+      // Rollback on error
+      setYears(years);
       toast({
         title: 'Error al actualizar año',
         description: error.message,
@@ -107,7 +117,7 @@ export function useValuationYears(valuationId: string) {
     loading, 
     addYear, 
     deleteYear, 
-    updateYear, 
+    updateYear,
     refetch: fetchYears 
   };
 }

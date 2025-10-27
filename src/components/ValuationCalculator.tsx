@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { trackFunnelEvent } from "@/lib/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,6 +110,18 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   
   // Hook para gestión de años dinámicos
   const { years: valuationYears, loading: yearsLoading, addYear, deleteYear, updateYear } = useValuationYears(valuation.id);
+  
+  // Debounce timer for database persistence
+  const saveTimeoutRef = React.useRef<NodeJS.Timeout>();
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
   
   // Mapear años de la BD a formato local
   const data: FinancialData = useMemo(() => {
@@ -622,65 +635,73 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const BASE_SECTION_IDS = ['revenue-section', 'costs-section', 'results-section'];
     const customSectionsUpdated = newSections.filter(s => !BASE_SECTION_IDS.includes(s.id));
     
-    // Actualizar custom sections
+    // Actualizar custom sections localmente (inmediato)
     if (customSectionsUpdated.length > 0) {
       setCustomSections(customSectionsUpdated);
     }
     
-    // Actualizar cada año en la base de datos
-    for (let i = 0; i < data.years.length; i++) {
-      const year = data.years[i];
-      const valuationYear = valuationYears[i];
-      
-      if (!valuationYear) continue;
-      
-      const totalRevenueRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'total-revenue');
-      const fiscalRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'fiscal-recurring');
-      const accountingRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'accounting-recurring');
-      const laborRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'labor-recurring');
-      const otherRevenueRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'other-revenue');
-      const personnelRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'personnel-costs');
-      const otherCostsRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'other-costs');
-      const ownerSalaryRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'owner-salary');
-      const employeesRow = newSections
-        .flatMap(s => s.rows)
-        .find(r => r.id === 'employees');
-
-      // Convert percentage values back to absolute amounts
-      const totalRevenue = totalRevenueRow?.values[year.year] || 0;
-      const personnelCosts = totalRevenue * ((personnelRow?.values[year.year] || 0) / 100);
-      const otherCosts = totalRevenue * ((otherCostsRow?.values[year.year] || 0) / 100);
-      const ownerSalary = totalRevenue * ((ownerSalaryRow?.values[year.year] || 0) / 100);
-
-      // Actualizar en la BD
-      await updateYear(valuationYear.id, {
-        revenue: totalRevenue,
-        fiscal_recurring: fiscalRow?.values[year.year] || 0,
-        accounting_recurring: accountingRow?.values[year.year] || 0,
-        labor_recurring: laborRow?.values[year.year] || 0,
-        other_revenue: otherRevenueRow?.values[year.year] || 0,
-        personnel_costs: personnelCosts,
-        other_costs: otherCosts,
-        owner_salary: ownerSalary,
-        employees: employeesRow?.values[year.year] || 0,
-      });
+    // Cancelar timeout previo
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+    
+    // Guardar en BD después de 500ms de inactividad (debounced)
+    saveTimeoutRef.current = setTimeout(async () => {
+      // Actualizar cada año en la base de datos
+      for (let i = 0; i < data.years.length; i++) {
+        const year = data.years[i];
+        const valuationYear = valuationYears[i];
+        
+        if (!valuationYear) continue;
+        
+        const totalRevenueRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'total-revenue');
+        const fiscalRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'fiscal-recurring');
+        const accountingRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'accounting-recurring');
+        const laborRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'labor-recurring');
+        const otherRevenueRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'other-revenue');
+        const personnelRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'personnel-costs');
+        const otherCostsRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'other-costs');
+        const ownerSalaryRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'owner-salary');
+        const employeesRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'employees');
+
+        // Convert percentage values back to absolute amounts
+        const totalRevenue = totalRevenueRow?.values[year.year] || 0;
+        const personnelCosts = totalRevenue * ((personnelRow?.values[year.year] || 0) / 100);
+        const otherCosts = totalRevenue * ((otherCostsRow?.values[year.year] || 0) / 100);
+        const ownerSalary = totalRevenue * ((ownerSalaryRow?.values[year.year] || 0) / 100);
+
+        // Actualizar en la BD con skipRefetch para evitar re-renders durante edición
+        await updateYear(valuationYear.id, {
+          revenue: totalRevenue,
+          fiscal_recurring: fiscalRow?.values[year.year] || 0,
+          accounting_recurring: accountingRow?.values[year.year] || 0,
+          labor_recurring: laborRow?.values[year.year] || 0,
+          other_revenue: otherRevenueRow?.values[year.year] || 0,
+          personnel_costs: personnelCosts,
+          other_costs: otherCosts,
+          owner_salary: ownerSalary,
+          employees: employeesRow?.values[year.year] || 0,
+        }, true); // skipRefetch = true
+      }
+    }, 500);
   };
 
   const handleYearAdd = (type: 'past' | 'future') => {

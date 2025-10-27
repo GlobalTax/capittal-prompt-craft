@@ -36,6 +36,7 @@ interface DynamicPLTableProps {
 
 export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
   const [editingValues, setEditingValues] = React.useState<Record<string, string>>({});
+  const editingCellsRef = React.useRef<Set<string>>(new Set());
 
   const formatNumber = (value: number): string => {
     if (value === undefined || value === null || isNaN(value)) return '0';
@@ -523,12 +524,13 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                     {/* Year Values */}
                     {years.map((year) => {
                       const cellKey = `${row.id}-${year}`;
-                      const isEditing = cellKey in editingValues;
+                      const isEditing = cellKey in editingValues || editingCellsRef.current.has(cellKey);
                       const displayValue = isEditing 
                         ? editingValues[cellKey] 
                         : formatNumber(row.values[year] || 0);
 
                       const handleFocus = () => {
+                        editingCellsRef.current.add(cellKey);
                         setEditingValues(prev => ({
                           ...prev,
                           [cellKey]: unformatNumber(row.values[year] || 0)
@@ -544,6 +546,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                       };
 
                       const handleCommit = () => {
+                        editingCellsRef.current.delete(cellKey);
                         const rawValue = editingValues[cellKey] ?? String(row.values[year] || 0);
                         let toUpdate = rawValue;
 
@@ -566,6 +569,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                           handleCommit();
                           e.currentTarget.blur();
                         } else if (e.key === 'Escape') {
+                          editingCellsRef.current.delete(cellKey);
                           setEditingValues(prev => {
                             const newState = { ...prev };
                             delete newState[cellKey];
