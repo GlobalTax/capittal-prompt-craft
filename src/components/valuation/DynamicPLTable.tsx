@@ -468,6 +468,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                         {row.type === 'input' ? (
                           <Input
                             type="text"
+                            inputMode="decimal"
                             value={formatNumber(row.values[year] || 0)}
                             onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
                             className="font-mono h-9 w-full text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
@@ -476,6 +477,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                           <div className="flex items-center gap-1 justify-end w-full">
                             <Input
                               type="text"
+                              inputMode="decimal"
                               value={formatNumber(row.values[year] || 0)}
                               onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
                               className="font-mono h-9 w-24 text-right border-muted-foreground/30 focus:border-primary bg-muted/20"

@@ -699,25 +699,34 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const issues: string[] = [];
     
     data.years.forEach((yearData, index) => {
+      // Solo validar si hay datos significativos en el año
+      const hasSignificantData = yearData.totalRevenue > 0 || 
+                                  yearData.personnelCosts > 0 || 
+                                  yearData.otherCosts > 0;
+      
+      if (!hasSignificantData) {
+        return; // Skip validación para este año si no tiene datos
+      }
+      
       const totalRecurringPercent = yearData.fiscalRecurringPercent + yearData.accountingRecurringPercent + 
                                      yearData.laborRecurringPercent + yearData.otherRevenuePercent;
       const yearMetrics = calculateMetricsForYear(yearData);
       
-      if (yearMetrics.totalCosts >= yearData.totalRevenue) {
-        issues.push(`${yearData.year}: Los costes superan los ingresos`);
+      // Convertir a advertencia en lugar de error
+      if (yearMetrics.totalCosts >= yearData.totalRevenue && yearData.totalRevenue > 0) {
+        issues.push(`⚠️ ${yearData.year}: Los costes superan o igualan los ingresos`);
       }
-      if (totalRecurringPercent > 100) {
+      if (totalRecurringPercent > 105) {
         issues.push(`${yearData.year}: Los porcentajes de facturación recurrente superan el 100%`);
-      }
-      if (yearData.numberOfEmployees === 0) {
-        issues.push(`${yearData.year}: Número de empleados no puede ser cero`);
       }
 
       if (index > 0) {
         const previousYear = data.years[index - 1];
-        const growth = ((yearData.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
-        if (growth < -20) {
-          issues.push(`${yearData.year}: Decrecimiento muy alto (-${Math.abs(growth).toFixed(1)}%)`);
+        if (previousYear.totalRevenue > 0) {
+          const growth = ((yearData.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
+          if (growth < -30) {
+            issues.push(`⚠️ ${yearData.year}: Decrecimiento muy alto (-${Math.abs(growth).toFixed(1)}%)`);
+          }
         }
       }
     });
