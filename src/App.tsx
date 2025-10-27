@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PublicOnlyRoute } from "@/components/auth/PublicOnlyRoute";
+import { AdminRoute } from "@/components/auth/AdminRoute";
 import { ProtectedLayout } from "@/components/layouts/ProtectedLayout";
 import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import { ValuationList } from "@/components/valuation/ValuationList";
@@ -79,16 +80,19 @@ const App = () => {
                   <Route path="/resources/sell-business" element={<SellBusinessContact />} />
                   <Route path="/resources/fee-calculator" element={<FeeCalculator />} />
                   
-                  {/* Admin routes */}
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/users" element={<AdminUsersPage />} />
-                  <Route path="/admin/templates" element={<TemplateManagement />} />
-                  <Route path="/admin/security" element={<SecurityDashboard />} />
-                  <Route path="/admin/audit-logs" element={<AuditLogs />} />
-                  <Route path="/admin/alert-settings" element={<AlertSettings />} />
-                  <Route path="/admin/sell-leads" element={<SellBusinessLeads />} />
-                  <Route path="/admin/funnel-analytics" element={<FunnelAnalytics />} />
-                  <Route path="/admin/commissions" element={<CommissionSettings />} />
+                  {/* Admin routes - Protected by AdminRoute */}
+                  <Route element={<AdminRoute />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/users" element={<AdminUsersPage />} />
+                    <Route path="/admin/templates" element={<TemplateManagement />} />
+                    <Route path="/admin/security" element={<SecurityDashboard />} />
+                    <Route path="/admin/audit-logs" element={<AuditLogs />} />
+                    <Route path="/admin/alert-settings" element={<AlertSettings />} />
+                    <Route path="/admin/sell-leads" element={<SellBusinessLeads />} />
+                    <Route path="/admin/funnel-analytics" element={<FunnelAnalytics />} />
+                    <Route path="/admin/commissions" element={<CommissionSettings />} />
+                  </Route>
+                  
                   <Route path="/my-referrals" element={<MyReferredLeads />} />
                 </Route>
               </Route>
