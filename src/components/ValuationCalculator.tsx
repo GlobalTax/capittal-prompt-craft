@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { trackFunnelEvent } from "@/lib/analytics";
@@ -150,8 +150,35 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   const [localData, setLocalData] = useState<FinancialData | null>(null);
   const viewData = localData ?? data; // Use local data for UI if available
   
-  // Sync localData from valuationYears when they change
+  // Sync localData ONLY on initial load (not on every valuationYears change)
   useEffect(() => {
+    // Only sync if localData is empty (initial load)
+    if (localData === null) {
+      if (valuationYears.length > 0) {
+        setLocalData({
+          years: valuationYears.map(vy => ({
+            year: vy.year,
+            yearStatus: vy.year_status,
+            totalRevenue: vy.revenue,
+            fiscalRecurringPercent: vy.fiscal_recurring,
+            accountingRecurringPercent: vy.accounting_recurring,
+            laborRecurringPercent: vy.labor_recurring,
+            otherRevenuePercent: vy.other_revenue,
+            personnelCosts: vy.personnel_costs,
+            otherCosts: vy.other_costs,
+            ownerSalary: vy.owner_salary,
+            numberOfEmployees: vy.employees,
+          }))
+        });
+      } else {
+        setLocalData(mapValuationToFinancialData(valuation));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only execute on mount
+
+  // Manual sync function to update from DB when needed
+  const syncFromDB = useCallback(() => {
     if (valuationYears.length > 0) {
       setLocalData({
         years: valuationYears.map(vy => ({
@@ -168,10 +195,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           numberOfEmployees: vy.employees,
         }))
       });
-    } else {
-      setLocalData(mapValuationToFinancialData(valuation));
     }
-  }, [valuationYears, valuation]);
+  }, [valuationYears]);
 
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
   
@@ -628,12 +653,16 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const latestYear = data.years[data.years.length - 1];
     const newYear = (parseInt(latestYear.year) + 1).toString();
     await addYear(newYear, 'projected');
+    // Sync from DB after structural change
+    setTimeout(syncFromDB, 100);
   };
 
   const addPastYear = async () => {
     const firstYear = data.years[0];
     const newYear = (parseInt(firstYear.year) - 1).toString();
     await addYear(newYear, 'closed');
+    // Sync from DB after structural change
+    setTimeout(syncFromDB, 100);
   };
   
   const toggleYearStatus = async (yearIndex: number) => {
@@ -641,6 +670,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     if (yearToToggle) {
       const newStatus = yearToToggle.year_status === 'closed' ? 'projected' : 'closed';
       await updateYear(yearToToggle.id, { year_status: newStatus });
+      // Sync from DB after structural change
+      setTimeout(syncFromDB, 100);
     }
   };
 
@@ -648,6 +679,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const yearToRemove = valuationYears[yearIndex];
     if (yearToRemove && data.years.length > 2) {
       await deleteYear(yearToRemove.id);
+      // Sync from DB after structural change
+      setTimeout(syncFromDB, 100);
     }
   };
 
