@@ -123,6 +123,11 @@ const Login = () => {
                 {t('auth.register')}
               </Link>
             </p>
+            <div className="text-center pt-2 border-t">
+              <Link to="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                Términos y Condiciones
+              </Link>
+            </div>
           </CardFooter>
         </form>
       </Card>
