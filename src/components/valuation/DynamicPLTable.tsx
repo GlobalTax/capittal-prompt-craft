@@ -222,11 +222,11 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     return 0;
   }, [sections, getCachedValue]);
 
-  // Validate percentage rows sum
+  // Validate percentage rows sum (only for revenue category)
   const validatePercentageRows = React.useCallback((baseRowId: string, year: string) => {
     const percentageRows = sections
       .flatMap(s => s.rows)
-      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId);
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && r.category === 'revenue');
     
     const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
     
@@ -237,11 +237,11 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     };
   }, [sections]);
 
-  // Normalize percentage rows to sum exactly 100%
+  // Normalize percentage rows to sum exactly 100% (only for revenue category)
   const normalizePercentageRows = React.useCallback((sectionId: string, baseRowId: string) => {
     const percentageRows = sections
       .flatMap(s => s.rows)
-      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId);
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && r.category === 'revenue');
     
     if (percentageRows.length === 0) return;
 
@@ -257,7 +257,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       const updatedSections = sections.map(section => ({
         ...section,
         rows: section.rows.map(row => {
-          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId;
+          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId && row.category === 'revenue';
           if (!isPercentageRow) return row;
           
           const currentValue = row.values[year] || 0;
@@ -388,10 +388,10 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                             size="sm"
                             onClick={() => normalizePercentageRows(ingresosValidation.sectionId, ingresosValidation.baseRowId)}
                             className="h-7 gap-1.5"
-                            title="Normalizar porcentajes al 100%"
+                            title="Normalizar composición de ingresos al 100%"
                           >
                             <Percent className="h-3.5 w-3.5" />
-                            Normalizar al 100%
+                            Normalizar Ingresos al 100%
                           </Button>
                         )}
                         <Button
