@@ -3,7 +3,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Card } from '@/components/ui/card';
 
 export const AdminRoute = () => {
-  const { isAdmin, loading } = useUserRole();
+  const { isAdmin, isGlobalAdmin, loading } = useUserRole();
 
   if (loading) {
     return (
@@ -17,7 +17,7 @@ export const AdminRoute = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && !isGlobalAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="p-8 max-w-md">

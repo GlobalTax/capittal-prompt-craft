@@ -25,9 +25,12 @@ export class ValuationRepository {
   }
   
   async create(valuation: Partial<Valuation>): Promise<Valuation> {
+    // Get user's organization_id
+    const { data: orgId } = await supabase.rpc('get_current_user_organization_id' as any);
+    
     const { data, error } = await supabase
       .from('valuations')
-      .insert([valuation as any])
+      .insert([{ ...valuation, organization_id: orgId } as any])
       .select()
       .single();
     

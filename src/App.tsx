@@ -39,6 +39,7 @@ import FunnelAnalytics from './pages/admin/FunnelAnalytics';
 import CommissionSettings from './pages/admin/CommissionSettings';
 import MyReferredLeads from './pages/MyReferredLeads';
 import ClientLanding from './pages/ClientLanding';
+import OrganizationManagement from './pages/admin/OrganizationManagement';
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => {
                     <Route path="/admin/sell-leads" element={<SellBusinessLeads />} />
                     <Route path="/admin/funnel-analytics" element={<FunnelAnalytics />} />
                     <Route path="/admin/commissions" element={<CommissionSettings />} />
+                    <Route path="/admin/organizations" element={<OrganizationManagement />} />
                   </Route>
                   
                   <Route path="/my-referrals" element={<MyReferredLeads />} />

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useUserRole = () => {
   const [role, setRole] = useState<string | null>(null);
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,9 +31,19 @@ export const useUserRole = () => {
         } else {
           setRole(data?.role || 'user');
         }
+
+        // Check if user is global admin
+        const { data: globalAdminData } = await supabase
+          .from('global_admins' as any)
+          .select('user_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        setIsGlobalAdmin(!!globalAdminData);
       } catch (error) {
         console.error('Error in useUserRole:', error);
         setRole('user');
+        setIsGlobalAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -46,6 +57,7 @@ export const useUserRole = () => {
     isAdmin: role === 'admin' || role === 'superadmin',
     isSuperAdmin: role === 'superadmin',
     isAdvisor: role === 'advisor',
+    isGlobalAdmin,
     loading
   };
 };
