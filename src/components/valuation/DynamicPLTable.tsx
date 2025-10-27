@@ -263,10 +263,11 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && (r.category === 'revenue' || r.category === undefined));
     
     const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
+    const hasAny = percentageRows.some(r => (r.values[year] || 0) > 0);
     
     return {
       sum,
-      isValid: sum >= 95 && sum <= 105,
+      isValid: !hasAny || (sum >= 95 && sum <= 105),
       percentageRows
     };
   }, [sections]);
@@ -279,36 +280,59 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     
     if (percentageRows.length === 0) return;
 
-    // Calculate normalization for all years
-    years.forEach(year => {
-      const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
-      
-      if (sum === 0) return;
-      
-      const factor = 100 / sum;
-      
-      // Update all percentage rows proportionally
-      const updatedSections = sections.map(section => ({
-        ...section,
-        rows: section.rows.map(row => {
-          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId && (row.category === 'revenue' || row.category === undefined);
-          if (!isPercentageRow) return row;
-          
-          const currentValue = row.values[year] || 0;
-          const normalizedValue = currentValue * factor;
-          
-          return {
-            ...row,
-            values: {
-              ...row.values,
-              [year]: Math.round(normalizedValue * 100) / 100
-            }
-          };
-        })
-      }));
-      
-      onDataChange(updatedSections);
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    const updatedSections = sections.map(section => {
+      if (section.id !== sectionId) return section;
+
+      const newRows = section.rows.map(row => {
+        if (!(row.type === 'percentage' && row.percentageOf === baseRowId && (row.category === 'revenue' || row.category === undefined))) {
+          return row;
+        }
+        return { ...row, values: { ...row.values } };
+      });
+
+      years.forEach(year => {
+        const sum = percentageRows.reduce((acc, r) => acc + ((r.values[year] || 0)), 0);
+        const targets: number[] = [];
+        const n = percentageRows.length;
+
+        if (sum === 0) {
+          // Equal distribution
+          const base = round2(100 / n);
+          for (let i = 0; i < n; i++) targets.push(base);
+        } else {
+          // Proportional normalization
+          const factor = 100 / sum;
+          for (let i = 0; i < n; i++) {
+            const r = percentageRows[i];
+            targets.push(round2((r.values[year] || 0) * factor));
+          }
+        }
+        
+        // Rounding adjustment: force sum = 100 by adjusting last row
+        const total = targets.reduce((a, b) => a + b, 0);
+        const diff = round2(100 - total);
+        if (Math.abs(diff) > 0) {
+          targets[n - 1] = round2(targets[n - 1] + diff);
+        }
+
+        // Apply new values to rows
+        percentageRows.forEach((r, idx) => {
+          const idxRow = newRows.findIndex(nr => nr.id === r.id);
+          if (idxRow !== -1) {
+            newRows[idxRow] = {
+              ...newRows[idxRow],
+              values: { ...newRows[idxRow].values, [year]: targets[idx] }
+            };
+          }
+        });
+      });
+
+      return { ...section, rows: newRows };
     });
+
+    onDataChange(updatedSections);
   }, [sections, years, onDataChange]);
 
   // Get validation info for INGRESOS section
@@ -521,7 +545,15 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
 
                       const handleCommit = () => {
                         const rawValue = editingValues[cellKey] ?? String(row.values[year] || 0);
-                        updateRowValue(section.id, row.id, year, rawValue);
+                        let toUpdate = rawValue;
+
+                        if (row.type === 'percentage') {
+                          const num = parseNumber(rawValue);
+                          const clamped = Math.max(0, Math.min(100, num));
+                          toUpdate = String(clamped);
+                        }
+
+                        updateRowValue(section.id, row.id, year, toUpdate);
                         setEditingValues(prev => {
                           const newState = { ...prev };
                           delete newState[cellKey];
