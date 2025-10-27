@@ -35,6 +35,8 @@ interface DynamicPLTableProps {
 }
 
 export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
+  const [editingValues, setEditingValues] = React.useState<Record<string, string>>({});
+
   const formatNumber = (value: number): string => {
     if (value === undefined || value === null || isNaN(value)) return '0';
     const rounded = Math.round(value * 100) / 100;
@@ -44,9 +46,41 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
     });
   };
 
+  const unformatNumber = (n: number): string => {
+    if (!n) return '';
+    const s = String(n);
+    return s.replace('.', ',');
+  };
+
   const parseNumber = (value: string): number => {
-    const cleaned = value.replace(/\./g, '').replace(',', '.');
-    return parseFloat(cleaned) || 0;
+    if (!value) return 0;
+    const v = value.trim();
+    const hasComma = v.includes(',');
+    const hasDot = v.includes('.');
+    let normalized = v.replace(/\s/g, '');
+    
+    if (hasComma && hasDot) {
+      // Ambos: asumir . como miles y , como decimal
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else if (hasComma) {
+      // Solo coma: asumir decimal
+      normalized = normalized.replace(',', '.');
+    } else if (hasDot) {
+      // Solo punto: si hay múltiples, tomar el último como decimal
+      const dotCount = (normalized.match(/\./g) || []).length;
+      if (dotCount > 1) {
+        const parts = normalized.split('.');
+        const decimal = parts.pop();
+        normalized = parts.join('') + (decimal ? '.' + decimal : '');
+      }
+    }
+    
+    const n = Number(normalized);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const sanitizeInput = (value: string): string => {
+    return value.replace(/[^\d.,-]/g, '');
   };
 
   const calculateVariation = (currentValue: number, previousValue: number) => {
@@ -463,41 +497,96 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                     </td>
 
                     {/* Year Values */}
-                    {years.map((year) => (
-                      <td key={year} className="p-3 text-right border-r w-[250px]">
-                        {row.type === 'input' ? (
-                          <Input
-                            type="text"
-                            inputMode="decimal"
-                            value={formatNumber(row.values[year] || 0)}
-                            onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                            className="font-mono h-9 w-full text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
-                          />
-                        ) : row.type === 'percentage' ? (
-                          <div className="flex items-center gap-1 justify-end w-full">
+                    {years.map((year) => {
+                      const cellKey = `${row.id}-${year}`;
+                      const isEditing = cellKey in editingValues;
+                      const displayValue = isEditing 
+                        ? editingValues[cellKey] 
+                        : formatNumber(row.values[year] || 0);
+
+                      const handleFocus = () => {
+                        setEditingValues(prev => ({
+                          ...prev,
+                          [cellKey]: unformatNumber(row.values[year] || 0)
+                        }));
+                      };
+
+                      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        const sanitized = sanitizeInput(e.target.value);
+                        setEditingValues(prev => ({
+                          ...prev,
+                          [cellKey]: sanitized
+                        }));
+                      };
+
+                      const handleCommit = () => {
+                        const rawValue = editingValues[cellKey] ?? String(row.values[year] || 0);
+                        updateRowValue(section.id, row.id, year, rawValue);
+                        setEditingValues(prev => {
+                          const newState = { ...prev };
+                          delete newState[cellKey];
+                          return newState;
+                        });
+                      };
+
+                      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (e.key === 'Enter') {
+                          handleCommit();
+                          e.currentTarget.blur();
+                        } else if (e.key === 'Escape') {
+                          setEditingValues(prev => {
+                            const newState = { ...prev };
+                            delete newState[cellKey];
+                            return newState;
+                          });
+                          e.currentTarget.blur();
+                        }
+                      };
+
+                      return (
+                        <td key={year} className="p-3 text-right border-r w-[250px]">
+                          {row.type === 'input' ? (
                             <Input
                               type="text"
                               inputMode="decimal"
-                              value={formatNumber(row.values[year] || 0)}
-                              onChange={(e) => updateRowValue(section.id, row.id, year, e.target.value)}
-                              className="font-mono h-9 w-24 text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
+                              autoComplete="off"
+                              value={displayValue}
+                              onFocus={handleFocus}
+                              onChange={handleChange}
+                              onBlur={handleCommit}
+                              onKeyDown={handleKeyDown}
+                              className="font-mono h-9 w-full text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
                             />
-                            <span className="text-xs">%</span>
-                            <span className="font-mono text-sm ml-2 w-20 text-right">
-                              {formatNumber(getCachedValue(row.id, year))}
+                          ) : row.type === 'percentage' ? (
+                            <div className="flex items-center gap-1 justify-end w-full">
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                autoComplete="off"
+                                value={displayValue}
+                                onFocus={handleFocus}
+                                onChange={handleChange}
+                                onBlur={handleCommit}
+                                onKeyDown={handleKeyDown}
+                                className="font-mono h-9 w-24 text-right border-muted-foreground/30 focus:border-primary bg-muted/20"
+                              />
+                              <span className="text-xs">%</span>
+                              <span className="font-mono text-sm ml-2 w-20 text-right">
+                                {formatNumber(getCachedValue(row.id, year))}
+                              </span>
+                            </div>
+                          ) : row.type === 'calculated' ? (
+                            <span className="font-mono text-sm font-semibold">
+                              {formatNumber(calculateRowValue(row, year))}
                             </span>
-                          </div>
-                        ) : row.type === 'calculated' ? (
-                          <span className="font-mono text-sm font-semibold">
-                            {formatNumber(calculateRowValue(row, year))}
-                          </span>
-                        ) : (
-                          <span className="font-mono text-sm">
-                            {formatNumber(calculateRowValue(row, year))}
-                          </span>
-                        )}
-                      </td>
-                    ))}
+                          ) : (
+                            <span className="font-mono text-sm">
+                              {formatNumber(calculateRowValue(row, year))}
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
 
                     {/* Variation Column */}
                     {years.length > 1 && (
