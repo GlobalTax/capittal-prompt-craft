@@ -80,6 +80,29 @@ export const useAuth = () => {
 
       if (error) throw error;
       
+      // Create organization for new user
+      if (data.user && company) {
+        try {
+          const orgSlug = company
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+          
+          await supabase.rpc('create_organization_with_admin' as any, {
+            _org_name: company,
+            _org_slug: `${orgSlug}-${Date.now()}`,
+            _company_id: taxId,
+            _email: email,
+            _phone: phone
+          });
+        } catch (orgError: any) {
+          console.error('Error creating organization:', orgError);
+          // Don't fail signup if org creation fails
+        }
+      }
+      
       toast.success('¡Cuenta creada exitosamente!');
       return { data, error: null };
     } catch (error: any) {
