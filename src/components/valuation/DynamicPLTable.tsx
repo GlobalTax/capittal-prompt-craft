@@ -173,7 +173,11 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       const yearData: { [key: string]: number } = {};
       sections.forEach(section => {
         section.rows.forEach(r => {
-          yearData[r.id] = getRowComputedValue(r, year, visitedIds);
+          // Skip the current row to avoid recursion and create a new visitedIds for each dependency
+          if (r.id !== row.id) {
+            const formulaVisitedIds = new Set(visitedIds);
+            yearData[r.id] = getRowComputedValue(r, year, formulaVisitedIds);
+          }
         });
       });
       return row.formula(yearData);
