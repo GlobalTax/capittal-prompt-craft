@@ -175,9 +175,11 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     baseYearForValuation: 'lastClosed',
   });
   
-  // Dynamic table state
-  const [dynamicSections, setDynamicSections] = useState<TableSection[]>(() => {
-    // Initialize dynamic sections from existing data
+  // Custom sections state (for user-added sections in the future)
+  const [customSections, setCustomSections] = useState<TableSection[]>([]);
+  
+  // Dynamic table sections - derived from data to ensure sync
+  const dynamicSections = useMemo<TableSection[]>(() => {
     return [
       {
         id: 'revenue-section',
@@ -367,9 +369,10 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             }
           }
         ]
-      }
+      },
+      ...customSections // Add custom sections for future extensibility
     ];
-  });
+  }, [data, customSections]);
 
   const calculateMetricsForYear = (yearData: YearData) => {
     const fiscalRecurring = (yearData.totalRevenue * yearData.fiscalRecurringPercent) / 100;
@@ -615,7 +618,14 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
 
   // Dynamic table handlers
   const handleDynamicDataChange = async (newSections: TableSection[]) => {
-    setDynamicSections(newSections);
+    // Separar secciones base de custom
+    const BASE_SECTION_IDS = ['revenue-section', 'costs-section', 'results-section'];
+    const customSectionsUpdated = newSections.filter(s => !BASE_SECTION_IDS.includes(s.id));
+    
+    // Actualizar custom sections
+    if (customSectionsUpdated.length > 0) {
+      setCustomSections(customSectionsUpdated);
+    }
     
     // Actualizar cada año en la base de datos
     for (let i = 0; i < data.years.length; i++) {
@@ -684,24 +694,6 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   const handleYearRemove = (yearIndex: number) => {
     removeYear(yearIndex);
   };
-
-  // Sincronizar dynamicSections cuando cambien los años
-  useEffect(() => {
-    if (data.years.length > 0) {
-      setDynamicSections(prevSections =>
-        prevSections.map(section => ({
-          ...section,
-          rows: section.rows.map(row => ({
-            ...row,
-            values: data.years.reduce((acc, y) => {
-              // Mantener valores existentes o inicializar a 0
-              return { ...acc, [y.year]: row.values[y.year] ?? 0 };
-            }, {})
-          }))
-        }))
-      );
-    }
-  }, [data.years.length]); // Solo cuando cambia el número de años
 
   const validateData = () => {
     const issues: string[] = [];
