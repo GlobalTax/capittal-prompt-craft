@@ -335,7 +335,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'ebitda',
-            label: 'EBITDA',
+            label: 'EBITDA Ajustado',
             type: 'calculated' as const,
             category: 'result' as const,
             indented: true,
@@ -344,7 +344,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
               const totalRevenue = yearData['total-revenue'] || 0;
               const personnelCosts = yearData['personnel-costs'] || 0;
               const otherCosts = yearData['other-costs'] || 0;
-              return totalRevenue - personnelCosts - otherCosts;
+              const ownerSalary = yearData['owner-salary'] || 0;
+              // EBITDA Ajustado: suma el sueldo del propietario de vuelta
+              return totalRevenue - personnelCosts - otherCosts + ownerSalary;
             }
           },
           {
@@ -381,6 +383,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const ownerMargin = (yearData.ownerSalary / yearData.totalRevenue) * 100;
     const revenuePerEmployee = yearData.totalRevenue / yearData.numberOfEmployees;
     const profitBeforeTaxes = yearData.totalRevenue - totalCosts;
+    // EBITDA Ajustado: incluye el sueldo del propietario
     const ebitda = profitBeforeTaxes + yearData.ownerSalary;
     const recurringPercentage = (totalRecurring / yearData.totalRevenue) * 100;
     const costEfficiency = (totalCosts / yearData.totalRevenue) * 100;
