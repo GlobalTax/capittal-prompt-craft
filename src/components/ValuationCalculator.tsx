@@ -75,7 +75,7 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
   return {
     years: [
       {
-        year: val.year_1 || currentYear.toString(),
+        year: val.year_1 || (currentYear - 1).toString(),
         yearStatus: 'closed',
         totalRevenue: val.revenue_1 || 0,
         fiscalRecurringPercent: val.fiscal_recurring_1 || 0,
@@ -88,8 +88,8 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
         numberOfEmployees: val.employees_1 || 0,
       },
       {
-        year: val.year_2 || (currentYear + 1).toString(),
-        yearStatus: 'closed',
+        year: val.year_2 || currentYear.toString(),
+        yearStatus: 'projected',
         totalRevenue: val.revenue_2 || 0,
         fiscalRecurringPercent: val.fiscal_recurring_2 || 0,
         accountingRecurringPercent: val.accounting_recurring_2 || 0,
