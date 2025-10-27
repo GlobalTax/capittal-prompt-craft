@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar, Calculator } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,28 +125,34 @@ const ExecutiveDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate('/my-referrals')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes Activos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Mis Referencias</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.activeClients || 0}</div>
+            <div className="text-2xl font-bold">Ver Leads</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Clientes únicos en valoraciones
+              Acceso rápido a tus referencias
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate('/resources/fee-calculator')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Completitud</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Calculadora de Honorarios</CardTitle>
+            <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.completionRate.toFixed(0) || 0}%</div>
+            <div className="text-2xl font-bold">Calcular</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Valoraciones completadas
+              Estima honorarios rápidamente
             </p>
           </CardContent>
         </Card>
