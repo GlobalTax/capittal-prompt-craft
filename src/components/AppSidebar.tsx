@@ -19,7 +19,6 @@ import {
   Settings,
   Target,
   FileDown,
-  Handshake,
   DollarSign,
   ShieldCheck,
   Users,
@@ -82,12 +81,6 @@ export function AppSidebar() {
       url: "/resources/templates",
       icon: FileDown,
       description: "Plantillas descargables"
-    },
-    {
-      title: t('sidebar.sellBusiness'),
-      url: "/resources/sell-business",
-      icon: Handshake,
-      description: "Colaboración en venta"
     },
     {
       title: t('sidebar.feeCalculator'),

@@ -22,7 +22,6 @@ import ResetPassword from "./pages/ResetPassword";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import NotFound from "./pages/NotFound";
 import DocumentTemplates from "./pages/DocumentTemplates";
-import SellBusinessContact from "./pages/SellBusinessContact";
 import FeeCalculator from "./pages/FeeCalculator";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsersPage from "./pages/admin/UserManagement";
@@ -74,7 +73,6 @@ const App = () => {
                   <Route path="/reports" element={<ReportGenerator />} />
                   <Route path="/security" element={<SecuritySettings />} />
                   <Route path="/resources/templates" element={<DocumentTemplates />} />
-                  <Route path="/resources/sell-business" element={<SellBusinessContact />} />
                   <Route path="/resources/fee-calculator" element={<FeeCalculator />} />
                   
                   {/* Admin routes - Protected by AdminRoute */}
