@@ -226,7 +226,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
   const validatePercentageRows = React.useCallback((baseRowId: string, year: string) => {
     const percentageRows = sections
       .flatMap(s => s.rows)
-      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && r.category === 'revenue');
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && (r.category === 'revenue' || r.category === undefined));
     
     const sum = percentageRows.reduce((acc, row) => acc + (row.values[year] || 0), 0);
     
@@ -241,7 +241,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
   const normalizePercentageRows = React.useCallback((sectionId: string, baseRowId: string) => {
     const percentageRows = sections
       .flatMap(s => s.rows)
-      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && r.category === 'revenue');
+      .filter(r => r.type === 'percentage' && r.percentageOf === baseRowId && (r.category === 'revenue' || r.category === undefined));
     
     if (percentageRows.length === 0) return;
 
@@ -257,7 +257,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       const updatedSections = sections.map(section => ({
         ...section,
         rows: section.rows.map(row => {
-          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId && row.category === 'revenue';
+          const isPercentageRow = row.type === 'percentage' && row.percentageOf === baseRowId && (row.category === 'revenue' || row.category === undefined);
           if (!isPercentageRow) return row;
           
           const currentValue = row.values[year] || 0;
