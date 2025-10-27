@@ -17,9 +17,7 @@ import {
   Calculator, 
   FileText, 
   Settings,
-  BarChart3,
   Target,
-  FileBarChart,
   FileDown,
   Handshake,
   DollarSign,
@@ -69,28 +67,6 @@ export function AppSidebar() {
       url: "/reports",
       icon: FileText,
       description: "PDFs profesionales"
-    }
-  ];
-
-
-  const advancedItems = [
-    {
-      title: t('sidebar.budget'),
-      url: "/advanced/budget",
-      icon: BarChart3,
-      description: "Presupuesto mensualizado"
-    },
-    {
-      title: t('sidebar.multiplesComparables'),
-      url: "/advanced/multiples",
-      icon: FileBarChart,
-      description: "Análisis sectorial"
-    },
-    {
-      title: t('sidebar.settings'),
-      url: "/settings",
-      icon: Settings,
-      description: "Ajustes avanzados"
     }
   ];
 
@@ -226,16 +202,6 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {renderMenuItems(menuItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Advanced Features */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-            {t('sidebar.advancedFeatures')}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(advancedItems)}
           </SidebarGroupContent>
         </SidebarGroup>
 

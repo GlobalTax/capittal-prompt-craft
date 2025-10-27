@@ -14,9 +14,6 @@ import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 import { ValuationList } from "@/components/valuation/ValuationList";
 import { ValuationEditor } from "@/components/valuation/ValuationEditor";
 import ReportGenerator from "@/components/ReportGenerator";
-import AdvancedSettings from "@/components/AdvancedSettings";
-import MonthlyBudget from "@/components/MonthlyBudget";
-import ComparableMultiples from "@/components/ComparableMultiples";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -75,9 +72,6 @@ const App = () => {
                   <Route path="/valuations/clients" element={<ValuationList filterType="client_business" />} />
                   <Route path="/valuation/:id" element={<ValuationEditor />} />
                   <Route path="/reports" element={<ReportGenerator />} />
-                  <Route path="/advanced/budget" element={<MonthlyBudget />} />
-                  <Route path="/advanced/multiples" element={<ComparableMultiples />} />
-                  <Route path="/settings" element={<AdvancedSettings />} />
                   <Route path="/security" element={<SecuritySettings />} />
                   <Route path="/resources/templates" element={<DocumentTemplates />} />
                   <Route path="/resources/sell-business" element={<SellBusinessContact />} />
