@@ -146,6 +146,33 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     };
   }, [valuationYears, valuation]);
 
+  // Local data state for immediate UI updates (decoupled from DB)
+  const [localData, setLocalData] = useState<FinancialData | null>(null);
+  const viewData = localData ?? data; // Use local data for UI if available
+  
+  // Sync localData from valuationYears when they change
+  useEffect(() => {
+    if (valuationYears.length > 0) {
+      setLocalData({
+        years: valuationYears.map(vy => ({
+          year: vy.year,
+          yearStatus: vy.year_status,
+          totalRevenue: vy.revenue,
+          fiscalRecurringPercent: vy.fiscal_recurring,
+          accountingRecurringPercent: vy.accounting_recurring,
+          laborRecurringPercent: vy.labor_recurring,
+          otherRevenuePercent: vy.other_revenue,
+          personnelCosts: vy.personnel_costs,
+          otherCosts: vy.other_costs,
+          ownerSalary: vy.owner_salary,
+          numberOfEmployees: vy.employees,
+        }))
+      });
+    } else {
+      setLocalData(mapValuationToFinancialData(valuation));
+    }
+  }, [valuationYears, valuation]);
+
   const [valuations, setValuations] = useState<ValuationResult[]>([]);
   
   // Debounced data for charts to prevent jumping
@@ -191,7 +218,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   // Custom sections state (for user-added sections in the future)
   const [customSections, setCustomSections] = useState<TableSection[]>([]);
   
-  // Dynamic table sections - derived from data to ensure sync
+  // Dynamic table sections - derived from viewData (local state for immediate UI updates)
   const dynamicSections = useMemo<TableSection[]>(() => {
     return [
       {
@@ -205,7 +232,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             type: 'input' as const,
             category: 'revenue' as const,
             indented: false,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.totalRevenue }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.totalRevenue }), {})
           },
           {
             id: 'fiscal-recurring',
@@ -214,7 +241,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'revenue' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.fiscalRecurringPercent }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.fiscalRecurringPercent }), {})
           },
           {
             id: 'accounting-recurring',
@@ -223,7 +250,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'revenue' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.accountingRecurringPercent }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.accountingRecurringPercent }), {})
           },
           {
             id: 'labor-recurring',
@@ -232,7 +259,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'revenue' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.laborRecurringPercent }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.laborRecurringPercent }), {})
           },
           {
             id: 'other-revenue',
@@ -241,7 +268,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'revenue' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.otherRevenuePercent }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.otherRevenuePercent }), {})
           }
         ]
       },
@@ -257,7 +284,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'cost' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => {
+            values: viewData.years.reduce((acc, y) => {
               const percentage = y.totalRevenue ? (y.personnelCosts / y.totalRevenue) * 100 : 0;
               return { ...acc, [y.year]: percentage };
             }, {})
@@ -269,7 +296,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'cost' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => {
+            values: viewData.years.reduce((acc, y) => {
               const percentage = y.totalRevenue ? (y.otherCosts / y.totalRevenue) * 100 : 0;
               return { ...acc, [y.year]: percentage };
             }, {})
@@ -281,7 +308,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             category: 'cost' as const,
             indented: true,
             percentageOf: 'total-revenue',
-            values: data.years.reduce((acc, y) => {
+            values: viewData.years.reduce((acc, y) => {
               const percentage = y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0;
               return { ...acc, [y.year]: percentage };
             }, {})
@@ -299,7 +326,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             type: 'input' as const,
             category: 'result' as const,
             indented: true,
-            values: data.years.reduce((acc, y) => ({ ...acc, [y.year]: y.numberOfEmployees }), {})
+            values: viewData.years.reduce((acc, y) => ({ ...acc, [y.year]: y.numberOfEmployees }), {})
           },
           {
             id: 'total-costs',
@@ -385,7 +412,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       },
       ...customSections // Add custom sections for future extensibility
     ];
-  }, [data, customSections]);
+  }, [viewData, customSections]);
 
   const calculateMetricsForYear = (yearData: YearData) => {
     const fiscalRecurring = (yearData.totalRevenue * yearData.fiscalRecurringPercent) / 100;
@@ -425,8 +452,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   };
 
   const calculateMetrics = () => {
-    const latestYear = data.years[data.years.length - 1];
-    const previousYear = data.years[data.years.length - 2];
+    const latestYear = viewData.years[viewData.years.length - 1];
+    const previousYear = viewData.years[viewData.years.length - 2];
     const latestMetrics = calculateMetricsForYear(latestYear);
     const revenueGrowth = previousYear ? ((latestYear.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100 : 0;
 
@@ -441,9 +468,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     let baseYearData: YearData;
     let baseMetrics: ReturnType<typeof calculateMetricsForYear>;
     
-    const closedYears = data.years.filter(y => y.yearStatus === 'closed');
-    const lastClosedYear = closedYears.length > 0 ? closedYears[closedYears.length - 1] : data.years[0];
-    const currentYear = data.years[data.years.length - 1];
+    const closedYears = viewData.years.filter(y => y.yearStatus === 'closed');
+    const lastClosedYear = closedYears.length > 0 ? closedYears[closedYears.length - 1] : viewData.years[0];
+    const currentYear = viewData.years[viewData.years.length - 1];
     
     switch (valuationConfig.baseYearForValuation) {
       case 'lastClosed':
@@ -456,7 +483,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         break;
       case 'average2Years':
         // Promedio de los dos últimos años
-        const last2Years = data.years.slice(-2);
+        const last2Years = viewData.years.slice(-2);
         const avgRevenue = last2Years.reduce((sum, y) => sum + y.totalRevenue, 0) / last2Years.length;
         const avgPersonnelCosts = last2Years.reduce((sum, y) => sum + y.personnelCosts, 0) / last2Years.length;
         const avgOtherCosts = last2Years.reduce((sum, y) => sum + y.otherCosts, 0) / last2Years.length;
@@ -503,8 +530,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           if (baseYearData.totalRevenue >= 1000000) adjustment += 0.05;
           
           // Ajuste por crecimiento (solo aplicable si hay más de un año)
-          if (data.years.length > 1) {
-            const previousYear = data.years[data.years.length - 2];
+          if (viewData.years.length > 1) {
+            const previousYear = viewData.years[viewData.years.length - 2];
             const revenueGrowth = ((currentYear.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
             if (revenueGrowth > 20) adjustment += 0.1;
             else if (revenueGrowth < 0) adjustment -= 0.15;
@@ -526,7 +553,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
 
   useEffect(() => {
     calculateValuations();
-  }, [data, valuationConfig]);
+  }, [viewData, valuationConfig]);
 
   // Debounce chart data updates to prevent jumping
   useEffect(() => {
@@ -629,6 +656,50 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     return ((currentValue - previousValue) / previousValue) * 100;
   };
 
+  // Helper to extract FinancialData from sections
+  const extractFromSections = (sections: TableSection[], current: FinancialData): FinancialData => {
+    const rows = sections.flatMap(s => s.rows);
+    const get = (id: string) => rows.find(r => r.id === id);
+    
+    return {
+      years: current.years.map(y => {
+        const yr = y.year;
+        const totalRevenue = get('total-revenue')?.values[yr] ?? y.totalRevenue;
+
+        // Porcentajes de ingresos
+        const fiscalPerc = get('fiscal-recurring')?.values[yr] ?? y.fiscalRecurringPercent;
+        const accPerc = get('accounting-recurring')?.values[yr] ?? y.accountingRecurringPercent;
+        const laborPerc = get('labor-recurring')?.values[yr] ?? y.laborRecurringPercent;
+        const otherPerc = get('other-revenue')?.values[yr] ?? y.otherRevenuePercent;
+
+        // Costes como % de ingresos → convertir a importe absoluto
+        const personnelPerc = get('personnel-costs')?.values[yr];
+        const otherCostsPerc = get('other-costs')?.values[yr];
+        const ownerSalaryPerc = get('owner-salary')?.values[yr];
+
+        const personnelCosts = totalRevenue * ((personnelPerc ?? (y.totalRevenue ? (y.personnelCosts / y.totalRevenue) * 100 : 0)) / 100);
+        const otherCosts = totalRevenue * ((otherCostsPerc ?? (y.totalRevenue ? (y.otherCosts / y.totalRevenue) * 100 : 0)) / 100);
+        const ownerSalary = totalRevenue * ((ownerSalaryPerc ?? (y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0)) / 100);
+
+        const employees = get('employees')?.values[yr] ?? y.numberOfEmployees;
+
+        return {
+          year: yr,
+          yearStatus: y.yearStatus,
+          totalRevenue,
+          fiscalRecurringPercent: fiscalPerc,
+          accountingRecurringPercent: accPerc,
+          laborRecurringPercent: laborPerc,
+          otherRevenuePercent: otherPerc,
+          personnelCosts,
+          otherCosts,
+          ownerSalary,
+          numberOfEmployees: employees,
+        };
+      })
+    };
+  };
+
   // Dynamic table handlers
   const handleDynamicDataChange = async (newSections: TableSection[]) => {
     // Separar secciones base de custom
@@ -640,6 +711,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       setCustomSections(customSectionsUpdated);
     }
     
+    // Actualizar localData inmediatamente para feedback visual instantáneo
+    setLocalData(prev => extractFromSections(newSections, prev ?? viewData));
+    
     // Cancelar timeout previo
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -648,8 +722,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     // Guardar en BD después de 500ms de inactividad (debounced)
     saveTimeoutRef.current = setTimeout(async () => {
       // Actualizar cada año en la base de datos
-      for (let i = 0; i < data.years.length; i++) {
-        const year = data.years[i];
+      for (let i = 0; i < viewData.years.length; i++) {
+        const year = viewData.years[i];
         const valuationYear = valuationYears[i];
         
         if (!valuationYear) continue;
@@ -719,7 +793,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   const validateData = () => {
     const issues: string[] = [];
     
-    data.years.forEach((yearData, index) => {
+    viewData.years.forEach((yearData, index) => {
       // Solo validar si hay datos significativos en el año
       const hasSignificantData = yearData.totalRevenue > 0 || 
                                   yearData.personnelCosts > 0 || 
@@ -742,7 +816,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       }
 
       if (index > 0) {
-        const previousYear = data.years[index - 1];
+        const previousYear = viewData.years[index - 1];
         if (previousYear.totalRevenue > 0) {
           const growth = ((yearData.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
           if (growth < -30) {
@@ -797,8 +871,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                 {/* P&L Comparativo - Dynamic Table */}
                 <div className="w-full">
                   <DynamicPLTable
-                    years={data.years.map(y => y.year)}
-                    yearStatuses={data.years.map(y => y.yearStatus)}
+                    years={viewData.years.map(y => y.year)}
+                    yearStatuses={viewData.years.map(y => y.yearStatus)}
                     sections={dynamicSections}
                     onDataChange={handleDynamicDataChange}
                     onYearAdd={handleYearAdd}
@@ -814,7 +888,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5" />
-                        Métricas Clave ({data.years[data.years.length - 1].year})
+                        Métricas Clave ({viewData.years[viewData.years.length - 1].year})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
