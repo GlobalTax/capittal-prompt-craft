@@ -81,10 +81,10 @@ export const useAuth = () => {
       if (error) throw error;
       if (!data.user) throw new Error('No se pudo crear el usuario');
       
-      // CRITICAL: Create user profile FIRST before organization
+      // CRITICAL: Upsert user profile to avoid race condition with trigger
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .insert({
+        .upsert({
           id: data.user.id,
           user_id: data.user.id,
           first_name: firstName || null,
@@ -94,7 +94,7 @@ export const useAuth = () => {
           city: city || null,
           advisory_type: advisoryType || null,
           tax_id: taxId || null,
-        });
+        }, { onConflict: 'id' });
 
       if (profileError) {
         logError(profileError, 'useAuth.signUp.createProfile');
