@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { sanitizeError } from '@/lib/utils';
 
 interface Props {
   children: ReactNode;
@@ -84,7 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.error && (
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm font-mono text-destructive">
-                    {this.state.error.toString()}
+                    {sanitizeError(this.state.error, 'Ha ocurrido un error inesperado')}
                   </p>
                 </div>
               )}
@@ -135,7 +136,7 @@ export function ErrorFallback({ error, resetError }: { error: Error; resetError:
           <CardDescription>Algo salió mal</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <p className="text-sm text-muted-foreground">{sanitizeError(error)}</p>
           <Button onClick={resetError} className="w-full">
             <RefreshCw className="mr-2 h-4 w-4" />
             Reintentar

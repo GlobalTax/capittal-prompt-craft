@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { dashboardRepository, DashboardKPI } from '@/repositories/DashboardRepository';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export function useDashboardKPIs(userId: string | undefined) {
   const [kpis, setKpis] = useState<DashboardKPI[]>([]);
@@ -21,10 +22,10 @@ export function useDashboardKPIs(userId: string | undefined) {
       const data = await dashboardRepository.getKPIs(userId);
       setKpis(data);
     } catch (error) {
-      console.error('Error fetching KPIs:', error);
+      logError(error, 'useDashboardKPIs.fetchKPIs');
       toast({
         title: 'Error',
-        description: 'No se pudieron cargar los KPIs',
+        description: sanitizeError(error, 'No se pudieron cargar los KPIs'),
         variant: 'destructive',
       });
     } finally {

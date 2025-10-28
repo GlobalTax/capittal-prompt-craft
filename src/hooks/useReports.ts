@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { reportRepository, ValuationReport } from '@/repositories/ReportRepository';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export function useReports() {
   const [reports, setReports] = useState<ValuationReport[]>([]);
@@ -23,10 +24,10 @@ export function useReports() {
       const data = await reportRepository.getReports(user.id);
       setReports(data);
     } catch (error) {
-      console.error('Error fetching reports:', error);
+      logError(error, 'useReports.fetchReports');
       toast({
         title: 'Error',
-        description: 'No se pudieron cargar los reportes',
+        description: sanitizeError(error, 'No se pudieron cargar los reportes'),
         variant: 'destructive',
       });
     } finally {
@@ -52,10 +53,10 @@ export function useReports() {
       
       return newReport;
     } catch (error) {
-      console.error('Error creating report:', error);
+      logError(error, 'useReports.createReport');
       toast({
         title: 'Error',
-        description: 'No se pudo generar el reporte',
+        description: sanitizeError(error, 'No se pudo generar el reporte'),
         variant: 'destructive',
       });
       return null;
@@ -70,10 +71,10 @@ export function useReports() {
         title: 'Reporte eliminado',
       });
     } catch (error) {
-      console.error('Error deleting report:', error);
+      logError(error, 'useReports.deleteReport');
       toast({
         title: 'Error',
-        description: 'No se pudo eliminar el reporte',
+        description: sanitizeError(error, 'No se pudo eliminar el reporte'),
         variant: 'destructive',
       });
     }

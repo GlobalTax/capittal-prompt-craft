@@ -16,4 +16,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: {
+    // Eliminar console.log, console.error, etc. en producción
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
+  build: {
+    // Minificar mejor en producción
+    minify: mode === 'production' ? 'esbuild' : false,
+    sourcemap: mode !== 'production',
+  },
 }));

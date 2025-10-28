@@ -3,6 +3,7 @@ import { valuationRepository } from '@/repositories/ValuationRepository';
 import { valuationYearRepository } from '@/repositories/ValuationYearRepository';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export type ValuationType = 'own_business' | 'potential_acquisition' | 'client_business';
 
@@ -75,9 +76,10 @@ export function useValuations() {
       const data = await valuationRepository.findAll(user.id);
       setValuations((data || []) as Valuation[]);
     } catch (error: any) {
+      logError(error, 'useValuations.fetchValuations');
       toast({
         title: 'Error al cargar valoraciones',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     } finally {
@@ -144,7 +146,7 @@ export function useValuations() {
           employees: 0,
         });
       } catch (yearError: any) {
-        console.error('Error creating valuation years:', yearError);
+        logError(yearError, 'useValuations.createValuation.years');
         toast({
           title: 'Advertencia',
           description: 'Valoración creada pero los años no se inicializaron correctamente',
@@ -160,9 +162,10 @@ export function useValuations() {
       
       return newValuation;
     } catch (error: any) {
+      logError(error, 'useValuations.createValuation');
       toast({
         title: 'Error al crear valoración',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
       return null;
@@ -175,9 +178,10 @@ export function useValuations() {
       
       setValuations(valuations.map(v => v.id === id ? { ...v, ...updates } : v));
     } catch (error: any) {
+      logError(error, 'useValuations.updateValuation');
       toast({
         title: 'Error al actualizar',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }
@@ -193,9 +197,10 @@ export function useValuations() {
         description: 'La valoración se eliminó correctamente',
       });
     } catch (error: any) {
+      logError(error, 'useValuations.deleteValuation');
       toast({
         title: 'Error al eliminar',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }

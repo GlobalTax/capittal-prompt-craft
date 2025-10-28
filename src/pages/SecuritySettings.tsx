@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Shield, Smartphone, Trash2, Monitor } from 'lucide-react';
 import { MFASetup } from '@/components/auth/MFASetup';
 import { format } from 'date-fns';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export default function SecuritySettings() {
   const [mfaEnabled, setMfaEnabled] = useState(false);
@@ -42,8 +43,8 @@ export default function SecuritySettings() {
 
       setSessions(sessionsData || []);
     } catch (error) {
-      console.error('Error loading security data:', error);
-      toast.error('Error al cargar configuración de seguridad');
+      logError(error, 'SecuritySettings.loadSecurityData');
+      toast.error(sanitizeError(error, 'Error al cargar configuración de seguridad'));
     } finally {
       setLoading(false);
     }
@@ -68,8 +69,8 @@ export default function SecuritySettings() {
       setMfaEnabled(false);
       toast.success('MFA desactivado correctamente');
     } catch (error) {
-      console.error('Error disabling MFA:', error);
-      toast.error('Error al desactivar MFA');
+      logError(error, 'SecuritySettings.handleDisableMFA');
+      toast.error(sanitizeError(error, 'Error al desactivar MFA'));
     }
   };
 
@@ -85,8 +86,8 @@ export default function SecuritySettings() {
       setSessions(sessions.filter(s => s.id !== sessionId));
       toast.success('Sesión revocada correctamente');
     } catch (error) {
-      console.error('Error revoking session:', error);
-      toast.error('Error al revocar sesión');
+      logError(error, 'SecuritySettings.handleRevokeSession');
+      toast.error(sanitizeError(error, 'Error al revocar sesión'));
     }
   };
 

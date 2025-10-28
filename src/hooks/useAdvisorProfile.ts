@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export interface AdvisorProfile {
   user_id: string;
@@ -40,10 +41,10 @@ export function useAdvisorProfile() {
       if (error && error.code !== 'PGRST116') throw error;
       setProfile(data);
     } catch (error: any) {
-      console.error('Error fetching profile:', error);
+      logError(error, 'useAdvisorProfile.fetchProfile');
       toast({
         title: 'Error al cargar perfil',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     } finally {
@@ -87,10 +88,10 @@ export function useAdvisorProfile() {
       });
       return data;
     } catch (error: any) {
-      console.error('Error updating profile:', error);
+      logError(error, 'useAdvisorProfile.updateProfile');
       toast({
         title: 'Error al actualizar',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
       throw error;
@@ -141,10 +142,10 @@ export function useAdvisorProfile() {
       
       return publicUrl;
     } catch (error: any) {
-      console.error('Error uploading logo:', error);
+      logError(error, 'useAdvisorProfile.uploadLogo');
       toast({
         title: 'Error al subir logo',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
       return null;
@@ -167,10 +168,10 @@ export function useAdvisorProfile() {
         title: 'Logo eliminado',
       });
     } catch (error: any) {
-      console.error('Error deleting logo:', error);
+      logError(error, 'useAdvisorProfile.deleteLogo');
       toast({
         title: 'Error al eliminar logo',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }

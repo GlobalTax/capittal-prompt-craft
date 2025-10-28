@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { valuationYearRepository, ValuationYear } from '@/repositories/ValuationYearRepository';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export function useValuationYears(valuationId: string) {
   const [years, setYears] = useState<ValuationYear[]>([]);
@@ -12,9 +13,10 @@ export function useValuationYears(valuationId: string) {
       const data = await valuationYearRepository.findByValuationId(valuationId);
       setYears(data || []);
     } catch (error: any) {
+      logError(error, 'useValuationYears.fetchYears');
       toast({
         title: 'Error al cargar años',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     } finally {
@@ -58,9 +60,10 @@ export function useValuationYears(valuationId: string) {
       setYears([...years, newYear].sort((a, b) => a.year.localeCompare(b.year)));
       toast({ title: 'Año añadido correctamente' });
     } catch (error: any) {
+      logError(error, 'useValuationYears.addYear');
       toast({
         title: 'Error al añadir año',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }
@@ -81,9 +84,10 @@ export function useValuationYears(valuationId: string) {
       setYears(years.filter(y => y.id !== id));
       toast({ title: 'Año eliminado' });
     } catch (error: any) {
+      logError(error, 'useValuationYears.deleteYear');
       toast({
         title: 'Error al eliminar año',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }
@@ -104,9 +108,10 @@ export function useValuationYears(valuationId: string) {
     } catch (error: any) {
       // Rollback on error
       setYears(years);
+      logError(error, 'useValuationYears.updateYear');
       toast({
         title: 'Error al actualizar año',
-        description: error.message,
+        description: sanitizeError(error),
         variant: 'destructive',
       });
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -40,7 +41,8 @@ export const useAuth = () => {
       toast.success('¡Bienvenido de nuevo!');
       return { data, error: null };
     } catch (error: any) {
-      toast.error(error.message || 'Error al iniciar sesión');
+      logError(error, 'useAuth.signIn');
+      toast.error(sanitizeError(error, 'Error al iniciar sesión'));
       return { data: null, error };
     }
   };
@@ -97,11 +99,11 @@ export const useAuth = () => {
           });
 
           if (orgError) {
-            console.error('Error creating organization:', orgError);
+            logError(orgError, 'useAuth.signUp.createOrg');
             toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
           }
         } catch (orgError: any) {
-          console.error('Error creating organization:', orgError);
+          logError(orgError, 'useAuth.signUp.createOrg');
           toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
         }
       }
@@ -109,7 +111,8 @@ export const useAuth = () => {
       toast.success('¡Cuenta creada exitosamente!');
       return { data, error: null };
     } catch (error: any) {
-      toast.error(error.message || 'Error al registrarse');
+      logError(error, 'useAuth.signUp');
+      toast.error(sanitizeError(error, 'Error al registrarse'));
       return { data: null, error };
     }
   };
@@ -122,7 +125,8 @@ export const useAuth = () => {
       toast.success('Sesión cerrada');
       return { error: null };
     } catch (error: any) {
-      toast.error(error.message || 'Error al cerrar sesión');
+      logError(error, 'useAuth.signOut');
+      toast.error(sanitizeError(error, 'Error al cerrar sesión'));
       return { error };
     }
   };

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { BudgetTableSection } from '@/components/valuation/DynamicBudgetTable';
+import { logError } from '@/lib/utils';
 
 export interface MonthlyBudget {
   id: string;
@@ -50,7 +51,7 @@ export function useMonthlyBudgets() {
       if (error) throw error;
       setBudgets(data as any);
     } catch (error) {
-      console.error('Error fetching budgets:', error);
+      logError(error, 'useMonthlyBudgets.fetchBudgets');
     } finally {
       setLoading(false);
     }

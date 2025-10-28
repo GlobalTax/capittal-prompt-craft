@@ -2,6 +2,29 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Card } from '@/components/ui/card';
 
+/**
+ * AdminRoute - Protección de rutas administrativas
+ * 
+ * ⚠️ IMPORTANTE: Esta es una validación de UI solamente
+ * La seguridad real está garantizada por:
+ * 
+ * 1. Row Level Security (RLS) en Supabase
+ *    - Todas las tablas críticas tienen políticas RLS
+ *    - Los usuarios no pueden acceder a datos de otros usuarios
+ * 
+ * 2. Funciones SECURITY DEFINER
+ *    - has_role_secure() valida roles en el servidor
+ *    - Todas las operaciones administrativas validan permisos
+ * 
+ * 3. Edge Functions protegidas
+ *    - validateUserRole() en todas las funciones admin
+ * 
+ * Esta validación frontend solo mejora UX mostrando mensajes
+ * apropiados cuando un usuario no tiene permisos.
+ * 
+ * Un atacante que bypasee este componente verá páginas vacías
+ * porque RLS bloqueará todas las queries en la base de datos.
+ */
 export const AdminRoute = () => {
   const { isAdmin, isGlobalAdmin, loading } = useUserRole();
 

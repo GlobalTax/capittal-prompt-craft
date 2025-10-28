@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { alertRepository, SystemAlert, AlertRule } from '@/repositories/AlertRepository';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError, logError } from '@/lib/utils';
 
 export function useAlerts(userId: string | undefined) {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -30,10 +31,10 @@ export function useAlerts(userId: string | undefined) {
       setAlertRules(rulesData);
       setUnreadCount(unreadCountData);
     } catch (error) {
-      console.error('Error fetching alerts:', error);
+      logError(error, 'useAlerts.fetchData');
       toast({
         title: 'Error',
-        description: 'No se pudieron cargar las alertas',
+        description: sanitizeError(error, 'No se pudieron cargar las alertas'),
         variant: 'destructive',
       });
     } finally {
@@ -49,10 +50,10 @@ export function useAlerts(userId: string | undefined) {
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking alert as read:', error);
+      logError(error, 'useAlerts.markAsRead');
       toast({
         title: 'Error',
-        description: 'No se pudo marcar la alerta como leída',
+        description: sanitizeError(error, 'No se pudo marcar la alerta como leída'),
         variant: 'destructive',
       });
     }
@@ -69,10 +70,10 @@ export function useAlerts(userId: string | undefined) {
         title: 'Todas las alertas marcadas como leídas',
       });
     } catch (error) {
-      console.error('Error marking all as read:', error);
+      logError(error, 'useAlerts.markAllAsRead');
       toast({
         title: 'Error',
-        description: 'No se pudieron marcar todas las alertas',
+        description: sanitizeError(error, 'No se pudieron marcar todas las alertas'),
         variant: 'destructive',
       });
     }
@@ -86,10 +87,10 @@ export function useAlerts(userId: string | undefined) {
         title: 'Alerta eliminada',
       });
     } catch (error) {
-      console.error('Error deleting alert:', error);
+      logError(error, 'useAlerts.deleteAlert');
       toast({
         title: 'Error',
-        description: 'No se pudo eliminar la alerta',
+        description: sanitizeError(error, 'No se pudo eliminar la alerta'),
         variant: 'destructive',
       });
     }
@@ -105,10 +106,10 @@ export function useAlerts(userId: string | undefined) {
         r.id === ruleId ? { ...r, enabled: !r.enabled } : r
       ));
     } catch (error) {
-      console.error('Error toggling rule:', error);
+      logError(error, 'useAlerts.toggleRule');
       toast({
         title: 'Error',
-        description: 'No se pudo actualizar la regla',
+        description: sanitizeError(error, 'No se pudo actualizar la regla'),
         variant: 'destructive',
       });
     }
