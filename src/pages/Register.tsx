@@ -21,7 +21,6 @@ const Register = () => {
   const [city, setCity] = useState('');
   const [advisoryType, setAdvisoryType] = useState('');
   const [taxId, setTaxId] = useState('');
-  const [professionalNumber, setProfessionalNumber] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuthContext();
@@ -77,8 +76,7 @@ const Register = () => {
       phone,
       city || undefined,
       advisoryType || undefined,
-      taxId || undefined,
-      professionalNumber || undefined
+      taxId || undefined
     );
 
     setLoading(false);
@@ -210,17 +208,6 @@ const Register = () => {
                     disabled={loading}
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="professionalNumber">Número de Colegiado</Label>
-                <Input
-                  id="professionalNumber"
-                  type="text"
-                  placeholder="Número de colegiado (opcional)"
-                  value={professionalNumber}
-                  onChange={(e) => setProfessionalNumber(e.target.value)}
-                  disabled={loading}
-                />
               </div>
             </div>
 

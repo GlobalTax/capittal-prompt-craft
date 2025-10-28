@@ -54,8 +54,7 @@ export const useAuth = () => {
     phone?: string,
     city?: string,
     advisoryType?: string,
-    taxId?: string,
-    professionalNumber?: string
+    taxId?: string
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -72,8 +71,7 @@ export const useAuth = () => {
             phone,
             city,
             advisory_type: advisoryType,
-            tax_id: taxId,
-            professional_number: professionalNumber
+            tax_id: taxId
           }
         }
       });
@@ -90,16 +88,21 @@ export const useAuth = () => {
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '');
           
-          await supabase.rpc('create_organization_with_admin' as any, {
+          const { error: orgError } = await supabase.rpc('create_organization_with_admin' as any, {
             _org_name: company,
             _org_slug: `${orgSlug}-${Date.now()}`,
-            _company_id: taxId,
+            _company_id: taxId || null,
             _email: email,
-            _phone: phone
+            _phone: phone || null
           });
+
+          if (orgError) {
+            console.error('Error creating organization:', orgError);
+            toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
+          }
         } catch (orgError: any) {
           console.error('Error creating organization:', orgError);
-          // Don't fail signup if org creation fails
+          toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
         }
       }
       
