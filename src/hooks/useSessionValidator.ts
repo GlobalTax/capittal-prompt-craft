@@ -37,7 +37,6 @@ export const useSessionValidator = () => {
             .from('user_sessions')
             .upsert({
               user_id: user.id,
-              session_token: session.access_token,
               ip_address: ip,
               user_agent: navigator.userAgent,
               last_activity: new Date().toISOString(),

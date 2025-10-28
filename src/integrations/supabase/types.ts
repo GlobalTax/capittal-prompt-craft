@@ -13541,7 +13541,6 @@ export type Database = {
           last_activity: string | null
           location_city: string | null
           location_country: string | null
-          session_token: string
           user_agent: string | null
           user_id: string
         }
@@ -13554,7 +13553,6 @@ export type Database = {
           last_activity?: string | null
           location_city?: string | null
           location_country?: string | null
-          session_token: string
           user_agent?: string | null
           user_id: string
         }
@@ -13567,7 +13565,6 @@ export type Database = {
           last_activity?: string | null
           location_city?: string | null
           location_country?: string | null
-          session_token?: string
           user_agent?: string | null
           user_id?: string
         }
@@ -15103,6 +15100,7 @@ export type Database = {
         Args: { p_timeout_minutes?: number; p_user_id: string }
         Returns: boolean
       }
+      cleanup_inactive_sessions: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: Json }
       cleanup_old_presence: { Args: never; Returns: undefined }
       cleanup_rate_limit_tracking: { Args: never; Returns: undefined }
