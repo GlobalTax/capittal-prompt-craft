@@ -79,9 +79,30 @@ export const useAuth = () => {
       });
 
       if (error) throw error;
+      if (!data.user) throw new Error('No se pudo crear el usuario');
       
-      // Create organization for new user
-      if (data.user && company) {
+      // CRITICAL: Create user profile FIRST before organization
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          id: data.user.id,
+          user_id: data.user.id,
+          first_name: firstName || null,
+          last_name: lastName || null,
+          company: company || null,
+          phone: phone || null,
+          city: city || null,
+          advisory_type: advisoryType || null,
+          tax_id: taxId || null,
+        });
+
+      if (profileError) {
+        logError(profileError, 'useAuth.signUp.createProfile');
+        throw new Error('Error al crear el perfil de usuario');
+      }
+      
+      // Create organization for new user (only if company provided)
+      if (company) {
         try {
           const orgSlug = company
             .toLowerCase()
@@ -100,11 +121,12 @@ export const useAuth = () => {
 
           if (orgError) {
             logError(orgError, 'useAuth.signUp.createOrg');
-            toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
+            // Don't throw, just log - organization is optional
+            toast.warning('Perfil creado, pero hubo un problema al configurar la organización.');
           }
         } catch (orgError: any) {
           logError(orgError, 'useAuth.signUp.createOrg');
-          toast.error('Cuenta creada, pero hubo un problema al configurar la organización. Contacta con soporte.');
+          toast.warning('Perfil creado, pero hubo un problema al configurar la organización.');
         }
       }
       
