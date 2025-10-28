@@ -1,10 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod schema for validation
+const AcceptInvitationSchema = z.object({
+  token: z.string().uuid("Token inválido"),
+  first_name: z.string().trim().min(1, "El nombre es requerido").max(50, "Nombre demasiado largo"),
+  last_name: z.string().trim().min(1, "El apellido es requerido").max(50, "Apellido demasiado largo"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(100, "Contraseña demasiado larga"),
+});
+
+// Error sanitization
+function sanitizeError(error: any): string {
+  console.error('[Internal Error]', error);
+  
+  if (error instanceof z.ZodError) {
+    return error.errors.map(e => e.message).join(', ');
+  }
+  
+  return 'Error al procesar la solicitud';
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,28 +35,23 @@ serve(async (req) => {
   console.log(`[${requestId}] Accept invitation request received`);
 
   try {
-    const { token, first_name, last_name, password } = await req.json();
-
-    // Input validation
-    if (!token || !first_name || !last_name || !password) {
-      console.log(`[${requestId}] Missing required fields`);
+    const rawData = await req.json();
+    
+    // Validate with Zod
+    const validationResult = AcceptInvitationSchema.safeParse(rawData);
+    
+    if (!validationResult.success) {
+      console.log(`[${requestId}] Validation error:`, validationResult.error.errors);
       return new Response(JSON.stringify({ 
-        error: 'Todos los campos son requeridos' 
+        error: 'Datos inválidos',
+        details: validationResult.error.errors.map(e => e.message).join(', ')
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (password.length < 6) {
-      console.log(`[${requestId}] Password too short`);
-      return new Response(JSON.stringify({ 
-        error: 'La contraseña debe tener al menos 6 caracteres' 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const { token, first_name, last_name, password } = validationResult.data;
 
     // Create service role client for admin operations
     const supabaseAdmin = createClient(
@@ -58,7 +73,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (invitationError || !invitation) {
-      console.log(`[${requestId}] Invalid invitation token:`, invitationError);
+      console.log(`[${requestId}] Invalid invitation token`);
       return new Response(JSON.stringify({ 
         error: 'Token de invitación no válido' 
       }), {
@@ -97,13 +112,13 @@ serve(async (req) => {
       password: password,
       email_confirm: true, // Auto-confirm email
       user_metadata: {
-        first_name: first_name.trim(),
-        last_name: last_name.trim(),
+        first_name: first_name,
+        last_name: last_name,
       }
     });
 
     if (signUpError) {
-      console.error(`[${requestId}] Error creating user:`, signUpError);
+      console.error(`[${requestId}] Error creating user:`, signUpError.code);
       
       // Handle duplicate user
       if (signUpError.message?.includes('already registered')) {
@@ -117,8 +132,7 @@ serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ 
-        error: 'Error al crear el usuario',
-        details: signUpError.message
+        error: 'Error al crear la cuenta'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -128,7 +142,7 @@ serve(async (req) => {
     if (!authData.user) {
       console.error(`[${requestId}] User creation returned no user data`);
       return new Response(JSON.stringify({ 
-        error: 'Error al crear el usuario' 
+        error: 'Error al crear la cuenta' 
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -146,9 +160,7 @@ serve(async (req) => {
       });
 
     if (roleError) {
-      console.error(`[${requestId}] Error assigning role:`, roleError);
-      // Don't fail the whole process if role assignment fails
-      // Admin can fix it manually
+      console.error(`[${requestId}] Error assigning role:`, roleError.code);
     } else {
       console.log(`[${requestId}] Role ${invitation.role} assigned successfully`);
     }
@@ -164,8 +176,7 @@ serve(async (req) => {
       .eq('token', token);
 
     if (updateError) {
-      console.error(`[${requestId}] Error updating invitation:`, updateError);
-      // Don't fail the whole process if update fails
+      console.error(`[${requestId}] Error updating invitation:`, updateError.code);
     }
 
     console.log(`[${requestId}] Invitation accepted successfully`);
@@ -179,10 +190,9 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error(`[${requestId}] Unexpected error:`, error);
+    console.error(`[${requestId}] Unexpected error`);
     return new Response(JSON.stringify({ 
-      error: 'Error interno del servidor',
-      details: error.message 
+      error: sanitizeError(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

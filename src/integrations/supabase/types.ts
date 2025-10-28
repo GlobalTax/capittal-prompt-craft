@@ -10266,18 +10266,21 @@ export type Database = {
       }
       rate_limit_tracking: {
         Row: {
+          action_type: string | null
           created_at: string | null
           endpoint: string
           id: string
           ip_address: unknown
         }
         Insert: {
+          action_type?: string | null
           created_at?: string | null
           endpoint: string
           id?: string
           ip_address: unknown
         }
         Update: {
+          action_type?: string | null
           created_at?: string | null
           endpoint?: string
           id?: string
@@ -15096,6 +15099,15 @@ export type Database = {
             }
             Returns: boolean
           }
+      check_rate_limit_generic: {
+        Args: {
+          p_action_type: string
+          p_identifier: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_session_timeout: {
         Args: { p_timeout_minutes?: number; p_user_id: string }
         Returns: boolean
@@ -15103,6 +15115,7 @@ export type Database = {
       cleanup_inactive_sessions: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: Json }
       cleanup_old_presence: { Args: never; Returns: undefined }
+      cleanup_rate_limit_old_records: { Args: never; Returns: undefined }
       cleanup_rate_limit_tracking: { Args: never; Returns: undefined }
       complete_invitation: {
         Args: { p_token: string; p_user_id: string }

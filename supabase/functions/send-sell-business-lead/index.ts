@@ -1,22 +1,49 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface SellBusinessRequest {
-  companyName: string;
-  sector: string;
-  revenue: number;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  message: string;
-  advisorUserId?: string;
-  valuationId?: string;
+// Zod schema for validation
+const SellBusinessSchema = z.object({
+  companyName: z.string().trim().min(2, "El nombre de la empresa debe tener al menos 2 caracteres").max(200, "El nombre es demasiado largo"),
+  sector: z.string().trim().min(2, "El sector es requerido").max(100),
+  revenue: z.number().positive("La facturación debe ser positiva").max(999999999, "Valor demasiado grande"),
+  contactName: z.string().trim().min(2, "El nombre de contacto es requerido").max(100),
+  contactEmail: z.string().email("Email inválido").max(255),
+  contactPhone: z.string().trim().min(9, "Teléfono inválido").max(20),
+  message: z.string().trim().max(2000, "Mensaje demasiado largo").optional(),
+  advisorUserId: z.string().uuid().optional(),
+  valuationId: z.string().uuid().optional(),
+});
+
+// HTML escape function to prevent XSS
+function escapeHtml(unsafe: string): string {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Error sanitization
+function sanitizeError(error: any): string {
+  console.error('[Internal Error]', error);
+  
+  // Map known errors to user-friendly messages
+  if (error?.code === '23505') return 'Este registro ya existe';
+  if (error?.code === '23503') return 'Referencia inválida';
+  if (error instanceof z.ZodError) {
+    return error.errors.map(e => e.message).join(', ');
+  }
+  
+  return 'Error al procesar la solicitud. Por favor contacta con soporte.';
 }
 
 serve(async (req: Request) => {
@@ -32,7 +59,59 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
-    const requestData: SellBusinessRequest = await req.json();
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('x-real-ip') || 
+                     '0.0.0.0';
+
+    // Rate limiting: 3 submissions per hour per IP
+    try {
+      const { data: rateLimitOk, error: rlError } = await supabase.rpc(
+        'check_rate_limit',
+        {
+          p_ip: clientIP,
+          p_endpoint: 'sell_business_lead',
+          p_max_requests: 3,
+          p_window_minutes: 60
+        }
+      );
+
+      if (rlError || !rateLimitOk) {
+        console.warn(`[Rate Limit] IP ${clientIP} exceeded limit`);
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: 'Demasiadas solicitudes. Máximo 3 envíos por hora.' 
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } catch (rateLimitError) {
+      console.error('[Rate Limit] Error checking rate limit:', rateLimitError);
+      // Continue processing if rate limit check fails (graceful degradation)
+    }
+
+    const rawData = await req.json();
+    
+    // Validate with Zod
+    const validationResult = SellBusinessSchema.safeParse(rawData);
+    
+    if (!validationResult.success) {
+      console.warn('[Validation Error]', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Datos inválidos',
+          details: validationResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const requestData = validationResult.data;
 
     console.log("Processing sell business lead:", {
       companyName: requestData.companyName,
@@ -50,7 +129,7 @@ serve(async (req: Request) => {
         contact_name: requestData.contactName,
         contact_email: requestData.contactEmail,
         contact_phone: requestData.contactPhone,
-        message: requestData.message,
+        message: requestData.message || null,
         advisor_user_id: requestData.advisorUserId || null,
         valuation_id: requestData.valuationId || null,
         status: "new",
@@ -60,7 +139,10 @@ serve(async (req: Request) => {
 
     if (insertError) {
       console.error("Error inserting lead:", insertError);
-      throw insertError;
+      return new Response(
+        JSON.stringify({ success: false, error: sanitizeError(insertError) }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     console.log("Lead created successfully:", lead.id);
@@ -92,22 +174,22 @@ serve(async (req: Request) => {
       }
     }
 
-    const {
-      companyName: company_name,
-      sector,
-      revenue: annual_revenue,
-      contactName: contact_name,
-      contactEmail: contact_email,
-      contactPhone: contact_phone,
-      message,
-      valuationId: valuation_id
-    } = requestData;
+    // Escape all user inputs for HTML
+    const safe = {
+      company_name: escapeHtml(requestData.companyName),
+      sector: escapeHtml(requestData.sector),
+      contact_name: escapeHtml(requestData.contactName),
+      contact_email: escapeHtml(requestData.contactEmail),
+      contact_phone: escapeHtml(requestData.contactPhone),
+      message: escapeHtml(requestData.message || ''),
+      annual_revenue: requestData.revenue
+    };
 
     // Professional HTML template for company
     const companyEmail = await resend.emails.send({
       from: 'Capittal <onboarding@resend.dev>',
       to: ['info@capittal.com'],
-      subject: `🎯 Nuevo Lead de Venta: ${company_name}`,
+      subject: `🎯 Nuevo Lead de Venta: ${safe.company_name}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -131,39 +213,39 @@ serve(async (req: Request) => {
                       <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse: collapse;">
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Empresa:</td>
-                          <td style="padding: 12px 0; color: #1a1a1a; font-weight: 500;">${company_name}</td>
+                          <td style="padding: 12px 0; color: #1a1a1a; font-weight: 500;">${safe.company_name}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Sector:</td>
-                          <td style="padding: 12px 0; color: #1a1a1a;">${sector}</td>
+                          <td style="padding: 12px 0; color: #1a1a1a;">${safe.sector}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Facturación Anual:</td>
-                          <td style="padding: 12px 0; color: #10b981; font-weight: 600; font-size: 18px;">${annual_revenue?.toLocaleString()}€</td>
+                          <td style="padding: 12px 0; color: #10b981; font-weight: 600; font-size: 18px;">${safe.annual_revenue.toLocaleString()}€</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Contacto:</td>
-                          <td style="padding: 12px 0; color: #1a1a1a;">${contact_name}</td>
+                          <td style="padding: 12px 0; color: #1a1a1a;">${safe.contact_name}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Email:</td>
-                          <td style="padding: 12px 0;"><a href="mailto:${contact_email}" style="color: #667eea; text-decoration: none;">${contact_email}</a></td>
+                          <td style="padding: 12px 0;"><a href="mailto:${safe.contact_email}" style="color: #667eea; text-decoration: none;">${safe.contact_email}</a></td>
                         </tr>
                         <tr style="border-bottom: 1px solid #e5e7eb;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Teléfono:</td>
-                          <td style="padding: 12px 0;"><a href="tel:${contact_phone}" style="color: #667eea; text-decoration: none;">${contact_phone}</a></td>
+                          <td style="padding: 12px 0;"><a href="tel:${safe.contact_phone}" style="color: #667eea; text-decoration: none;">${safe.contact_phone}</a></td>
                         </tr>
                         ${advisorInfo ? `
                         <tr style="border-bottom: 1px solid #e5e7eb; background-color: #f0fdf4;">
                           <td style="padding: 12px 0; color: #6b7280; font-weight: 600;">Referido por:</td>
-                          <td style="padding: 12px 0; color: #10b981; font-weight: 600;">${advisorInfo.first_name} ${advisorInfo.last_name}</td>
+                          <td style="padding: 12px 0; color: #10b981; font-weight: 600;">${escapeHtml(advisorInfo.first_name)} ${escapeHtml(advisorInfo.last_name)}</td>
                         </tr>
                         ` : ''}
                       </table>
-                      ${message ? `
+                      ${safe.message ? `
                       <div style="margin-top: 24px; padding: 20px; background-color: #f9fafb; border-left: 4px solid #667eea; border-radius: 6px;">
                         <p style="margin: 0 0 8px 0; color: #6b7280; font-weight: 600; font-size: 14px;">Mensaje del cliente:</p>
-                        <p style="margin: 0; color: #1a1a1a; line-height: 1.6;">${message}</p>
+                        <p style="margin: 0; color: #1a1a1a; line-height: 1.6;">${safe.message}</p>
                       </div>
                       ` : ''}
                       <div style="margin-top: 32px; text-align: center;">
@@ -192,7 +274,7 @@ serve(async (req: Request) => {
     // Professional confirmation email to client
     const clientEmail = await resend.emails.send({
       from: 'Capittal <onboarding@resend.dev>',
-      to: [contact_email],
+      to: [requestData.contactEmail],
       subject: '✅ Hemos recibido tu solicitud - Capittal',
       html: `
         <!DOCTYPE html>
@@ -213,9 +295,9 @@ serve(async (req: Request) => {
                   </tr>
                   <tr>
                     <td style="padding: 40px 30px;">
-                      <h2 style="color: #1a1a1a; font-size: 22px; margin: 0 0 16px 0;">Hola ${contact_name},</h2>
+                      <h2 style="color: #1a1a1a; font-size: 22px; margin: 0 0 16px 0;">Hola ${safe.contact_name},</h2>
                       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-                        Gracias por confiar en <strong style="color: #667eea;">Capittal</strong> para vender <strong>${company_name}</strong>.
+                        Gracias por confiar en <strong style="color: #667eea;">Capittal</strong> para vender <strong>${safe.company_name}</strong>.
                       </p>
                       <p style="color: #4b5563; line-height: 1.6; margin: 0 0 24px 0; font-size: 16px;">
                         Hemos recibido tu solicitud y nuestro equipo de expertos la está revisando. Nos pondremos en contacto contigo en las <strong>próximas 24-48 horas</strong> para agendar una llamada inicial.
@@ -228,16 +310,6 @@ serve(async (req: Request) => {
                           <li><strong>Valoración detallada</strong> y análisis de mercado</li>
                           <li><strong>Propuesta de colaboración</strong> personalizada</li>
                         </ol>
-                      </div>
-                      <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 24px 0; border-radius: 6px;">
-                        <h3 style="color: #d97706; margin: 0 0 12px 0; font-size: 16px;">💡 Mientras tanto, te recomendamos preparar:</h3>
-                        <ul style="color: #78350f; line-height: 1.8; margin: 0; padding-left: 20px;">
-                          <li>Estados financieros de los <strong>últimos 3 años</strong></li>
-                          <li>Información sobre <strong>activos y pasivos</strong></li>
-                          <li>Listado de <strong>clientes principales</strong> (sin datos sensibles)</li>
-                          <li>Detalles de <strong>contratos importantes</strong></li>
-                          <li>Organigrama y <strong>estructura del equipo</strong></li>
-                        </ul>
                       </div>
                       <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0; font-size: 16px;">
                         Si tienes alguna pregunta urgente, no dudes en responder a este email.
@@ -252,9 +324,6 @@ serve(async (req: Request) => {
                     <td style="padding: 20px 30px; background-color: #f9fafb; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">
                         © ${new Date().getFullYear()} Capittal. Expertos en Valoración y Venta de Empresas.
-                      </p>
-                      <p style="margin: 0; color: #9ca3af; font-size: 11px;">
-                        Este email fue enviado automáticamente. Por favor, no respondas a esta dirección.
                       </p>
                     </td>
                   </tr>
@@ -281,11 +350,10 @@ serve(async (req: Request) => {
       }
     );
   } catch (error: any) {
-    console.error("Error in send-sell-business-lead:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
+        error: sanitizeError(error),
       }),
       {
         status: 500,
