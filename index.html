@@ -3,24 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- DNS Prefetch & Preconnect for performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
     <link rel="shortcut icon" href="/favicon.png">
+    
     <title>Capittal - Herramienta de Valoración Despachos de Asesoría</title>
     <meta name="description" content="Herramienta profesional de valoración para despachos de asesoría. Calcula múltiplos, analiza márgenes financieros y obtiene valoraciones precisas basadas en datos del sector." />
     <meta name="author" content="Capittal" />
     <meta name="keywords" content="valoración empresas, asesoría, valoración despachos, calculadora valoración, múltiplos, due diligence, análisis financiero" />
     
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
+    <!-- Preload critical fonts (local) -->
+    <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/GeneralSans-Regular.woff" as="font" type="font/woff" crossorigin>
+    
+    <!-- Async load Google Fonts (non-blocking) -->
+    <link 
+      rel="preload" 
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=optional" 
+      as="style" 
+      onload="this.onload=null;this.rel='stylesheet'"
+    >
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=optional" rel="stylesheet">
+    </noscript>
+    
+    <!-- Preload main JS bundle -->
+    <link rel="modulepreload" href="/src/main.tsx">
 
+    <!-- Open Graph -->
     <meta property="og:title" content="Capittal - Valoración de Despachos de Asesoría" />
     <meta property="og:description" content="Herramienta profesional para la valoración de empresas de asesoría con múltiplos del sector y análisis financiero avanzado." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />

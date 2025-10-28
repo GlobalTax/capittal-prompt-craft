@@ -2,7 +2,25 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./index.html",
+    "./pages/**/*.{ts,tsx}", 
+    "./components/**/*.{ts,tsx}", 
+    "./app/**/*.{ts,tsx}", 
+    "./src/**/*.{ts,tsx}"
+  ],
+  // Safelist para clases dinámicas que Tailwind no detecta automáticamente
+  safelist: [
+    // Chart colors
+    'bg-chart-1', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4', 'bg-chart-5',
+    'text-chart-1', 'text-chart-2', 'text-chart-3', 'text-chart-4', 'text-chart-5',
+    // Status colors
+    'bg-success', 'bg-warning', 'bg-destructive',
+    'text-success', 'text-warning', 'text-destructive',
+    'border-success', 'border-warning', 'border-destructive',
+    // Dynamic badges
+    'bg-gray-500', 'bg-blue-500', 'bg-green-500', 'bg-red-500',
+  ],
   prefix: "",
   theme: {
     container: {

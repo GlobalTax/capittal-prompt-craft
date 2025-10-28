@@ -6,34 +6,43 @@ interface TrackEventProps {
 }
 
 export const useTrackLandingEvents = () => {
-  // 1. Tracking de Scroll Depth automático
+  // 1. Tracking de Scroll Depth automático (optimizado con RAF)
   useEffect(() => {
     let maxScroll = 0;
     const milestones = [50, 80];
     const tracked = new Set<number>();
+    let ticking = false;
 
     const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      
-      const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
-      
-      if (scrollPercent > maxScroll) {
-        maxScroll = scrollPercent;
-        
-        milestones.forEach(milestone => {
-          if (scrollPercent >= milestone && !tracked.has(milestone)) {
-            trackEvent({
-              event: 'SCROLL_DEPTH',
-              properties: { 
-                percentage: milestone,
-                timestamp: new Date().toISOString()
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          // Batch todas las lecturas del DOM juntas para evitar forced reflow
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.scrollY || document.documentElement.scrollTop;
+          
+          const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+          
+          if (scrollPercent > maxScroll) {
+            maxScroll = scrollPercent;
+            
+            milestones.forEach(milestone => {
+              if (scrollPercent >= milestone && !tracked.has(milestone)) {
+                trackEvent({
+                  event: 'SCROLL_DEPTH',
+                  properties: { 
+                    percentage: milestone,
+                    timestamp: new Date().toISOString()
+                  }
+                });
+                tracked.add(milestone);
               }
             });
-            tracked.add(milestone);
           }
+          
+          ticking = false;
         });
+        ticking = true;
       }
     };
 
