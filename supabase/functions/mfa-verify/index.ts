@@ -176,12 +176,18 @@ function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { token, factor_id } = await req.json(); // ✅ Ya no recibe 'user_id'
+    const { token, factor_id } = await req.json();
+    
+    // Get client IP for rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+               req.headers.get('x-real-ip') || 
+               'unknown';
 
     console.log(`[mfa-verify] Verifying token for factor: ${factor_id}`);
 
@@ -201,12 +207,11 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // ✅ Obtener secret del servidor (no del cliente)
+    // Get MFA factor with secret
     const { data: mfaFactor, error: fetchError } = await supabase
       .from('user_mfa_factors')
       .select('id, secret, user_id, is_verified')
@@ -223,8 +228,45 @@ serve(async (req) => {
 
     console.log(`[mfa-verify] Factor found for user: ${mfaFactor.user_id}`);
 
-    // ✅ Verificar token usando el secret del servidor
+    // CHECK RATE LIMIT BEFORE VERIFYING
+    const { data: rateLimitCheck, error: rateLimitError } = await supabase
+      .rpc('check_mfa_rate_limit', {
+        p_user_id: mfaFactor.user_id,
+        p_ip_address: ip
+      });
+
+    if (rateLimitError) {
+      console.error('[mfa-verify] Rate limit check error:', rateLimitError);
+    } else if (rateLimitCheck && !(rateLimitCheck as any).allowed) {
+      console.log('[mfa-verify] Rate limit exceeded for user:', mfaFactor.user_id);
+      
+      // Record failed attempt
+      await supabase.rpc('record_mfa_attempt', {
+        p_user_id: mfaFactor.user_id,
+        p_ip_address: ip,
+        p_success: false
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          valid: false, 
+          error: 'Too many failed attempts. Please try again later.',
+          reset_at: (rateLimitCheck as any).reset_at,
+          remaining_attempts: 0
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+      );
+    }
+
+    // Verificar token usando el secret del servidor
     const isValid = verifyTOTP(token, mfaFactor.secret, 1);
+
+    // Record attempt
+    await supabase.rpc('record_mfa_attempt', {
+      p_user_id: mfaFactor.user_id,
+      p_ip_address: ip,
+      p_success: isValid
+    });
 
     if (isValid) {
       console.log('[mfa-verify] Token valid, marking factor as verified');

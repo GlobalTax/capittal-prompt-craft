@@ -8237,6 +8237,33 @@ export type Database = {
         }
         Relationships: []
       }
+      mfa_verification_attempts: {
+        Row: {
+          attempted_at: string
+          created_at: string
+          id: string
+          ip_address: string
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          created_at?: string
+          id?: string
+          ip_address: string
+          success?: boolean
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          created_at?: string
+          id?: string
+          ip_address?: string
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_budgets: {
         Row: {
           budget_name: string
@@ -15069,6 +15096,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_mfa_rate_limit: {
+        Args: { p_ip_address: string; p_user_id: string }
+        Returns: Json
+      }
       check_rate_limit:
         | {
             Args: {
@@ -15593,6 +15624,10 @@ export type Database = {
         Returns: undefined
       }
       recalcular_todos_los_leads: { Args: never; Returns: Json }
+      record_mfa_attempt: {
+        Args: { p_ip_address: string; p_success: boolean; p_user_id: string }
+        Returns: undefined
+      }
       remove_user_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -15600,6 +15635,7 @@ export type Database = {
         }
         Returns: Json
       }
+      reset_mfa_rate_limit: { Args: { p_user_id: string }; Returns: undefined }
       run_security_audit: { Args: never; Returns: Json }
       sanitize_input: { Args: { p_input: string }; Returns: string }
       sanitize_input_enhanced: {
