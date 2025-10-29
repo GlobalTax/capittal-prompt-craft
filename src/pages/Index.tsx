@@ -74,14 +74,15 @@ const Index = () => {
       gradient: 'from-primary/10 to-accent/10',
       iconColor: 'text-primary'
     },
-    {
+    // NOTA: Generador de reportes oculto temporalmente para fase futura
+    /*{
       title: 'Reportes',
       description: 'Genera informes profesionales',
       icon: TrendingUp,
       link: '/reports',
       gradient: 'from-accent/10 to-primary/10',
       iconColor: 'text-accent'
-    },
+    },*/
     {
       title: 'Empresas',
       description: 'Gestiona oportunidades de negocio',
@@ -128,7 +129,7 @@ const Index = () => {
         </div>
 
         {/* Quick stats */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-l-4 border-primary hover:shadow-lg transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -153,7 +154,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-accent/5 to-accent/3 border-l-4 border-accent hover:shadow-lg transition-all">
+          {/* NOTA: Generador de reportes oculto temporalmente para fase futura */}
+          {/*<Card className="bg-gradient-to-br from-accent/5 to-accent/3 border-l-4 border-accent hover:shadow-lg transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -163,7 +165,7 @@ const Index = () => {
                 <TrendingUp className="w-8 h-8 text-accent/50" />
               </div>
             </CardContent>
-          </Card>
+          </Card>*/}
         </div>
 
         {/* Recent Referrals Widget */}

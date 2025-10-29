@@ -55,12 +55,13 @@ export function AppSidebar() {
       icon: Calculator,
       description: "Todas tus valoraciones"
     },
-    {
+    // NOTA: Generador de reportes oculto temporalmente para fase futura
+    /*{
       title: t('sidebar.reports'),
       url: "/reports",
       icon: FileText,
       description: "PDFs profesionales"
-    }
+    }*/
   ];
 
   const resourceItems = [

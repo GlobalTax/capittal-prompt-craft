@@ -25,7 +25,8 @@ import NotFound from "./pages/NotFound";
 const ExecutiveDashboard = lazy(() => import("@/components/ExecutiveDashboard"));
 const ValuationList = lazy(() => import("@/components/valuation/ValuationList").then(m => ({ default: m.ValuationList })));
 const ValuationEditor = lazy(() => import("@/components/valuation/ValuationEditor").then(m => ({ default: m.ValuationEditor })));
-const ReportGenerator = lazy(() => import("@/components/ReportGenerator"));
+// NOTA: Generador de reportes oculto temporalmente para fase futura
+// const ReportGenerator = lazy(() => import("@/components/ReportGenerator"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const DocumentTemplates = lazy(() => import("./pages/DocumentTemplates"));
 const FeeCalculator = lazy(() => import("./pages/FeeCalculator"));
@@ -87,7 +88,8 @@ const App = () => {
                 <Route path="/dashboard" element={<LazyRoute component={ExecutiveDashboard} />} />
                 <Route path="/valuations" element={<LazyRoute component={ValuationList} />} />
                 <Route path="/valuation/:id" element={<LazyRoute component={ValuationEditor} />} />
-                  <Route path="/reports" element={<LazyRoute component={ReportGenerator} />} />
+                  {/* NOTA: Generador de reportes oculto temporalmente para fase futura */}
+                  {/* <Route path="/reports" element={<LazyRoute component={ReportGenerator} />} /> */}
                   <Route path="/security" element={<LazyRoute component={SecuritySettings} />} />
                   <Route path="/resources/templates" element={<LazyRoute component={DocumentTemplates} />} />
                   <Route path="/resources/fee-calculator" element={<LazyRoute component={FeeCalculator} />} />
