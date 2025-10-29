@@ -53,6 +53,13 @@ const ExecutiveDashboard = () => {
     mixed: 'Mixta'
   };
 
+  // Valuation type labels for recent valuations
+  const valuationTypeLabels: Record<string, string> = {
+    own_business: 'Propia',
+    client_business: 'Cliente',
+    potential_acquisition: 'Adquisición',
+  };
+
   // Status labels and colors
   const statusLabels: Record<string, string> = {
     draft: 'Borrador',
@@ -226,13 +233,13 @@ const ExecutiveDashboard = () => {
                       <div
                         key={valuation.id}
                         className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/valuations/${valuation.id}`)}
+                        onClick={() => navigate(`/valuation/${valuation.id}`)}
                       >
                           <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{valuation.client_name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              {typeLabels[valuation.valuation_type]}
+                              {valuationTypeLabels[valuation.valuation_type] || valuation.valuation_type}
                             </Badge>
                             <UITooltip>
                               <TooltipTrigger asChild>
