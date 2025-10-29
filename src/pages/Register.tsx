@@ -82,7 +82,7 @@ const Register = () => {
     setLoading(false);
 
     if (!error) {
-      navigate('/dashboard', { replace: true });
+      navigate('/verify-email', { replace: true });
     }
   };
 

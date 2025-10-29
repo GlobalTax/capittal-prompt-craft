@@ -11,6 +11,7 @@ import { PublicOnlyRoute } from "@/components/auth/PublicOnlyRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
 import { ProtectedLayout } from "@/components/layouts/ProtectedLayout";
 import { RouteLoading } from "@/components/RouteLoading";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 
 // Critical routes - load immediately
 import Landing from "./pages/Landing";
@@ -32,6 +33,7 @@ const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const MyCollaborationRequests = lazy(() => import("./pages/MyCollaborationRequests"));
 const ClientLanding = lazy(() => import("./pages/ClientLanding"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 // Admin routes - separate chunk
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -63,6 +65,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
+            <EmailVerificationBanner />
             <Routes>
               {/* Public routes - no lazy loading */}
               <Route path="/" element={<Landing />} />
@@ -108,6 +111,9 @@ const App = () => {
               
               {/* Public landing page */}
               <Route path="/sell-your-business" element={<LazyRoute component={ClientLanding} />} />
+              
+              {/* Email verification page */}
+              <Route path="/verify-email" element={<LazyRoute component={VerifyEmail} />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -12088,6 +12088,39 @@ export type Database = {
         }
         Relationships: []
       }
+      suspended_users: {
+        Row: {
+          auto_delete_at: string | null
+          created_at: string
+          notes: string | null
+          reason: string | null
+          suspended_at: string
+          suspended_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_delete_at?: string | null
+          created_at?: string
+          notes?: string | null
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_delete_at?: string | null
+          created_at?: string
+          notes?: string | null
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_alerts: {
         Row: {
           action_required: boolean | null
@@ -14590,6 +14623,33 @@ export type Database = {
           },
         ]
       }
+      verification_email_logs: {
+        Row: {
+          email: string
+          id: string
+          ip_address: string | null
+          sent_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          ip_address?: string | null
+          sent_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          ip_address?: string | null
+          sent_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       winback_attempts: {
         Row: {
           canal: string
@@ -15232,6 +15292,10 @@ export type Database = {
         Args: { p_timeout_minutes?: number; p_user_id: string }
         Returns: boolean
       }
+      check_verification_email_rate_limit: {
+        Args: { p_email?: string; p_max_per_hour?: number; p_user_id?: string }
+        Returns: boolean
+      }
       cleanup_inactive_sessions: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: Json }
       cleanup_old_presence: { Args: never; Returns: undefined }
@@ -15526,6 +15590,7 @@ export type Database = {
       is_admin_user: { Args: never; Returns: boolean }
       is_global_admin: { Args: never; Returns: boolean }
       is_global_admin_secure: { Args: never; Returns: boolean }
+      is_user_suspended: { Args: { p_user_id: string }; Returns: boolean }
       log_automation_event: {
         Args: {
           p_action_data?: Json
@@ -15631,6 +15696,15 @@ export type Database = {
           p_user_id?: string
         }
         Returns: string
+      }
+      log_verification_email_sent: {
+        Args: {
+          p_email: string
+          p_ip_address?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       mark_engine_task_notified: {
         Args: { p_kind: string; p_task_id: string }
@@ -15795,6 +15869,10 @@ export type Database = {
       validate_user_input: {
         Args: { p_input: string; p_input_type?: string; p_max_length?: number }
         Returns: string
+      }
+      verify_user_email_manually: {
+        Args: { p_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

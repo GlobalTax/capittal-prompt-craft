@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.security-alerts]
 verify_jwt = true
+
+[functions.resend-verification-email]
+verify_jwt = false

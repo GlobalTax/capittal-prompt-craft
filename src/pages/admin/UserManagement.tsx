@@ -24,7 +24,10 @@ import {
   UserPlus,
   AlertCircle,
   Copy,
-  Trash2
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Ban
 } from "lucide-react";
 import {
   Dialog,
@@ -47,6 +50,7 @@ interface UserData {
   verification_status: string;
   first_name?: string;
   last_name?: string;
+  is_suspended?: boolean;
 }
 
 interface PendingInvitation {
@@ -74,8 +78,11 @@ function AdminUsersPanel() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState("");
+  const [suspendReason, setSuspendReason] = useState("");
+  const [suspendNotes, setSuspendNotes] = useState("");
   const [newRole, setNewRole] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
@@ -139,16 +146,18 @@ function AdminUsersPanel() {
 
       const userIds = authUsersData.users.map((u: any) => u.id);
 
-      const [profiles, roles, verifications] = await Promise.all([
+      const [profiles, roles, verifications, suspended] = await Promise.all([
         supabase.from('user_profiles').select('*').in('id', userIds),
         supabase.from('user_roles').select('*').in('user_id', userIds),
-        supabase.from('user_verification_status').select('*').in('user_id', userIds)
+        supabase.from('user_verification_status').select('*').in('user_id', userIds),
+        supabase.from('suspended_users').select('user_id').in('user_id', userIds)
       ]);
 
       return authUsersData.users.map((user: any) => {
         const profile = profiles.data?.find(p => p.id === user.id);
         const role = roles.data?.find(r => r.user_id === user.id);
         const verification = verifications.data?.find(v => v.user_id === user.id);
+        const isSuspended = suspended.data?.some(s => s.user_id === user.id) || false;
 
         return {
           id: user.id,
@@ -159,7 +168,8 @@ function AdminUsersPanel() {
           role: role?.role || 'user',
           verification_status: verification?.verification_status || 'pending',
           first_name: profile?.first_name,
-          last_name: profile?.last_name
+          last_name: profile?.last_name,
+          is_suspended: isSuspended
         } as UserData;
       });
     }
@@ -409,6 +419,68 @@ function AdminUsersPanel() {
     },
     onError: () => {
       toast.error('Error al cancelar invitación');
+    }
+  });
+
+  // Suspend/Reactivate user mutations
+  const suspendUser = useMutation({
+    mutationFn: async ({ userId, reason, notes }: { userId: string; reason: string; notes: string }) => {
+      const { error } = await supabase
+        .from('suspended_users')
+        .insert({
+          user_id: userId,
+          reason,
+          notes,
+          auto_delete_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 días
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('Usuario suspendido correctamente');
+      setShowSuspendDialog(false);
+      setSuspendReason("");
+      setSuspendNotes("");
+    },
+    onError: () => {
+      toast.error('Error al suspender usuario');
+    }
+  });
+
+  const reactivateUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase
+        .from('suspended_users')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('Usuario reactivado correctamente');
+    },
+    onError: () => {
+      toast.error('Error al reactivar usuario');
+    }
+  });
+
+  // Verify email manually mutation
+  const verifyEmailManually = useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase.rpc('verify_user_email_manually', {
+        p_user_id: userId
+      });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('Email verificado manualmente');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Error al verificar email');
     }
   });
 
@@ -677,6 +749,7 @@ function AdminUsersPanel() {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Email Verificado</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Registro</TableHead>
@@ -687,7 +760,7 @@ function AdminUsersPanel() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     Cargando usuarios...
                   </TableCell>
                 </TableRow>
@@ -706,9 +779,42 @@ function AdminUsersPanel() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {user.email_confirmed_at ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span className="text-sm text-green-600 dark:text-green-400">Verificado</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <span className="text-sm text-amber-600 dark:text-amber-400">Pendiente</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => verifyEmailManually.mutate(user.id)}
+                              disabled={verifyEmailManually.isPending}
+                              title="Verificar manualmente"
+                              className="h-6 px-2"
+                            >
+                              <UserCheck className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getRoleBadgeVariant(user.role)}>
+                          {user.role}
+                        </Badge>
+                        {user.is_suspended && (
+                          <Badge variant="destructive" className="gap-1">
+                            <Ban className="h-3 w-3" />
+                            Suspendido
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(user.verification_status)}>
@@ -752,6 +858,29 @@ function AdminUsersPanel() {
                         >
                           <Shield className="h-4 w-4" />
                         </Button>
+                        {user.is_suspended ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => reactivateUser.mutate(user.id)}
+                            disabled={reactivateUser.isPending}
+                            title="Reactivar usuario"
+                          >
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowSuspendDialog(true);
+                            }}
+                            title="Suspender usuario"
+                          >
+                            <Ban className="h-4 w-4 text-amber-600" />
+                          </Button>
+                        )}
                         {isSuperAdmin && (
                           <Button
                             size="sm"
@@ -776,7 +905,7 @@ function AdminUsersPanel() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No se encontraron usuarios
                   </TableCell>
                 </TableRow>
@@ -1151,6 +1280,73 @@ function AdminUsersPanel() {
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {deleteUser.isPending ? 'Eliminando...' : isEmbedded ? 'No disponible en vista embebida' : 'Eliminar Usuario'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Suspend User Dialog */}
+      <Dialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              <Ban className="h-5 w-5" />
+              Suspender Usuario
+            </DialogTitle>
+            <DialogDescription>
+              Suspender temporalmente a {selectedUser?.email}. Esta acción es reversible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+              <p className="text-sm text-amber-900 dark:text-amber-100">
+                <strong>Nota:</strong> El usuario no podrá iniciar sesión mientras esté suspendido. 
+                Los datos se mantendrán intactos y se podrá reactivar en cualquier momento.
+              </p>
+            </div>
+            <div>
+              <Label>Razón de suspensión *</Label>
+              <Input
+                placeholder="Ej: Incumplimiento de términos de servicio"
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Notas adicionales (opcional)</Label>
+              <Textarea
+                placeholder="Información adicional sobre la suspensión..."
+                value={suspendNotes}
+                onChange={(e) => setSuspendNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              El usuario será eliminado automáticamente después de 90 días si no se reactiva.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowSuspendDialog(false);
+                setSuspendReason("");
+                setSuspendNotes("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => selectedUser && suspendUser.mutate({ 
+                userId: selectedUser.id, 
+                reason: suspendReason,
+                notes: suspendNotes
+              })}
+              disabled={!suspendReason || suspendUser.isPending}
+            >
+              <Ban className="h-4 w-4 mr-2" />
+              {suspendUser.isPending ? 'Suspendiendo...' : 'Suspender Usuario'}
             </Button>
           </DialogFooter>
         </DialogContent>
