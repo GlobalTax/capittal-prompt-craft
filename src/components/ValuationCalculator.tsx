@@ -1425,56 +1425,110 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                   </CardContent>
                 </Card>
 
-                {/* Ayudar a Vender Button */}
-                <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <Handshake className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle>¿Tu Cliente Quiere Vender?</CardTitle>
-                        <CardDescription>
-                          Genera comisiones ayudándole a vender su empresa con Capittal
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-3">
-                      <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                {/* Ayudar a Vender Button - Conditional based on valuation type */}
+                {valuation.valuation_type === 'client_business' && (
+                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-lg bg-primary/10">
+                          <Handshake className="h-6 w-6 text-primary" />
+                        </div>
                         <div>
-                          <p className="font-medium">Comisión competitiva</p>
-                          <p className="text-muted-foreground">Hasta un 5% del valor de la operación</p>
+                          <CardTitle>¿Tu Cliente Quiere Vender?</CardTitle>
+                          <CardDescription>
+                            Genera comisiones ayudándole a vender su empresa con Capittal
+                          </CardDescription>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Sin costes adicionales</p>
-                          <p className="text-muted-foreground">Solo cobras si la venta se cierra</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Comisión competitiva</p>
+                            <p className="text-muted-foreground">Hasta un 5% del valor de la operación</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Sin costes adicionales</p>
+                            <p className="text-muted-foreground">Solo cobras si la venta se cierra</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Proceso transparente</p>
+                            <p className="text-muted-foreground">Seguimiento en tiempo real del progreso</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                      
+                      <Button 
+                        size="lg" 
+                        className="w-full"
+                        onClick={() => setShowCollaborationDialog(true)}
+                      >
+                        <Handshake className="mr-2 h-5 w-5" />
+                        Ayudar a Vender Esta Empresa
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {valuation.valuation_type === 'own_business' && (
+                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-lg bg-primary/10">
+                          <Handshake className="h-6 w-6 text-primary" />
+                        </div>
                         <div>
-                          <p className="font-medium">Proceso transparente</p>
-                          <p className="text-muted-foreground">Seguimiento en tiempo real del progreso</p>
+                          <CardTitle>¿Quieres Vender Tu Despacho?</CardTitle>
+                          <CardDescription>
+                            Capittal te ayuda a vender tu despacho al mejor precio
+                          </CardDescription>
                         </div>
                       </div>
-                    </div>
-                    
-                    <Button 
-                      size="lg" 
-                      className="w-full"
-                      onClick={() => setShowCollaborationDialog(true)}
-                    >
-                      <Handshake className="mr-2 h-5 w-5" />
-                      Ayudar a Vender Esta Empresa
-                    </Button>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Valoración profesional</p>
+                            <p className="text-muted-foreground">Análisis completo del valor de tu negocio</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Red de compradores</p>
+                            <p className="text-muted-foreground">Acceso a inversores y compradores cualificados</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Proceso confidencial</p>
+                            <p className="text-muted-foreground">Garantizamos discreción en todo momento</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        size="lg" 
+                        className="w-full"
+                        onClick={() => setShowCollaborationDialog(true)}
+                      >
+                        <Handshake className="mr-2 h-5 w-5" />
+                        Quiero Vender Mi Despacho, Ayúdame!
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
         </div>
@@ -1483,9 +1537,15 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         <Dialog open={showCollaborationDialog} onOpenChange={setShowCollaborationDialog}>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>Solicitar Ayuda para Vender</DialogTitle>
+              <DialogTitle>
+                {valuation.valuation_type === 'own_business' 
+                  ? 'Solicitar Ayuda para Vender Mi Despacho'
+                  : 'Solicitar Ayuda para Vender'}
+              </DialogTitle>
               <DialogDescription>
-                Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta valoración
+                {valuation.valuation_type === 'own_business'
+                  ? 'Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de tu despacho'
+                  : 'Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta valoración'}
               </DialogDescription>
             </DialogHeader>
             
