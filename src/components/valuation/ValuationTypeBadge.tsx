@@ -50,10 +50,12 @@ export function ValuationTypeBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge variant={config.variant} className={config.className}>
-            {showIcon && <Icon className="w-3 h-3 mr-1" />}
-            {showLabel && config.label}
-          </Badge>
+          <div className="inline-flex">
+            <Badge variant={config.variant} className={config.className}>
+              {showIcon && <Icon className="w-3 h-3 mr-1" />}
+              {showLabel && config.label}
+            </Badge>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p>{config.description}</p>

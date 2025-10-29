@@ -30,10 +30,6 @@ export function ValuationEditor() {
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const { years: valuationYears, loading: yearsLoading } = useValuationYears(id || '');
-  
-  // Determinar si estamos en modo asesor o cliente basado en la URL de origen
-  const isAdvisorMode = window.location.pathname.includes('/valuations/advisor') || 
-                        document.referrer.includes('/valuations/advisor');
 
   useEffect(() => {
     // Validar UUID antes de cualquier fetch
@@ -43,7 +39,7 @@ export function ValuationEditor() {
         description: 'El identificador de valoración no es válido',
         variant: 'destructive',
       });
-      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
+      navigate('/valuations');
       return;
     }
     fetchValuation();
@@ -68,7 +64,7 @@ export function ValuationEditor() {
         description: error.message,
         variant: 'destructive',
       });
-      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
+      navigate('/valuations');
     } finally {
       setLoading(false);
     }
@@ -98,7 +94,7 @@ export function ValuationEditor() {
       if (error) throw error;
       
       toast({ title: 'Valoración eliminada' });
-      navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients');
+      navigate('/valuations');
     } catch (error: any) {
       toast({
         title: 'Error al eliminar',
@@ -174,7 +170,7 @@ export function ValuationEditor() {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => navigate(isAdvisorMode ? '/valuations/advisor' : '/valuations/clients')}
+              onClick={() => navigate('/valuations')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -205,12 +201,9 @@ export function ValuationEditor() {
 
       {/* Content */}
       <div className="container max-w-7xl py-6 px-4 space-y-6">
-        {/* Formulario de Contexto - Forzar tipo según ruta */}
+        {/* Formulario de Contexto */}
         <ClientInfoForm 
-          valuation={{
-            ...valuation,
-            valuation_type: isAdvisorMode ? 'own_business' : (valuation.valuation_type || 'client_business')
-          }} 
+          valuation={valuation} 
           onUpdate={updateField} 
         />
 
