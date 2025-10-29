@@ -719,19 +719,34 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         return;
       }
       
+      // Extract sector from metadata or target_industry
+      const sector = valuation.metadata?.sector || valuation.target_industry || 'No especificado';
+      
+      console.log('Sending collaboration request with data:', {
+        valuationId: valuation.id,
+        advisorUserId: user.id,
+        companyName,
+        sector,
+        annualRevenue,
+        valuationAmount,
+      });
+      
       const { data, error } = await supabase.functions.invoke('request-sell-collaboration', {
         body: {
           valuationId: valuation.id,
           advisorUserId: user.id,
           companyName,
-          sector: valuation.target_industry || 'No especificado',
+          sector,
           annualRevenue,
           valuationAmount,
           notes: collaborationNotes
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error details:', error);
+        throw new Error(error.message || 'Error al enviar la solicitud');
+      }
       
       toast({
         title: '✅ Solicitud Enviada',
