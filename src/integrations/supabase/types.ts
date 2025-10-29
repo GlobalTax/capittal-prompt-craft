@@ -15108,6 +15108,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_security_invoker_views: {
+        Args: never
+        Returns: {
+          has_security_invoker: boolean
+          view_name: string
+        }[]
+      }
       check_session_timeout: {
         Args: { p_timeout_minutes?: number; p_user_id: string }
         Returns: boolean
