@@ -16,6 +16,10 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart,
 import { DynamicPLTable, type RowData, type TableSection } from "@/components/valuation/DynamicPLTable";
 import { Valuation } from "@/hooks/useValuations";
 import { useValuationYears } from "@/hooks/useValuationYears";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 
 interface YearData {
@@ -107,9 +111,15 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
 
 const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Hook para gestión de años dinámicos
   const { years: valuationYears, loading: yearsLoading, addYear, deleteYear, updateYear } = useValuationYears(valuation.id);
+  
+  // Collaboration dialog state
+  const [showCollaborationDialog, setShowCollaborationDialog] = useState(false);
+  const [collaborationNotes, setCollaborationNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   
   // Debounce timer for database persistence
   const saveTimeoutRef = React.useRef<NodeJS.Timeout>();
@@ -646,6 +656,89 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     // Eliminar puntos (separadores de miles) y reemplazar coma por punto decimal
     const cleaned = value.replace(/\./g, '').replace(',', '.');
     return parseFloat(cleaned) || 0;
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // Handle sell collaboration request
+  const handleRequestCollaboration = async () => {
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: 'Error',
+          description: 'Debes estar autenticado para realizar esta acción',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Get current valuation amount
+      const valuationAmount = valuations.length > 0 
+        ? valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length
+        : 0;
+      
+      const annualRevenue = viewData.years[0]?.totalRevenue || 0;
+      
+      // Determine company name based on valuation type
+      const companyName = valuation.valuation_type === 'client_business' 
+        ? (valuation.client_company || valuation.title)
+        : valuation.valuation_type === 'potential_acquisition'
+        ? (valuation.target_company_name || valuation.title)
+        : valuation.title;
+      
+      if (!companyName || !annualRevenue) {
+        toast({
+          title: 'Datos incompletos',
+          description: 'Por favor completa el nombre de la empresa y la facturación antes de solicitar ayuda',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      const { data, error } = await supabase.functions.invoke('request-sell-collaboration', {
+        body: {
+          valuationId: valuation.id,
+          advisorUserId: user.id,
+          companyName,
+          sector: valuation.target_industry || 'No especificado',
+          annualRevenue,
+          valuationAmount,
+          notes: collaborationNotes
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: '✅ Solicitud Enviada',
+        description: 'Samuel y Lluis han recibido tu solicitud. Te contactarán pronto.',
+      });
+      
+      setShowCollaborationDialog(false);
+      setCollaborationNotes('');
+      
+      // Track event
+      await trackFunnelEvent('sell_collaboration_requested', valuation.id);
+    } catch (error: any) {
+      console.error('Error requesting collaboration:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo enviar la solicitud. Por favor, intenta de nuevo.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
 
@@ -1375,10 +1468,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                     <Button 
                       size="lg" 
                       className="w-full"
-                      onClick={async () => {
-                        await trackFunnelEvent('sell_button_clicked', valuation.id);
-                        navigate(`/resources/sell-business?valuation=${valuation.id}`);
-                      }}
+                      onClick={() => setShowCollaborationDialog(true)}
                     >
                       <Handshake className="mr-2 h-5 w-5" />
                       Ayudar a Vender Esta Empresa
@@ -1388,6 +1478,79 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
               </div>
             </div>
         </div>
+
+        {/* Collaboration Dialog */}
+        <Dialog open={showCollaborationDialog} onOpenChange={setShowCollaborationDialog}>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Solicitar Ayuda para Vender</DialogTitle>
+              <DialogDescription>
+                Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta valoración
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <div className="text-sm font-medium mb-3">Datos que se enviarán:</div>
+                <div className="grid gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Empresa:</span>
+                    <span className="font-medium">
+                      {valuation.valuation_type === 'client_business' 
+                        ? (valuation.client_company || valuation.title)
+                        : valuation.valuation_type === 'potential_acquisition'
+                        ? (valuation.target_company_name || valuation.title)
+                        : valuation.title}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Sector:</span>
+                    <span className="font-medium">{valuation.target_industry || 'No especificado'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Facturación:</span>
+                    <span className="font-medium">{formatCurrency(viewData.years[0]?.totalRevenue || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Valoración Media:</span>
+                    <span className="font-medium text-primary">
+                      {valuations.length > 0 
+                        ? formatCurrency(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length)
+                        : 'No calculada'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas adicionales (opcional)</Label>
+                <Textarea
+                  id="notes"
+                  value={collaborationNotes}
+                  onChange={(e) => setCollaborationNotes(e.target.value)}
+                  placeholder="¿Algo más que deberíamos saber sobre este caso? Situación especial, urgencia, expectativas del cliente..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCollaborationDialog(false)}
+                disabled={submitting}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleRequestCollaboration} 
+                disabled={submitting}
+              >
+                {submitting ? 'Enviando...' : 'Enviar Solicitud'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </TooltipProvider>
     </div>
   );
