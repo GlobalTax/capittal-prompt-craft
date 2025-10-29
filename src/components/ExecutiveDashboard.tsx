@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, BarChart3, Users, Target, Zap, Loader2, FileText, TrendingUp, Calendar, CheckCircle2 } from "lucide-react";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
+import { useValuations } from "@/hooks/useValuations";
+import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +19,32 @@ const ExecutiveDashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { stats, trends, typeDistribution, financialSummary, recentValuations, loading } = useDashboardStats(user?.id);
+  const { stats, trends, typeDistribution, financialSummary, recentValuations, loading, refetch } = useDashboardStats(user?.id);
+  const { updateValuation } = useValuations();
+  const { toast } = useToast();
+
+  const handleToggleComplete = async (id: string, completed: boolean) => {
+    try {
+      await updateValuation(id, { 
+        completed,
+        status: completed ? 'completed' : 'in_progress'
+      });
+      
+      toast({
+        title: completed ? '✅ Valoración completada' : '🔄 Valoración en progreso',
+        description: 'Estado actualizado correctamente',
+      });
+      
+      // Refrescar datos del dashboard
+      refetch();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Type labels
   const typeLabels: Record<string, string> = {
@@ -80,8 +108,9 @@ const ExecutiveDashboard = () => {
   }));
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
@@ -199,15 +228,29 @@ const ExecutiveDashboard = () => {
                         className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
                         onClick={() => navigate(`/valuations/${valuation.id}`)}
                       >
-                        <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{valuation.client_name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
                               {typeLabels[valuation.valuation_type]}
                             </Badge>
-                            <Badge className={`text-xs ${statusColors[valuation.status]}`}>
-                              {statusLabels[valuation.status]}
-                            </Badge>
+                            <UITooltip>
+                              <TooltipTrigger asChild>
+                                <Badge 
+                                  className={`text-xs ${statusColors[valuation.status]} cursor-pointer hover:scale-105 transition-all hover:shadow-md`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleComplete(valuation.id, valuation.status !== 'completed');
+                                  }}
+                                >
+                                  {statusLabels[valuation.status]}
+                                  {valuation.status === 'completed' && <CheckCircle2 className="h-3 w-3 ml-1 inline" />}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Clic para cambiar estado</p>
+                              </TooltipContent>
+                            </UITooltip>
                           </div>
                         </div>
                         <div className="text-right ml-4">
@@ -393,7 +436,8 @@ const ExecutiveDashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
