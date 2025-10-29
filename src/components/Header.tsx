@@ -1,6 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { UserProfile } from "@/components/auth/UserProfile";
+import { ReportIssueButton } from "@/components/ReportIssueButton";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
@@ -30,6 +31,7 @@ const Header = () => {
               <SelectItem value="en">English</SelectItem>
             </SelectContent>
           </Select>
+          <ReportIssueButton variant="ghost" size="icon" />
           <UserProfile />
         </div>
       </div>

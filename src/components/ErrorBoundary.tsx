@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { sanitizeError } from '@/lib/utils';
+import { ReportIssueButton } from '@/components/ReportIssueButton';
 
 interface Props {
   children: ReactNode;
@@ -101,7 +102,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </details>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button onClick={this.handleReset} variant="default">
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Intentar de nuevo
@@ -110,6 +111,17 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Home className="mr-2 h-4 w-4" />
                   Ir al inicio
                 </Button>
+                <ReportIssueButton
+                  variant="outline"
+                  size="default"
+                  prefilled={{
+                    issueType: 'error',
+                    title: sanitizeError(this.state.error, 'Error técnico capturado'),
+                    description: 'Error técnico capturado automáticamente por el sistema.',
+                    severity: 'high',
+                    errorStack: this.state.error?.stack,
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
