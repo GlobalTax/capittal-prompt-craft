@@ -85,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get advisor profile details
     const { data: advisorProfile, error: advisorError } = await supabaseClient
       .from("advisor_profiles")
-      .select("user_id, business_name, contact_phone, website, specialization")
+      .select("user_id, business_name, contact_phone, website")
       .eq("user_id", advisorUserId)
       .maybeSingle();
 
@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
         sector: sector,
         annual_revenue: annualRevenue,
         status: "new",
-        source: "advisor_request",
+        source: "referral",
         advisor_user_id: advisorUserId,
         valuation_id: valuationId,
         contact_name: advisorName,
@@ -136,7 +136,13 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No se pudo crear el lead de venta");
     }
 
-    console.log("Created sell business lead:", leadData.id);
+    console.log("Created sell business lead successfully:", {
+      leadId: leadData.id,
+      source: "referral",
+      advisorUserId,
+      valuationId,
+      companyName,
+    });
 
     // Create collaboration request
     const { data: collabData, error: collabError } = await supabaseClient
