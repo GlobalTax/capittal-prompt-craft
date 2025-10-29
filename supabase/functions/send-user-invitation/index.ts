@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
+import { SendInvitationSchema, validateInput, sanitizeError, escapeHtml } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -105,35 +106,22 @@ serve(async (req) => {
       console.log(`[${requestId}] [bypass] Superadmin ${user.email} can send unlimited invitations`);
     }
 
-    // Input validation
-    const { email, role, app_url } = await req.json();
-    
-    if (!email || typeof email !== 'string' || !email.trim() || !email.includes('@')) {
-      console.log(`[${requestId}] Invalid email: ${email}`);
-      return new Response(JSON.stringify({ error: 'Email inválido' }), {
+    // Input validation with Zod
+    const rawBody = await req.json();
+    const validation = validateInput(SendInvitationSchema, rawBody);
+
+    if (!validation.success) {
+      console.warn(`[${requestId}] Validation failed:`, validation.errors);
+      return new Response(JSON.stringify({ 
+        error: 'Datos inválidos',
+        details: validation.errors 
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (!role || typeof role !== 'string' || !role.trim()) {
-      console.log(`[${requestId}] Invalid role: ${role}`);
-      return new Response(JSON.stringify({ error: 'Rol requerido' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const validRoles = ['user', 'advisor', 'admin', 'superadmin'];
-    if (!validRoles.includes(role)) {
-      console.log(`[${requestId}] Invalid role value: ${role}`);
-      return new Response(JSON.stringify({ error: `Rol inválido. Debe ser: ${validRoles.join(', ')}` }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
+    const { email: cleanEmail, role, app_url } = validation.data;
     console.log(`[${requestId}] Creating invitation for ${cleanEmail} with role ${role}`);
 
     // Create invitation via DB function
@@ -422,8 +410,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error(`[${requestId}] Unexpected error:`, error);
     return new Response(JSON.stringify({ 
-      error: 'Error interno del servidor',
-      details: error.message 
+      error: sanitizeError(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

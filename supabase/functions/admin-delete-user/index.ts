@@ -1,19 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { AdminDeleteUserSchema, validateInput, sanitizeError, redactEmail } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Función helper para redactar emails en logs (F04 - Seguridad)
-const redactEmail = (email: string): string => {
-  if (!email || !email.includes('@')) return 'unknown';
-  const [local, domain] = email.split('@');
-  const redactedLocal = local.length > 2 
-    ? `${local[0]}${'*'.repeat(local.length - 2)}${local[local.length - 1]}`
-    : '*'.repeat(local.length);
-  return `${redactedLocal}@${domain}`;
 };
 
 serve(async (req) => {
@@ -104,15 +95,22 @@ serve(async (req) => {
       }
     }
 
-    // Get the user_id to delete from the request body
-    const { user_id } = await req.json();
+    // Get and validate the user_id to delete from the request body
+    const rawBody = await req.json();
+    const validation = validateInput(AdminDeleteUserSchema, rawBody);
 
-    if (!user_id) {
+    if (!validation.success) {
+      console.error('[admin-delete-user] Validation failed:', validation.errors);
       return new Response(
-        JSON.stringify({ error: 'user_id es requerido' }),
+        JSON.stringify({ 
+          error: 'Datos inválidos', 
+          details: validation.errors 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { user_id } = validation.data;
 
     // Prevent self-deletion
     if (user_id === user.id) {
@@ -244,9 +242,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[admin-delete-user] Unexpected error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Error interno del servidor';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: sanitizeError(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

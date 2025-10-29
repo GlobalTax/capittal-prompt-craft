@@ -1,22 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { SecurityAlertSchema, validateInput, sanitizeError } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface SecurityAlertPayload {
-  event_id: string;
-  event_type: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  description: string;
-  user_id?: string;
-  user_email?: string;
-  ip_address?: string;
-  metadata?: any;
-  created_at: string;
-}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -25,7 +14,22 @@ serve(async (req) => {
   }
 
   try {
-    const payload: SecurityAlertPayload = await req.json();
+    // Validate input payload
+    const rawPayload = await req.json();
+    const validation = validateInput(SecurityAlertSchema, rawPayload);
+
+    if (!validation.success) {
+      console.error('Security alert validation failed:', validation.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Datos inválidos',
+          details: validation.errors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const payload = validation.data;
     
     console.log('Security alert received:', {
       event_id: payload.event_id,
@@ -239,8 +243,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        stack: error.stack 
+        error: sanitizeError(error)
       }),
       { 
         status: 500, 

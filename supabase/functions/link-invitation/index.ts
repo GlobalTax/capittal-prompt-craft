@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { LinkInvitationSchema, validateInput, sanitizeError } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,16 +64,23 @@ serve(async (req) => {
 
     console.log(`[${requestId}] Authenticated user: ${user.email}`);
 
-    // Parse request body
-    const { token } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const validation = validateInput(LinkInvitationSchema, rawBody);
 
-    if (!token) {
-      console.error(`[${requestId}] Missing token in request`);
+    if (!validation.success) {
+      console.error(`[${requestId}] Validation failed:`, validation.errors);
       return new Response(
-        JSON.stringify({ error: 'Token requerido', code: 'MISSING_TOKEN' }),
+        JSON.stringify({ 
+          error: 'Datos inválidos', 
+          code: 'VALIDATION_ERROR',
+          details: validation.errors 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { token } = validation.data;
 
     console.log(`[${requestId}] Validating invitation token: ${token.substring(0, 8)}...`);
 
@@ -194,9 +202,8 @@ serve(async (req) => {
     console.error(`[${requestId}] Unexpected error:`, error);
     return new Response(
       JSON.stringify({ 
-        error: 'Error interno del servidor', 
-        code: 'INTERNAL_ERROR',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: sanitizeError(error),
+        code: 'INTERNAL_ERROR'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
