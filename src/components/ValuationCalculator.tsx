@@ -20,6 +20,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ValuationMethodsConfig } from "@/components/valuation/ValuationMethodsConfig";
+import { SectorMultiplesConfig } from "@/components/valuation/SectorMultiplesConfig";
 
 
 interface YearData {
@@ -124,6 +126,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   const [collaborationNotes, setCollaborationNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
+  // Sector multiples config dialog state
+  const [showMultiplesConfig, setShowMultiplesConfig] = useState(false);
+  
   // Debounce timer for database persistence
   const saveTimeoutRef = React.useRef<NodeJS.Timeout>();
   
@@ -135,6 +140,22 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       }
     };
   }, []);
+
+  // Initialize valuation methods with default values if not present
+  useEffect(() => {
+    if (!valuation.metadata?.valuationMethods) {
+      const defaultMethods = {
+        ebitda: { enabled: true, multiplier: 7.0 },
+        revenue: { enabled: true, multiplier: 1.2 },
+        netProfit: { enabled: false, multiplier: 15.0 }
+      };
+      
+      onUpdate('metadata', {
+        ...valuation.metadata,
+        valuationMethods: defaultMethods
+      });
+    }
+  }, [valuation.metadata]);
   
   // Mapear años de la BD a formato local
   const data: FinancialData = useMemo(() => {
@@ -518,90 +539,56 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     };
   };
 
+  // Helper to calculate Net Profit for a year
+  const calculateNetProfit = (yearData: YearData) => {
+    const bai = yearData.totalRevenue - yearData.personnelCosts - yearData.otherCosts - yearData.ownerSalary;
+    const tax = bai * 0.25; // 25% corporate tax
+    return bai - tax;
+  };
+
   const calculateValuations = () => {
-    // Determinar qué año usar según la configuración
-    let baseYearData: YearData;
-    let baseMetrics: ReturnType<typeof calculateMetricsForYear>;
+    if (viewData.years.length === 0) return;
     
-    const closedYears = viewData.years.filter(y => y.yearStatus === 'closed');
-    const lastClosedYear = closedYears.length > 0 ? closedYears[closedYears.length - 1] : viewData.years[0];
-    const currentYear = viewData.years[viewData.years.length - 1];
+    // Get active methods from metadata
+    const activeMethods = valuation.metadata?.valuationMethods || {
+      ebitda: { enabled: true, multiplier: 7.0 },
+      revenue: { enabled: true, multiplier: 1.2 },
+      netProfit: { enabled: false, multiplier: 15.0 }
+    };
     
-    switch (valuationConfig.baseYearForValuation) {
-      case 'lastClosed':
-        baseYearData = lastClosedYear;
-        baseMetrics = calculateMetricsForYear(baseYearData);
-        break;
-      case 'current':
-        baseYearData = currentYear;
-        baseMetrics = calculateMetricsForYear(baseYearData);
-        break;
-      case 'average2Years':
-        // Promedio de los dos últimos años
-        const last2Years = viewData.years.slice(-2);
-        const avgRevenue = last2Years.reduce((sum, y) => sum + y.totalRevenue, 0) / last2Years.length;
-        const avgPersonnelCosts = last2Years.reduce((sum, y) => sum + y.personnelCosts, 0) / last2Years.length;
-        const avgOtherCosts = last2Years.reduce((sum, y) => sum + y.otherCosts, 0) / last2Years.length;
-        const avgOwnerSalary = last2Years.reduce((sum, y) => sum + y.ownerSalary, 0) / last2Years.length;
-        
-        baseYearData = {
-          ...currentYear,
-          totalRevenue: avgRevenue,
-          personnelCosts: avgPersonnelCosts,
-          otherCosts: avgOtherCosts,
-          ownerSalary: avgOwnerSalary
-        };
-        baseMetrics = calculateMetricsForYear(baseYearData);
-        break;
-    }
+    // Use last projected year for valuations
+    const baseYear = viewData.years[viewData.years.length - 1];
     
     const allValuations: ValuationResult[] = [];
     
-    // Procesar cada método habilitado
-    valuationConfig.methods.forEach(method => {
-      if (!method.enabled) return;
-      
-      const baseValue = method.type === 'ebitda' 
-        ? baseMetrics.ebitda 
-        : baseYearData.totalRevenue;
-      
-      // Calcular valoraciones por cada multiplicador
-      method.multipliers.forEach(multiplier => {
-        let valuationAmount = baseValue * multiplier.value;
-        
-        // Aplicar ajustes automáticos si las sugerencias están activas
-        if (valuationConfig.showSuggestions) {
-          let adjustment = 1;
-          
-          // Ajuste por margen neto
-          if (baseMetrics.netMargin > 30) adjustment += 0.1;
-          else if (baseMetrics.netMargin < 10) adjustment -= 0.1;
-          
-          // Ajuste por recurrencia
-          if (baseMetrics.recurringPercentage > 70) adjustment += 0.05;
-          else if (baseMetrics.recurringPercentage < 40) adjustment -= 0.05;
-          
-          // Ajuste por tamaño
-          if (baseYearData.totalRevenue >= 1000000) adjustment += 0.05;
-          
-          // Ajuste por crecimiento (solo aplicable si hay más de un año)
-          if (viewData.years.length > 1) {
-            const previousYear = viewData.years[viewData.years.length - 2];
-            const revenueGrowth = ((currentYear.totalRevenue - previousYear.totalRevenue) / previousYear.totalRevenue) * 100;
-            if (revenueGrowth > 20) adjustment += 0.1;
-            else if (revenueGrowth < 0) adjustment -= 0.15;
-          }
-          
-          valuationAmount *= adjustment;
-        }
-        
-        allValuations.push({
-          valuationAmount,
-          multiplier: multiplier.value,
-          method: `${method.name} - ${multiplier.label}`
-        });
+    // EBITDA valuation
+    if (activeMethods.ebitda?.enabled) {
+      const ebitda = baseYear.totalRevenue - baseYear.personnelCosts - baseYear.otherCosts + baseYear.ownerSalary;
+      allValuations.push({
+        valuationAmount: ebitda * activeMethods.ebitda.multiplier,
+        multiplier: activeMethods.ebitda.multiplier,
+        method: 'Valoración por EBITDA'
       });
-    });
+    }
+    
+    // Revenue valuation
+    if (activeMethods.revenue?.enabled) {
+      allValuations.push({
+        valuationAmount: baseYear.totalRevenue * activeMethods.revenue.multiplier,
+        multiplier: activeMethods.revenue.multiplier,
+        method: 'Valoración por Facturación'
+      });
+    }
+    
+    // Net Profit valuation (P/E Ratio)
+    if (activeMethods.netProfit?.enabled) {
+      const netProfit = calculateNetProfit(baseYear);
+      allValuations.push({
+        valuationAmount: netProfit * activeMethods.netProfit.multiplier,
+        multiplier: activeMethods.netProfit.multiplier,
+        method: 'Valoración por Beneficio Neto (P/E)'
+      });
+    }
     
     setValuations(allValuations);
   };
@@ -1052,6 +1039,22 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                       </Button>
                     </Alert>
                   </div>
+                )}
+
+                {/* Valuation Methods Configuration */}
+                <ValuationMethodsConfig
+                  valuation={valuation}
+                  onUpdate={onUpdate}
+                  onOpenMultiplesConfig={() => setShowMultiplesConfig(true)}
+                />
+
+                {/* Sector Multiples Config Dialog */}
+                {showMultiplesConfig && (
+                  <SectorMultiplesConfig
+                    valuation={valuation}
+                    onUpdate={onUpdate}
+                    onClose={() => setShowMultiplesConfig(false)}
+                  />
                 )}
 
                 {/* P&L Comparativo - Dynamic Table */}
