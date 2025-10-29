@@ -85,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get advisor profile details
     const { data: advisorProfile, error: advisorError } = await supabaseClient
       .from("advisor_profiles")
-      .select("user_id, business_name, phone, website, specialization")
+      .select("user_id, business_name, contact_phone, website, specialization")
       .eq("user_id", advisorUserId)
       .maybeSingle();
 
@@ -93,20 +93,24 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error fetching advisor profile:", advisorError);
     }
 
-    // Get advisor user details
-    const { data: advisorUser, error: advisorUserError } = await supabaseClient
+    // Get email from authenticated user
+    const advisorEmail = user.email || "No disponible";
+
+    // Get additional user details
+    const { data: advisorUserProfile, error: profileError } = await supabaseClient
       .from("user_profiles")
-      .select("email, full_name")
+      .select("first_name, last_name, company")
       .eq("user_id", advisorUserId)
       .maybeSingle();
 
-    if (advisorUserError) {
-      console.error("Error fetching advisor user:", advisorUserError);
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
     }
 
-    const advisorName = advisorUser?.full_name || "Asesor Desconocido";
-    const advisorEmail = advisorUser?.email || "No disponible";
-    const advisorPhone = advisorProfile?.phone || "No disponible";
+    const advisorName = advisorUserProfile
+      ? `${advisorUserProfile.first_name || ''} ${advisorUserProfile.last_name || ''}`.trim() || "Asesor Desconocido"
+      : "Asesor Desconocido";
+    const advisorPhone = advisorProfile?.contact_phone || "No disponible";
     const advisorBusiness = advisorProfile?.business_name || "No especificado";
 
     // Create sell_business_lead
@@ -120,6 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
         source: "advisor_request",
         advisor_user_id: advisorUserId,
         valuation_id: valuationId,
+        contact_name: advisorName,
         contact_email: advisorEmail,
         contact_phone: advisorPhone,
       })

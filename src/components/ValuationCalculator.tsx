@@ -150,12 +150,18 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         netProfit: { enabled: false, multiplier: 15.0 }
       };
       
-      onUpdate('metadata', {
-        ...valuation.metadata,
+      // Ensure correct JSONB serialization
+      const newMetadata = {
+        ...(valuation.metadata || {}),
         valuationMethods: defaultMethods
-      });
+      };
+      
+      // Serialize and deserialize to ensure valid JSONB format
+      const serializedMetadata = JSON.parse(JSON.stringify(newMetadata));
+      
+      onUpdate('metadata', serializedMetadata);
     }
-  }, [valuation.metadata]);
+  }, [valuation.id]);
   
   // Mapear años de la BD a formato local
   const data: FinancialData = useMemo(() => {
