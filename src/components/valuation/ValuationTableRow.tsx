@@ -9,10 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building2, Users, Target, MoreVertical, Edit, FileText, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, FileText, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { StatusBadge } from './StatusBadge';
+import { ValuationTypeBadge } from './ValuationTypeBadge';
 
 interface ValuationTableRowProps {
   valuation: Valuation;
@@ -35,15 +36,6 @@ export function ValuationTableRow({
   const totalRevenue = (valuation.revenue_2 || 0) + (valuation.other_revenue_2 || 0);
   const totalCosts = (valuation.personnel_costs_2 || 0) + (valuation.other_costs_2 || 0);
   const ebitda = totalRevenue - totalCosts;
-
-  // Configuración de tipo
-  const typeConfig = {
-    own_business: { icon: Building2, label: 'Mi Negocio', color: 'bg-primary/10 text-primary' },
-    client_business: { icon: Users, label: 'Cliente', color: 'bg-success/10 text-success' },
-    potential_acquisition: { icon: Target, label: 'Objetivo', color: 'bg-accent/10 text-accent' },
-  }[valuation.valuation_type || 'own_business'];
-
-  const TypeIcon = typeConfig.icon;
 
   // Nombre de cliente/empresa
   const clientName =
@@ -70,10 +62,7 @@ export function ValuationTableRow({
 
       {/* Tipo */}
       <TableCell>
-        <Badge variant="outline" className={`gap-1 ${typeConfig.color}`}>
-          <TypeIcon className="h-3 w-3" />
-          {typeConfig.label}
-        </Badge>
+        <ValuationTypeBadge type={valuation.valuation_type || 'own_business'} />
       </TableCell>
 
       {/* Título */}

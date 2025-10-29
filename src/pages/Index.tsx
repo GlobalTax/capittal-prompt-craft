@@ -71,8 +71,8 @@ const Index = () => {
       description: 'Gestiona tus proyectos de valoración',
       icon: FileText,
       link: '/valuations',
-      gradient: 'from-success/10 to-success/5',
-      iconColor: 'text-success'
+      gradient: 'from-primary/10 to-accent/10',
+      iconColor: 'text-primary'
     },
     {
       title: 'Reportes',

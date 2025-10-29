@@ -79,11 +79,10 @@ const App = () => {
 
               {/* Protected routes - lazy loaded */}
               <Route element={<ProtectedRoute />}>
-                <Route element={<ProtectedLayout />}>
-                  <Route path="/dashboard" element={<LazyRoute component={ExecutiveDashboard} />} />
-                  <Route path="/valuations/advisor" element={<LazyRoute component={ValuationList} />} />
-                  <Route path="/valuations/clients" element={<LazyRoute component={ValuationList} />} />
-                  <Route path="/valuation/:id" element={<LazyRoute component={ValuationEditor} />} />
+              <Route element={<ProtectedLayout />}>
+                <Route path="/dashboard" element={<LazyRoute component={ExecutiveDashboard} />} />
+                <Route path="/valuations" element={<LazyRoute component={ValuationList} />} />
+                <Route path="/valuation/:id" element={<LazyRoute component={ValuationEditor} />} />
                   <Route path="/reports" element={<LazyRoute component={ReportGenerator} />} />
                   <Route path="/security" element={<LazyRoute component={SecuritySettings} />} />
                   <Route path="/resources/templates" element={<LazyRoute component={DocumentTemplates} />} />

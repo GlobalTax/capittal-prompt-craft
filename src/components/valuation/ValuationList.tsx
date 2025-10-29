@@ -1,12 +1,14 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useValuations, ValuationType, Valuation } from '@/hooks/useValuations';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
 import { ValuationTable } from './ValuationTable';
 import { ValuationListHeader } from './ValuationListHeader';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
+import { ValuationTypeBadge } from './ValuationTypeBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, Building2, Users, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -21,26 +23,15 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { generateValuationPDF } from '@/components/reports/ValuationPDFExporter';
 
-interface ValuationListProps {
-  filterType?: ValuationType;
-}
-
-export function ValuationList({ filterType }: ValuationListProps = {}) {
+export function ValuationList() {
   const { valuations, loading, createValuation, updateValuation, deleteValuation } = useValuations();
   const { profile: advisorProfile, loading: profileLoading } = useAdvisorProfile();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>(filterType || 'all');
+  const [typeFilter, setTypeFilter] = useState<ValuationType | 'all'>('all');
   const [showNewDialog, setShowNewDialog] = useState(false);
-
-  // Sincronizar typeFilter cuando cambia filterType (ej: navegación entre rutas)
-  useEffect(() => {
-    setTypeFilter(filterType || 'all');
-  }, [filterType]);
   const [newTitle, setNewTitle] = useState('');
-  const [newType, setNewType] = useState<ValuationType>(
-    filterType === 'client_business' ? 'client_business' : 'own_business'
-  );
+  const [newType, setNewType] = useState<ValuationType>('own_business');
   const currentYear = new Date().getFullYear();
   const [closedYear, setClosedYear] = useState((currentYear - 1).toString());
   const [projectedYear, setProjectedYear] = useState(currentYear.toString());
@@ -96,7 +87,7 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
     if (newValuation) {
       setShowNewDialog(false);
       setNewTitle('');
-      setNewType(filterType === 'client_business' ? 'client_business' : 'own_business');
+      setNewType('own_business');
       setClosedYear((currentYear - 1).toString());
       setProjectedYear(currentYear.toString());
       navigate(`/valuation/${newValuation.id}`);
@@ -145,11 +136,18 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
     await deleteValuation(id);
   };
 
+  // Calcular stats por tipo para los pills
+  const typeStats = useMemo(() => {
+    const ownBusiness = valuations.filter(v => v.valuation_type === 'own_business').length;
+    const clientBusiness = valuations.filter(v => v.valuation_type === 'client_business').length;
+    const acquisition = valuations.filter(v => v.valuation_type === 'potential_acquisition').length;
+    return { ownBusiness, clientBusiness, acquisition };
+  }, [valuations]);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header mejorado con tabs y KPIs */}
+      {/* Header unificado */}
       <ValuationListHeader
-        filterType={filterType}
         totalCount={stats.total}
         inProgressCount={stats.inProgress}
         completedCount={stats.completed}
@@ -159,52 +157,70 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
 
       {/* Filters */}
       <div className="container px-4 py-6 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar valoraciones, clientes, empresas..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        {/* Búsqueda */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar valoraciones, clientes, empresas..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
         
-        {/* Type Filter - Solo mostrar si no hay filtro predefinido */}
-        {!filterType && (
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-muted-foreground self-center mr-2">Tipo:</span>
-            {[
-              { value: 'all', label: 'Todas' },
-              { value: 'own_business', label: 'Mi Negocio' },
-              { value: 'client_business', label: 'Clientes' },
-              { value: 'potential_acquisition', label: 'Objetivos' }
-            ].map((type) => (
-              <Button
-                key={type.value}
-                variant={typeFilter === type.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTypeFilter(type.value)}
-              >
-                {type.label}
-              </Button>
-            ))}
-          </div>
-        )}
+        {/* Pills de filtro por tipo */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-muted-foreground mr-2">Filtrar por tipo:</span>
+          <Badge
+            variant={typeFilter === 'all' ? 'default' : 'outline'}
+            className="cursor-pointer hover:bg-accent transition-colors"
+            onClick={() => setTypeFilter('all')}
+          >
+            Todas: {valuations.length}
+          </Badge>
+          <Badge
+            variant={typeFilter === 'own_business' ? 'default' : 'outline'}
+            className="cursor-pointer bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors gap-1"
+            onClick={() => setTypeFilter('own_business')}
+          >
+            <Building2 className="w-3 h-3" />
+            Mi Negocio: {typeStats.ownBusiness}
+          </Badge>
+          <Badge
+            variant={typeFilter === 'client_business' ? 'default' : 'outline'}
+            className="cursor-pointer bg-success/10 text-success border-success/20 hover:bg-success/20 transition-colors gap-1"
+            onClick={() => setTypeFilter('client_business')}
+          >
+            <Users className="w-3 h-3" />
+            Clientes: {typeStats.clientBusiness}
+          </Badge>
+          <Badge
+            variant={typeFilter === 'potential_acquisition' ? 'default' : 'outline'}
+            className="cursor-pointer bg-warning/10 text-warning border-warning/20 hover:bg-warning/20 transition-colors gap-1"
+            onClick={() => setTypeFilter('potential_acquisition')}
+          >
+            <Target className="w-3 h-3" />
+            Objetivos: {typeStats.acquisition}
+          </Badge>
+        </div>
         
-        {/* Status Filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground self-center mr-2">Estado:</span>
-          {['all', 'draft', 'in_progress', 'completed'].map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter(status)}
+        {/* Pills de filtro por estado */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-muted-foreground mr-2">Filtrar por estado:</span>
+          {[
+            { value: 'all', label: 'Todas' },
+            { value: 'draft', label: 'Borradores' },
+            { value: 'in_progress', label: 'En Progreso' },
+            { value: 'completed', label: 'Completadas' }
+          ].map((status) => (
+            <Badge
+              key={status.value}
+              variant={statusFilter === status.value ? 'default' : 'outline'}
+              className="cursor-pointer hover:bg-accent transition-colors"
+              onClick={() => setStatusFilter(status.value)}
             >
-              {status === 'all' ? 'Todas' : status === 'draft' ? 'Borradores' : status === 'in_progress' ? 'En Progreso' : 'Completadas'}
-            </Button>
+              {status.label}
+            </Badge>
           ))}
         </div>
       </div>
@@ -252,13 +268,6 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
               <ValuationTypeSelector 
                 value={newType} 
                 onChange={setNewType}
-                allowedTypes={
-                  filterType === 'own_business' 
-                    ? ['own_business', 'potential_acquisition']
-                    : filterType === 'client_business'
-                    ? ['client_business', 'potential_acquisition']
-                    : undefined
-                }
               />
             </div>
             <div className="space-y-2">

@@ -50,16 +50,10 @@ export function AppSidebar() {
       description: "Resumen ejecutivo"
     },
     {
-      title: "Mis Valoraciones",
-      url: "/valuations/advisor",
+      title: "Valoraciones",
+      url: "/valuations",
       icon: Calculator,
-      description: "Valoración del despacho"
-    },
-    {
-      title: "Valoraciones Clientes",
-      url: "/valuations/clients",
-      icon: Target,
-      description: "Valoraciones de clientes"
+      description: "Todas tus valoraciones"
     },
     {
       title: t('sidebar.reports'),

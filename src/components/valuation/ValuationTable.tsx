@@ -31,7 +31,7 @@ export function ValuationTable({
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-[50px]"></TableHead>
-            <TableHead className="w-[120px]">Tipo</TableHead>
+            <TableHead className="w-[140px]">Tipo</TableHead>
             <TableHead className="min-w-[200px]">Título</TableHead>
             <TableHead className="min-w-[180px]">Cliente/Empresa</TableHead>
             <TableHead className="text-right w-[130px]">Ingresos</TableHead>
