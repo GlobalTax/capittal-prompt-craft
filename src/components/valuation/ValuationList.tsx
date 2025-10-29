@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useValuations, ValuationType, Valuation } from '@/hooks/useValuations';
 import { useAdvisorProfile } from '@/hooks/useAdvisorProfile';
-import { ValuationCard } from './ValuationCard';
+import { ValuationTable } from './ValuationTable';
+import { ValuationListHeader } from './ValuationListHeader';
 import { ValuationTypeSelector } from './ValuationTypeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, MoreVertical, FileText, Edit, Trash2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -15,12 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -65,6 +60,20 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [valuations, searchQuery, statusFilter, typeFilter]);
+
+  // Calcular estadísticas
+  const stats = useMemo(() => {
+    const total = filteredValuations.length;
+    const inProgress = filteredValuations.filter(v => v.status === 'in_progress').length;
+    const completed = filteredValuations.filter(v => v.status === 'completed').length;
+    const totalEBITDA = filteredValuations.reduce((sum, v) => {
+      // Usar año 2 (proyectado) para EBITDA
+      const revenue = (v.revenue_2 || 0) + (v.other_revenue_2 || 0);
+      const costs = (v.personnel_costs_2 || 0) + (v.other_costs_2 || 0);
+      return sum + (revenue - costs);
+    }, 0);
+    return { total, inProgress, completed, totalEBITDA };
+  }, [filteredValuations]);
 
   const handleCreateNew = async () => {
     if (!newTitle.trim()) return;
@@ -138,18 +147,15 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container flex items-center justify-between h-16 px-4">
-          <h1 className="text-2xl font-semibold">
-            {filterType === 'own_business' ? 'Mis Valoraciones' : filterType === 'client_business' ? 'Valoraciones de Clientes' : 'Valoraciones'}
-          </h1>
-          <Button onClick={() => setShowNewDialog(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nueva Valoración
-          </Button>
-        </div>
-      </div>
+      {/* Header mejorado con tabs y KPIs */}
+      <ValuationListHeader
+        filterType={filterType}
+        totalCount={stats.total}
+        inProgressCount={stats.inProgress}
+        completedCount={stats.completed}
+        totalEBITDA={stats.totalEBITDA}
+        onNewClick={() => setShowNewDialog(true)}
+      />
 
       {/* Filters */}
       <div className="container px-4 py-6 space-y-4">
@@ -203,69 +209,31 @@ export function ValuationList({ filterType }: ValuationListProps = {}) {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Tabla */}
       <div className="container px-4 pb-20 md:pb-8">
         {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 rounded-lg" />
-            ))}
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
           </div>
         ) : filteredValuations.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 border rounded-lg bg-card">
             <p className="text-muted-foreground mb-4">No hay valoraciones todavía</p>
             <Button onClick={() => setShowNewDialog(true)}>
               Crear tu primera valoración
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredValuations.map((valuation, index) => (
-              <div key={valuation.id} className="relative group">
-                <ValuationCard
-                  valuation={valuation}
-                  onToggleComplete={handleToggleComplete}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                  className="animate-fade-in"
-                />
-                <div className="absolute top-2 right-2 opacity-60 transition-opacity">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 bg-card/80 backdrop-blur">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate(`/valuation/${valuation.id}`)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleGeneratePDF(valuation);
-                        }}
-                        disabled={generatingPDF === valuation.id || profileLoading}
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        {generatingPDF === valuation.id ? 'Generando...' : 'Generar PDF'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(valuation.id);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ValuationTable
+            valuations={filteredValuations}
+            onToggleComplete={handleToggleComplete}
+            onEdit={(id) => navigate(`/valuation/${id}`)}
+            onGeneratePDF={handleGeneratePDF}
+            onDelete={handleDelete}
+            generatingPDF={generatingPDF}
+          />
         )}
       </div>
 
