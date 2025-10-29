@@ -191,33 +191,34 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   const [localData, setLocalData] = useState<FinancialData | null>(null);
   const viewData = localData ?? data; // Use local data for UI if available
   
-  // Sync localData ONLY on initial load (not on every valuationYears change)
+  // Sync localData ONLY on initial load AFTER years have loaded
   useEffect(() => {
-    // Only sync if localData is empty (initial load)
-    if (localData === null) {
-      if (valuationYears.length > 0) {
-        setLocalData({
-          years: valuationYears.map(vy => ({
-            year: vy.year,
-            yearStatus: vy.year_status,
-            totalRevenue: vy.revenue,
-            fiscalRecurringPercent: vy.fiscal_recurring,
-            accountingRecurringPercent: vy.accounting_recurring,
-            laborRecurringPercent: vy.labor_recurring,
-            otherRevenuePercent: vy.other_revenue,
-            personnelCosts: vy.personnel_costs,
-            otherCosts: vy.other_costs,
-            ownerSalary: vy.owner_salary,
-            depreciation: vy.depreciation || 0,
-            numberOfEmployees: vy.employees,
-          }))
-        });
-      } else {
-        setLocalData(mapValuationToFinancialData(valuation));
-      }
+    // Skip if already initialized or still loading
+    if (localData !== null || yearsLoading) return;
+    
+    // Initialize localData once years have loaded
+    if (valuationYears.length > 0) {
+      setLocalData({
+        years: valuationYears.map(vy => ({
+          year: vy.year,
+          yearStatus: vy.year_status,
+          totalRevenue: vy.revenue,
+          fiscalRecurringPercent: vy.fiscal_recurring,
+          accountingRecurringPercent: vy.accounting_recurring,
+          laborRecurringPercent: vy.labor_recurring,
+          otherRevenuePercent: vy.other_revenue,
+          personnelCosts: vy.personnel_costs,
+          otherCosts: vy.other_costs,
+          ownerSalary: vy.owner_salary,
+          depreciation: vy.depreciation || 0,
+          numberOfEmployees: vy.employees,
+        }))
+      });
+    } else {
+      // Fallback only if no years exist after loading
+      setLocalData(mapValuationToFinancialData(valuation));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only execute on mount
+  }, [valuationYears, yearsLoading, localData, valuation]);
 
   // Manual sync function to update from DB when needed
   const syncFromDB = useCallback(() => {
