@@ -133,6 +133,77 @@ export type Database = {
         }
         Relationships: []
       }
+      advisor_collaboration_requests: {
+        Row: {
+          annual_revenue: number | null
+          collaboration_terms: Json | null
+          collaboration_type: string | null
+          commission_percentage: number | null
+          company_name: string
+          company_sector: string | null
+          created_at: string
+          estimated_commission: number | null
+          expires_at: string | null
+          id: string
+          lead_id: string | null
+          message: string | null
+          requesting_advisor_id: string
+          responded_at: string | null
+          response_message: string | null
+          status: string
+          target_advisor_id: string
+          updated_at: string
+        }
+        Insert: {
+          annual_revenue?: number | null
+          collaboration_terms?: Json | null
+          collaboration_type?: string | null
+          commission_percentage?: number | null
+          company_name: string
+          company_sector?: string | null
+          created_at?: string
+          estimated_commission?: number | null
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          message?: string | null
+          requesting_advisor_id: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          target_advisor_id: string
+          updated_at?: string
+        }
+        Update: {
+          annual_revenue?: number | null
+          collaboration_terms?: Json | null
+          collaboration_type?: string | null
+          commission_percentage?: number | null
+          company_name?: string
+          company_sector?: string | null
+          created_at?: string
+          estimated_commission?: number | null
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          message?: string | null
+          requesting_advisor_id?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          target_advisor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_collaboration_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sell_business_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       advisor_profiles: {
         Row: {
           brand_color: string | null

@@ -29,7 +29,7 @@ const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const DocumentTemplates = lazy(() => import("./pages/DocumentTemplates"));
 const FeeCalculator = lazy(() => import("./pages/FeeCalculator"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
-const MyReferredLeads = lazy(() => import("./pages/MyReferredLeads"));
+const MyCollaborationRequests = lazy(() => import("./pages/MyCollaborationRequests"));
 const ClientLanding = lazy(() => import("./pages/ClientLanding"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 
@@ -103,7 +103,7 @@ const App = () => {
                     <Route path="/admin/organizations" element={<LazyRoute component={OrganizationManagement} />} />
                   </Route>
                   
-                  <Route path="/my-referrals" element={<LazyRoute component={MyReferredLeads} />} />
+                  <Route path="/my-referrals" element={<LazyRoute component={MyCollaborationRequests} />} />
                 </Route>
               </Route>
               

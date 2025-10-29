@@ -71,10 +71,10 @@ export function AppSidebar() {
 
   const resourceItems = [
     {
-      title: "Mis Referencias",
+      title: "Solicitudes de Colaboración",
       url: "/my-referrals",
       icon: TrendingUp,
-      description: "Leads y comisiones"
+      description: "Empresas donde te solicitan colaborar"
     },
     {
       title: t('sidebar.documentTemplates'),
