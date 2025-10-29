@@ -71,27 +71,72 @@ export class DashboardRepository {
   }
 
   async getValuationStats(userId: string): Promise<ValuationStats> {
-    const { data, error } = await supabase
+    // Get valuations with their metadata
+    const { data: valuations, error: valuationsError } = await supabase
       .from('valuations')
-      .select('status, client_name, dcf_results, comparable_multiples_results')
+      .select('id, status, client_name, metadata, target_industry')
       .eq('user_id', userId);
     
-    if (error) throw new Error(error.message);
+    if (valuationsError) throw new Error(valuationsError.message);
 
-    const valuations = data || [];
-    const total = valuations.length;
-    const draft = valuations.filter(v => v.status === 'draft').length;
-    const in_progress = valuations.filter(v => v.status === 'in_progress').length;
-    const completed = valuations.filter(v => v.status === 'completed').length;
+    const valuationsList = valuations || [];
+    const total = valuationsList.length;
+    const draft = valuationsList.filter(v => v.status === 'draft').length;
+    const in_progress = valuationsList.filter(v => v.status === 'in_progress').length;
+    const completed = valuationsList.filter(v => v.status === 'completed').length;
     
-    // Calculate total value from dcf_results or comparable_multiples_results
-    const totalValue = valuations.reduce((sum, v) => {
-      const dcfValue = (v.dcf_results as any)?.enterpriseValue || 0;
-      const multiplesValue = (v.comparable_multiples_results as any)?.enterpriseValue || 0;
-      return sum + Math.max(dcfValue, multiplesValue);
-    }, 0);
+    // Get all valuation years for these valuations
+    const valuationIds = valuationsList.map(v => v.id);
+    let years: any[] = [];
+    if (valuationIds.length > 0) {
+      const { data: yearsData, error: yearsError } = await supabase
+        .from('valuation_years')
+        .select('*')
+        .in('valuation_id', valuationIds);
+      
+      if (yearsError) throw new Error(yearsError.message);
+      years = yearsData || [];
+    }
     
-    const activeClients = new Set(valuations.map(v => v.client_name).filter(Boolean)).size;
+    // Get sector multiples
+    const { data: sectorMultiples, error: multiplesError } = await supabase
+      .from('sector_multiples')
+      .select('*');
+    
+    if (multiplesError) throw new Error(multiplesError.message);
+    
+    // Calculate total value by computing enterprise value for each valuation
+    let totalValue = 0;
+    
+    for (const valuation of valuationsList) {
+      // Get latest projected year for this valuation
+      const valuationYears = years.filter(y => y.valuation_id === valuation.id);
+      const latestYear = valuationYears
+        .filter(y => y.year_status === 'projected')
+        .sort((a, b) => parseInt(b.year) - parseInt(a.year))[0] || valuationYears[valuationYears.length - 1];
+      
+      if (!latestYear) continue;
+      
+      // Calculate EBITDA
+      const revenue = (latestYear.revenue || 0) + (latestYear.other_revenue || 0);
+      const costs = (latestYear.personnel_costs || 0) + (latestYear.other_costs || 0) + (latestYear.owner_salary || 0);
+      const ebitda = revenue - costs;
+      
+      if (ebitda <= 0) continue;
+      
+      // Get sector code from metadata or target_industry
+      const sectorCode = (valuation.metadata as any)?.sector || valuation.target_industry || 'consulting';
+      
+      // Find sector multiple
+      const sector = (sectorMultiples || []).find(s => s.sector_code === sectorCode);
+      const multiple = sector?.ebitda_multiple_avg || 5.0; // Default to 5x if not found
+      
+      // Calculate enterprise value
+      const enterpriseValue = ebitda * multiple;
+      totalValue += enterpriseValue;
+    }
+    
+    const activeClients = new Set(valuationsList.map(v => v.client_name).filter(Boolean)).size;
     const completionRate = total > 0 ? (completed / total) * 100 : 0;
 
     return {
@@ -109,25 +154,61 @@ export class DashboardRepository {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
 
-    const { data, error } = await supabase
+    const { data: valuations, error: valuationsError } = await supabase
       .from('valuations')
-      .select('created_at, dcf_results, comparable_multiples_results')
+      .select('id, created_at, metadata, target_industry')
       .eq('user_id', userId)
       .gte('created_at', startDate.toISOString());
     
-    if (error) throw new Error(error.message);
+    if (valuationsError) throw new Error(valuationsError.message);
 
-    // Group by month
+    // Get valuation years for these valuations
+    const valuationIds = (valuations || []).map(v => v.id);
+    let years: any[] = [];
+    if (valuationIds.length > 0) {
+      const { data: yearsData, error: yearsError } = await supabase
+        .from('valuation_years')
+        .select('*')
+        .in('valuation_id', valuationIds);
+      
+      if (yearsError) throw new Error(yearsError.message);
+      years = yearsData || [];
+    }
+
+    // Get sector multiples
+    const { data: sectorMultiples, error: multiplesError } = await supabase
+      .from('sector_multiples')
+      .select('*');
+    
+    if (multiplesError) throw new Error(multiplesError.message);
+
+    // Group by month and calculate values
     const monthlyMap = new Map<string, { count: number; value: number }>();
     
-    (data || []).forEach(v => {
+    (valuations || []).forEach(v => {
       const date = new Date(v.created_at);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const current = monthlyMap.get(monthKey) || { count: 0, value: 0 };
       
-      const dcfValue = (v.dcf_results as any)?.enterpriseValue || 0;
-      const multiplesValue = (v.comparable_multiples_results as any)?.enterpriseValue || 0;
-      const value = Math.max(dcfValue, multiplesValue);
+      // Calculate enterprise value for this valuation
+      const valuationYears = years.filter(y => y.valuation_id === v.id);
+      const latestYear = valuationYears
+        .filter(y => y.year_status === 'projected')
+        .sort((a, b) => parseInt(b.year) - parseInt(a.year))[0] || valuationYears[valuationYears.length - 1];
+      
+      let value = 0;
+      if (latestYear) {
+        const revenue = (latestYear.revenue || 0) + (latestYear.other_revenue || 0);
+        const costs = (latestYear.personnel_costs || 0) + (latestYear.other_costs || 0) + (latestYear.owner_salary || 0);
+        const ebitda = revenue - costs;
+        
+        if (ebitda > 0) {
+          const sectorCode = (v.metadata as any)?.sector || v.target_industry || 'consulting';
+          const sector = (sectorMultiples || []).find(s => s.sector_code === sectorCode);
+          const multiple = sector?.ebitda_multiple_avg || 5.0;
+          value = ebitda * multiple;
+        }
+      }
       
       monthlyMap.set(monthKey, {
         count: current.count + 1,
@@ -176,17 +257,17 @@ export class DashboardRepository {
   }
 
   async getFinancialSummary(userId: string): Promise<FinancialSummary> {
-    const { data, error } = await supabase
+    const { data: valuations, error: valuationsError } = await supabase
       .from('valuations')
-      .select('dcf_results, comparable_multiples_results, revenue_1, personnel_costs_1, other_costs_1')
+      .select('id, metadata, target_industry')
       .eq('user_id', userId)
       .eq('status', 'completed');
     
-    if (error) throw new Error(error.message);
+    if (valuationsError) throw new Error(valuationsError.message);
 
-    const valuations = data || [];
+    const valuationsList = valuations || [];
     
-    if (valuations.length === 0) {
+    if (valuationsList.length === 0) {
       return {
         avgEbitda: 0,
         avgEnterpriseValue: 0,
@@ -196,26 +277,55 @@ export class DashboardRepository {
       };
     }
 
-    // Calculate EBITDA from revenue and costs
-    const ebitdas = valuations.map(v => {
-      const revenue = v.revenue_1 || 0;
-      const personnel = v.personnel_costs_1 || 0;
-      const other = v.other_costs_1 || 0;
-      return revenue - personnel - other;
-    }).filter(e => e > 0);
+    // Get valuation years for completed valuations
+    const valuationIds = valuationsList.map(v => v.id);
+    const { data: years, error: yearsError } = await supabase
+      .from('valuation_years')
+      .select('*')
+      .in('valuation_id', valuationIds);
     
-    // Get enterprise values from results
-    const values = valuations.map(v => {
-      const dcfValue = (v.dcf_results as any)?.enterpriseValue || 0;
-      const multiplesValue = (v.comparable_multiples_results as any)?.enterpriseValue || 0;
-      return Math.max(dcfValue, multiplesValue);
-    }).filter(v => v > 0);
+    if (yearsError) throw new Error(yearsError.message);
+
+    // Get sector multiples
+    const { data: sectorMultiples, error: multiplesError } = await supabase
+      .from('sector_multiples')
+      .select('*');
     
-    // Get multiples from results
-    const multiples = valuations.map(v => {
-      return (v.comparable_multiples_results as any)?.appliedMultiple || 
-             (v.dcf_results as any)?.impliedMultiple || 0;
-    }).filter(m => m > 0);
+    if (multiplesError) throw new Error(multiplesError.message);
+
+    // Calculate metrics for each valuation
+    const ebitdas: number[] = [];
+    const values: number[] = [];
+    const multiples: number[] = [];
+    
+    for (const valuation of valuationsList) {
+      const valuationYears = (years || []).filter(y => y.valuation_id === valuation.id);
+      const latestYear = valuationYears
+        .filter(y => y.year_status === 'projected')
+        .sort((a, b) => parseInt(b.year) - parseInt(a.year))[0] || valuationYears[valuationYears.length - 1];
+      
+      if (!latestYear) continue;
+      
+      // Calculate EBITDA
+      const revenue = (latestYear.revenue || 0) + (latestYear.other_revenue || 0);
+      const costs = (latestYear.personnel_costs || 0) + (latestYear.other_costs || 0) + (latestYear.owner_salary || 0);
+      const ebitda = revenue - costs;
+      
+      if (ebitda > 0) {
+        ebitdas.push(ebitda);
+        
+        // Get sector multiple
+        const sectorCode = (valuation.metadata as any)?.sector || valuation.target_industry || 'consulting';
+        const sector = (sectorMultiples || []).find(s => s.sector_code === sectorCode);
+        const multiple = sector?.ebitda_multiple_avg || 5.0;
+        
+        multiples.push(multiple);
+        
+        // Calculate enterprise value
+        const enterpriseValue = ebitda * multiple;
+        values.push(enterpriseValue);
+      }
+    }
 
     return {
       avgEbitda: ebitdas.length > 0 ? ebitdas.reduce((a, b) => a + b, 0) / ebitdas.length : 0,
@@ -229,13 +339,65 @@ export class DashboardRepository {
   async getRecentValuations(userId: string, limit: number = 5): Promise<RecentValuation[]> {
     const { data, error } = await supabase
       .from('valuations')
-      .select('id, client_name, valuation_type, status, updated_at, dcf_results, comparable_multiples_results')
+      .select('id, client_name, valuation_type, status, updated_at, dcf_results, comparable_multiples_results, metadata, target_industry')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(limit);
     
     if (error) throw new Error(error.message);
-    return data as RecentValuation[];
+    
+    // Get valuation years for these valuations
+    const valuationIds = (data || []).map(v => v.id);
+    let years: any[] = [];
+    if (valuationIds.length > 0) {
+      const { data: yearsData, error: yearsError } = await supabase
+        .from('valuation_years')
+        .select('*')
+        .in('valuation_id', valuationIds);
+      
+      if (!yearsError) years = yearsData || [];
+    }
+
+    // Get sector multiples
+    const { data: sectorMultiples } = await supabase
+      .from('sector_multiples')
+      .select('*');
+
+    // Calculate enterprise value for each valuation
+    const valuationsWithValues = (data || []).map(v => {
+      const valuationYears = years.filter(y => y.valuation_id === v.id);
+      const latestYear = valuationYears
+        .filter(y => y.year_status === 'projected')
+        .sort((a, b) => parseInt(b.year) - parseInt(a.year))[0] || valuationYears[valuationYears.length - 1];
+      
+      // Calculate enterprise value
+      let calculatedValue = 0;
+      if (latestYear) {
+        const revenue = (latestYear.revenue || 0) + (latestYear.other_revenue || 0);
+        const costs = (latestYear.personnel_costs || 0) + (latestYear.other_costs || 0) + (latestYear.owner_salary || 0);
+        const ebitda = revenue - costs;
+        
+        if (ebitda > 0) {
+          const sectorCode = (v.metadata as any)?.sector || v.target_industry || 'consulting';
+          const sector = (sectorMultiples || []).find(s => s.sector_code === sectorCode);
+          const multiple = sector?.ebitda_multiple_avg || 5.0;
+          calculatedValue = ebitda * multiple;
+        }
+      }
+      
+      // Use saved results if available, otherwise use calculated value
+      const dcfValue = (v.dcf_results as any)?.enterpriseValue || 0;
+      const multiplesValue = (v.comparable_multiples_results as any)?.enterpriseValue || 0;
+      const savedValue = Math.max(dcfValue, multiplesValue);
+      
+      return {
+        ...v,
+        dcf_results: savedValue > 0 ? v.dcf_results : { enterpriseValue: calculatedValue },
+        comparable_multiples_results: savedValue > 0 ? v.comparable_multiples_results : null
+      };
+    });
+    
+    return valuationsWithValues as RecentValuation[];
   }
 }
 
