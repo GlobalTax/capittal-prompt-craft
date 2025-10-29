@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Shield, Copy, CheckCircle2 } from 'lucide-react';
 
 export const MFASetup = ({ onComplete }: { onComplete?: () => void }) => {
-  const [secret, setSecret] = useState('');
+  const [factorId, setFactorId] = useState<string>(''); // ✅ Nuevo: almacenar factor_id
   const [qrCode, setQrCode] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -24,43 +24,26 @@ export const MFASetup = ({ onComplete }: { onComplete?: () => void }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Generar secret base32 aleatorio
-      const randomBytes = new Uint8Array(20);
-      crypto.getRandomValues(randomBytes);
-      const base32Secret = base32Encode(randomBytes);
-      
-      setSecret(base32Secret);
+      console.log('[MFASetup] Calling mfa-generate-secret...');
 
-      // Generar URL para QR code
-      const issuer = 'AlgoPasa';
-      const accountName = user.email;
-      const otpauthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${base32Secret}&issuer=${issuer}`;
-      
-      // Generar QR code usando API pública
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
-      setQrCode(qrUrl);
+      // ✅ Llamar al edge function para generar secret server-side
+      const { data, error } = await supabase.functions.invoke('mfa-generate-secret');
+
+      if (error) {
+        console.error('[MFASetup] Error generating secret:', error);
+        throw error;
+      }
+
+      console.log('[MFASetup] Secret generated successfully (factor_id received)');
+
+      // ✅ Guardar solo QR y factor_id (NO el secret)
+      setQrCode(data.qr_code_url);
+      setFactorId(data.factor_id);
 
     } catch (error) {
       console.error('Error generating MFA secret:', error);
       toast.error('Error al generar código MFA');
     }
-  };
-
-  const base32Encode = (buffer: Uint8Array): string => {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let bits = '';
-    let result = '';
-
-    for (const byte of buffer) {
-      bits += byte.toString(2).padStart(8, '0');
-    }
-
-    for (let i = 0; i < bits.length; i += 5) {
-      const chunk = bits.slice(i, i + 5).padEnd(5, '0');
-      result += alphabet[parseInt(chunk, 2)];
-    }
-
-    return result;
   };
 
   const handleVerify = async () => {
@@ -72,53 +55,45 @@ export const MFASetup = ({ onComplete }: { onComplete?: () => void }) => {
     setIsVerifying(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      console.log('[MFASetup] Verifying token...');
 
-      // Verificar el código TOTP
+      // ✅ Solo enviar factor_id (NO el secret)
       const { data: verifyResult, error: verifyError } = await supabase.functions.invoke(
         'mfa-verify',
         {
           body: {
             token: verificationCode,
-            user_id: user.id,
-            secret: secret // Solo para verificación inicial
+            factor_id: factorId // ✅ factor_id en lugar de user_id
           }
         }
       );
 
-      if (verifyError) throw verifyError;
-
-      if (!verifyResult?.valid) {
-        toast.error('Código inválido. Intenta de nuevo.');
+      if (verifyError) {
+        console.error('[MFASetup] Verification error:', verifyError);
+        toast.error('Error al verificar código');
         setIsVerifying(false);
         return;
       }
 
-      // Generar códigos de backup
-      const { data: codes, error: codesError } = await supabase.rpc('generate_backup_codes');
-      if (codesError) throw codesError;
+      if (!verifyResult?.valid) {
+        toast.error('Código inválido. Por favor, inténtalo de nuevo.');
+        setIsVerifying(false);
+        return;
+      }
 
-      // Guardar MFA factor
-      const { error: insertError } = await supabase
-        .from('user_mfa_factors')
-        .upsert({
-          user_id: user.id,
-          factor_type: 'totp',
-          secret: secret,
-          is_verified: true,
-          backup_codes: codes
-        });
+      console.log('[MFASetup] ✅ Verification successful');
 
-      if (insertError) throw insertError;
+      // Guardar backup codes (ya generados por el edge function)
+      if (verifyResult.backup_codes) {
+        setBackupCodes(verifyResult.backup_codes);
+      }
 
-      setBackupCodes(codes);
-      setStep('backup');
       toast.success('MFA configurado correctamente');
+      setStep('backup');
 
     } catch (error) {
       console.error('Error verifying MFA:', error);
-      toast.error('Error al verificar código');
+      toast.error('Error al verificar MFA');
     } finally {
       setIsVerifying(false);
     }
@@ -222,19 +197,12 @@ export const MFASetup = ({ onComplete }: { onComplete?: () => void }) => {
             
             <div className="w-full space-y-2">
               <Label>O ingresa manualmente este código:</Label>
-              <div className="flex gap-2">
-                <Input value={secret} readOnly className="font-mono text-sm" />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => {
-                    navigator.clipboard.writeText(secret);
-                    toast.success('Código copiado');
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
+              <div className="p-2 bg-muted rounded text-sm break-all text-xs text-muted-foreground text-center font-mono">
+                Factor ID: {factorId}
               </div>
+              <p className="text-xs text-muted-foreground">
+                El código secreto está almacenado de forma segura en el servidor
+              </p>
             </div>
           </div>
         )}

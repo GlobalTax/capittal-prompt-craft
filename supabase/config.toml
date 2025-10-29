@@ -30,5 +30,8 @@ verify_jwt = true
 [functions.mfa-verify]
 verify_jwt = false
 
+[functions.mfa-generate-secret]
+verify_jwt = true
+
 [functions.security-alerts]
 verify_jwt = true

@@ -13332,6 +13332,7 @@ export type Database = {
           last_used_at: string | null
           secret: string
           user_id: string
+          verified_at: string | null
         }
         Insert: {
           backup_codes?: string[] | null
@@ -13342,6 +13343,7 @@ export type Database = {
           last_used_at?: string | null
           secret: string
           user_id: string
+          verified_at?: string | null
         }
         Update: {
           backup_codes?: string[] | null
@@ -13352,6 +13354,7 @@ export type Database = {
           last_used_at?: string | null
           secret?: string
           user_id?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -15045,6 +15048,14 @@ export type Database = {
         Returns: number
       }
       can_manage_all_leads: { Args: never; Returns: boolean }
+      can_manage_document_permissions_secure: {
+        Args: { p_document_id: string }
+        Returns: boolean
+      }
+      can_view_document_permissions_secure: {
+        Args: { p_document_id: string }
+        Returns: boolean
+      }
       check_auth_rate_limit: {
         Args: { p_identifier: string }
         Returns: boolean
@@ -15412,6 +15423,7 @@ export type Database = {
       is_admin_or_superadmin: { Args: never; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
       is_global_admin: { Args: never; Returns: boolean }
+      is_global_admin_secure: { Args: never; Returns: boolean }
       log_automation_event: {
         Args: {
           p_action_data?: Json

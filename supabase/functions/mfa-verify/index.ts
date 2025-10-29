@@ -181,60 +181,103 @@ serve(async (req) => {
   }
 
   try {
-    const { token, user_id } = await req.json();
-    
-    if (!token || !user_id) {
+    const { token, factor_id } = await req.json(); // ✅ Ya no recibe 'user_id'
+
+    console.log(`[mfa-verify] Verifying token for factor: ${factor_id}`);
+
+    if (!token || !factor_id) {
       return new Response(
-        JSON.stringify({ error: 'token y user_id son requeridos' }),
+        JSON.stringify({ valid: false, error: 'Token y factor_id requeridos' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validar formato del token (6 dígitos)
+    if (!/^\d{6}$/.test(token)) {
+      console.warn('[mfa-verify] Invalid token format');
+      return new Response(
+        JSON.stringify({ valid: false, error: 'Token debe ser 6 dígitos' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-    
-    // Obtener secret del usuario
-    const { data: mfaFactor, error: fetchError } = await supabase
-      .from('user_mfa_factors')
-      .select('secret, id')
-      .eq('user_id', user_id)
-      .eq('is_verified', true)
-      .single();
-    
-    if (fetchError || !mfaFactor) {
-      console.error('[mfa-verify] MFA factor not found:', fetchError);
-      return new Response(
-        JSON.stringify({ valid: false, error: 'MFA no configurado' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Verificar TOTP
-    const valid = verifyTOTP(token, mfaFactor.secret, 1);
-    
-    if (valid) {
-      // Actualizar last_used_at
-      await supabase
-        .from('user_mfa_factors')
-        .update({ last_used_at: new Date().toISOString() })
-        .eq('id', mfaFactor.id);
-      
-      console.log(`[mfa-verify] Valid token for user: ${user_id}`);
-    } else {
-      console.log(`[mfa-verify] Invalid token for user: ${user_id}`);
-    }
-    
-    return new Response(
-      JSON.stringify({ valid }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
+    // ✅ Obtener secret del servidor (no del cliente)
+    const { data: mfaFactor, error: fetchError } = await supabase
+      .from('user_mfa_factors')
+      .select('id, secret, user_id, is_verified')
+      .eq('id', factor_id)
+      .single();
+
+    if (fetchError || !mfaFactor) {
+      console.error('[mfa-verify] Factor not found:', fetchError);
+      return new Response(
+        JSON.stringify({ valid: false, error: 'Factor MFA no encontrado' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[mfa-verify] Factor found for user: ${mfaFactor.user_id}`);
+
+    // ✅ Verificar token usando el secret del servidor
+    const isValid = verifyTOTP(token, mfaFactor.secret, 1);
+
+    if (isValid) {
+      console.log('[mfa-verify] Token valid, marking factor as verified');
+
+      // Marcar como verificado
+      const { error: updateError } = await supabase
+        .from('user_mfa_factors')
+        .update({
+          is_verified: true,
+          verified_at: new Date().toISOString(),
+          last_used_at: new Date().toISOString()
+        })
+        .eq('id', factor_id);
+
+      if (updateError) {
+        console.error('[mfa-verify] Error updating factor:', updateError);
+        return new Response(
+          JSON.stringify({ valid: false, error: 'Error al verificar MFA' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Generar backup codes
+      const { data: backupCodes, error: backupError } = await supabase.rpc('generate_mfa_backup_codes', {
+        p_user_id: mfaFactor.user_id,
+        p_count: 10
+      });
+
+      if (backupError) {
+        console.error('[mfa-verify] Error generating backup codes:', backupError);
+      }
+
+      console.log('[mfa-verify] ✅ MFA verification successful');
+
+      return new Response(
+        JSON.stringify({ 
+          valid: true, 
+          backup_codes: backupCodes || [] 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      console.warn('[mfa-verify] ❌ Invalid token');
+      return new Response(
+        JSON.stringify({ valid: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
   } catch (error: any) {
-    console.error('[mfa-verify] Error:', error);
+    console.error('[mfa-verify] Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ valid: false, error: 'Error interno del servidor' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
