@@ -26,7 +26,7 @@ export function ValuationTable({
   generatingPDF,
 }: ValuationTableProps) {
   return (
-    <div className="rounded-md border bg-card">
+    <div className="rounded-md border bg-white">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">

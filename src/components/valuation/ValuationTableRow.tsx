@@ -47,7 +47,7 @@ export function ValuationTableRow({
 
   return (
     <TableRow
-      className="cursor-pointer hover:bg-muted/50 transition-colors"
+      className="cursor-pointer hover:bg-gray-50 transition-colors"
       onClick={() => onEdit(valuation.id)}
     >
       {/* Checkbox */}

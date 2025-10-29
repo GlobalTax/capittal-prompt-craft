@@ -145,7 +145,7 @@ export function ValuationList() {
   }, [valuations]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Header unificado */}
       <ValuationListHeader
         totalCount={stats.total}
@@ -235,7 +235,7 @@ export function ValuationList() {
             <Skeleton className="h-16 w-full" />
           </div>
         ) : filteredValuations.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg bg-card">
+          <div className="text-center py-12 border rounded-lg bg-white">
             <p className="text-muted-foreground mb-4">No hay valoraciones todavía</p>
             <Button onClick={() => setShowNewDialog(true)}>
               Crear tu primera valoración
