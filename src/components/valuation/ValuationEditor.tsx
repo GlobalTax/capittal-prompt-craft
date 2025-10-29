@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Trash2, StickyNote, FileText } from 'lucide-react';
+import { ArrowLeft, Trash2, StickyNote, FileText, CheckCircle2, Circle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -146,6 +146,49 @@ export function ValuationEditor() {
     }
   };
 
+  const handleToggleComplete = async () => {
+    if (!valuation) return;
+    
+    const newCompleted = !valuation.completed;
+    const newStatus = newCompleted ? 'completed' : 'in_progress';
+    
+    try {
+      const { error } = await supabase
+        .from('valuations')
+        .update({ 
+          completed: newCompleted,
+          status: newStatus 
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Actualizar estado local
+      setValuation({
+        ...valuation,
+        completed: newCompleted,
+        status: newStatus
+      });
+      
+      toast({
+        title: newCompleted ? '✅ Valoración completada' : '🔄 Valoración en progreso',
+        description: 'Estado actualizado correctamente',
+      });
+      
+      // Track evento
+      await trackFunnelEvent(
+        newCompleted ? 'valuation_completed' : 'valuation_reopened', 
+        id
+      );
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container max-w-7xl py-6 space-y-6">
@@ -182,6 +225,24 @@ export function ValuationEditor() {
           </div>
           <div className="flex items-center gap-4">
             <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+            <Button 
+              variant={valuation.completed ? "default" : "outline"}
+              size="sm"
+              onClick={handleToggleComplete}
+              className="gap-2"
+            >
+              {valuation.completed ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Completada
+                </>
+              ) : (
+                <>
+                  <Circle className="h-4 w-4" />
+                  Marcar como Completada
+                </>
+              )}
+            </Button>
             <Button 
               variant="default" 
               size="sm"
