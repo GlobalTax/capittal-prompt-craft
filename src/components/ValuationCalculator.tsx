@@ -936,12 +936,16 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         const employeesRow = newSections
           .flatMap(s => s.rows)
           .find(r => r.id === 'employees');
+        const depreciationRow = newSections
+          .flatMap(s => s.rows)
+          .find(r => r.id === 'depreciation');
 
         // Convert percentage values back to absolute amounts
         const totalRevenue = totalRevenueRow?.values[year.year] || 0;
         const personnelCosts = totalRevenue * ((personnelRow?.values[year.year] || 0) / 100);
         const otherCosts = totalRevenue * ((otherCostsRow?.values[year.year] || 0) / 100);
         const ownerSalary = totalRevenue * ((ownerSalaryRow?.values[year.year] || 0) / 100);
+        const depreciation = totalRevenue * ((depreciationRow?.values[year.year] || 0) / 100);
 
         // Actualizar en la BD con skipRefetch para evitar re-renders durante edición
         await updateYear(valuationYear.id, {
@@ -953,6 +957,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           personnel_costs: personnelCosts,
           other_costs: otherCosts,
           owner_salary: ownerSalary,
+          depreciation: depreciation,
           employees: employeesRow?.values[year.year] || 0,
         }, true); // skipRefetch = true
       }
