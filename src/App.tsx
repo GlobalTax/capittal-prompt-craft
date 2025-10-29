@@ -31,6 +31,7 @@ const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const DocumentTemplates = lazy(() => import("./pages/DocumentTemplates"));
 const FeeCalculator = lazy(() => import("./pages/FeeCalculator"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
+const AdvancedSettings = lazy(() => import("@/components/AdvancedSettings"));
 const MyCollaborationRequests = lazy(() => import("./pages/MyCollaborationRequests"));
 const ClientLanding = lazy(() => import("./pages/ClientLanding"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
@@ -91,6 +92,7 @@ const App = () => {
                   {/* NOTA: Generador de reportes oculto temporalmente para fase futura */}
                   {/* <Route path="/reports" element={<LazyRoute component={ReportGenerator} />} /> */}
                   <Route path="/security" element={<LazyRoute component={SecuritySettings} />} />
+                  <Route path="/settings" element={<LazyRoute component={AdvancedSettings} />} />
                   <Route path="/resources/templates" element={<LazyRoute component={DocumentTemplates} />} />
                   <Route path="/resources/fee-calculator" element={<LazyRoute component={FeeCalculator} />} />
                   
