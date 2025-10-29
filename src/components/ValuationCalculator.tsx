@@ -255,15 +255,17 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   
   // Dynamic table sections - derived from viewData (local state for immediate UI updates)
   const dynamicSections = useMemo<TableSection[]>(() => {
+    const customLabels = (valuation.metadata as any)?.customLabels || {};
+    
     return [
       {
         id: 'revenue-section',
         title: 'INGRESOS',
-        editable: false,
+        editable: true,
         rows: [
           {
             id: 'total-revenue',
-            label: 'Facturación Total',
+            label: customLabels['total-revenue'] || 'Facturación Total',
             type: 'input' as const,
             category: 'revenue' as const,
             indented: false,
@@ -271,7 +273,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'fiscal-recurring',
-            label: 'Servicios Fiscales',
+            label: customLabels['fiscal-recurring'] || 'Servicios Fiscales',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -280,7 +282,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'accounting-recurring',
-            label: 'Servicios Contables',
+            label: customLabels['accounting-recurring'] || 'Servicios Contables',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -289,7 +291,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'labor-recurring',
-            label: 'Servicios Laborales',
+            label: customLabels['labor-recurring'] || 'Servicios Laborales',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -298,7 +300,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'other-revenue',
-            label: 'Otros Servicios',
+            label: customLabels['other-revenue'] || 'Otros Servicios',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -310,11 +312,11 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       {
         id: 'costs-section',
         title: 'COSTES',
-        editable: false,
+        editable: true,
         rows: [
           {
             id: 'personnel-costs',
-            label: 'Costes de Personal',
+            label: customLabels['personnel-costs'] || 'Costes de Personal',
             type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
@@ -326,7 +328,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'other-costs',
-            label: 'Otros Costes Operativos',
+            label: customLabels['other-costs'] || 'Otros Costes Operativos',
             type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
@@ -338,7 +340,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'owner-salary',
-            label: 'Sueldo Propiedad',
+            label: customLabels['owner-salary'] || 'Sueldo Propiedad',
             type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
@@ -353,11 +355,11 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       {
         id: 'results-section',
         title: 'RESULTADOS',
-        editable: false,
+        editable: true,
         rows: [
           {
             id: 'employees',
-            label: 'Nº Trabajadores',
+            label: customLabels['employees'] || 'Nº Trabajadores',
             type: 'input' as const,
             category: 'result' as const,
             indented: true,
@@ -447,7 +449,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       },
       ...customSections // Add custom sections for future extensibility
     ];
-  }, [viewData, customSections]);
+  }, [viewData, customSections, valuation.metadata]);
 
   const calculateMetricsForYear = (yearData: YearData) => {
     const fiscalRecurring = (yearData.totalRevenue * yearData.fiscalRecurringPercent) / 100;
@@ -826,6 +828,33 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     };
   };
 
+  // Save custom labels to metadata
+  const saveCustomLabels = useCallback((sections: TableSection[]) => {
+    const customLabels: Record<string, string> = {};
+    const defaultLabels: Record<string, string> = {
+      'total-revenue': 'Facturación Total',
+      'fiscal-recurring': 'Servicios Fiscales',
+      'accounting-recurring': 'Servicios Contables',
+      'labor-recurring': 'Servicios Laborales',
+      'other-revenue': 'Otros Servicios',
+      'personnel-costs': 'Costes de Personal',
+      'other-costs': 'Otros Costes Operativos',
+      'owner-salary': 'Sueldo Propiedad',
+      'employees': 'Nº Trabajadores',
+    };
+    
+    sections.forEach(section => {
+      section.rows.forEach(row => {
+        if (row.label !== defaultLabels[row.id]) {
+          customLabels[row.id] = row.label;
+        }
+      });
+    });
+    
+    const metadata = valuation.metadata || {};
+    onUpdate('metadata', { ...metadata, customLabels });
+  }, [valuation.metadata, onUpdate]);
+
   // Dynamic table handlers
   const handleDynamicDataChange = async (newSections: TableSection[]) => {
     // Separar secciones base de custom
@@ -836,6 +865,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     if (customSectionsUpdated.length > 0) {
       setCustomSections(customSectionsUpdated);
     }
+    
+    // Guardar labels personalizados
+    saveCustomLabels(newSections);
     
     // Actualizar localData inmediatamente para feedback visual instantáneo
     setLocalData(prev => extractFromSections(newSections, prev ?? viewData));

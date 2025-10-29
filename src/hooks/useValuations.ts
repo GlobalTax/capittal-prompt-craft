@@ -61,6 +61,9 @@ export interface Valuation {
   comparable_multiples_results?: any;
   last_dcf_calculation?: string;
   last_multiples_calculation?: string;
+  
+  // Metadata para labels personalizados y otros datos
+  metadata?: any;
 }
 
 export function useValuations() {
