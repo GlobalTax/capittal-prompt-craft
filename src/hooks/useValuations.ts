@@ -29,6 +29,10 @@ export interface Valuation {
   target_location?: string;
   contact_person?: string;
   
+  // Información sectorial
+  cnae_code?: string;
+  business_description?: string;
+  
   // Notas privadas
   private_notes?: string;
   

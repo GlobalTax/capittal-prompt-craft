@@ -62,6 +62,26 @@ export function ClientInfoForm({ valuation, onUpdate }: ClientInfoFormProps) {
               placeholder="+34 600 000 000"
             />
           </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="cnae_code">CNAE</Label>
+            <Input
+              id="cnae_code"
+              value={valuation.cnae_code || ''}
+              onChange={(e) => onUpdate('cnae_code', e.target.value)}
+              placeholder="Ej: 6920 - Actividades de contabilidad, teneduría de libros..."
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="business_description">Descripción de la Actividad</Label>
+            <Input
+              id="business_description"
+              value={valuation.business_description || ''}
+              onChange={(e) => onUpdate('business_description', e.target.value)}
+              placeholder="Breve descripción del negocio y su actividad principal"
+            />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -102,6 +122,26 @@ export function ClientInfoForm({ valuation, onUpdate }: ClientInfoFormProps) {
               value={valuation.contact_person || ''}
               onChange={(e) => onUpdate('contact_person', e.target.value)}
               placeholder="María García"
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="cnae_code">CNAE</Label>
+            <Input
+              id="cnae_code"
+              value={valuation.cnae_code || ''}
+              onChange={(e) => onUpdate('cnae_code', e.target.value)}
+              placeholder="Ej: 6920 - Actividades de contabilidad"
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="business_description">Descripción de la Actividad</Label>
+            <Input
+              id="business_description"
+              value={valuation.business_description || ''}
+              onChange={(e) => onUpdate('business_description', e.target.value)}
+              placeholder="Descripción del negocio objetivo"
             />
           </div>
         </div>

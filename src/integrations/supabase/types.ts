@@ -14484,10 +14484,12 @@ export type Database = {
         Row: {
           accounting_recurring_1: number | null
           accounting_recurring_2: number | null
+          business_description: string | null
           client_company: string | null
           client_email: string | null
           client_name: string | null
           client_phone: string | null
+          cnae_code: string | null
           comparable_multiples_results: Json | null
           completed: boolean | null
           contact_person: string | null
@@ -14529,10 +14531,12 @@ export type Database = {
         Insert: {
           accounting_recurring_1?: number | null
           accounting_recurring_2?: number | null
+          business_description?: string | null
           client_company?: string | null
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          cnae_code?: string | null
           comparable_multiples_results?: Json | null
           completed?: boolean | null
           contact_person?: string | null
@@ -14574,10 +14578,12 @@ export type Database = {
         Update: {
           accounting_recurring_1?: number | null
           accounting_recurring_2?: number | null
+          business_description?: string | null
           client_company?: string | null
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          cnae_code?: string | null
           comparable_multiples_results?: Json | null
           completed?: boolean | null
           contact_person?: string | null

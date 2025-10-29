@@ -279,7 +279,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'fiscal-recurring',
-            label: customLabels['fiscal-recurring'] || 'Servicios Fiscales',
+            label: customLabels['fiscal-recurring'] || 'Servicio 1',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -288,7 +288,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'accounting-recurring',
-            label: customLabels['accounting-recurring'] || 'Servicios Contables',
+            label: customLabels['accounting-recurring'] || 'Servicio 2',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -297,7 +297,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'labor-recurring',
-            label: customLabels['labor-recurring'] || 'Servicios Laborales',
+            label: customLabels['labor-recurring'] || 'Servicio 3',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -306,7 +306,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           },
           {
             id: 'other-revenue',
-            label: customLabels['other-revenue'] || 'Otros Servicios',
+            label: customLabels['other-revenue'] || 'Otros Ingresos',
             type: 'percentage' as const,
             category: 'revenue' as const,
             indented: true,
@@ -855,10 +855,10 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     const customLabels: Record<string, string> = {};
     const defaultLabels: Record<string, string> = {
       'total-revenue': 'Facturación Total',
-      'fiscal-recurring': 'Servicios Fiscales',
-      'accounting-recurring': 'Servicios Contables',
-      'labor-recurring': 'Servicios Laborales',
-      'other-revenue': 'Otros Servicios',
+      'fiscal-recurring': 'Servicio 1',
+      'accounting-recurring': 'Servicio 2',
+      'labor-recurring': 'Servicio 3',
+      'other-revenue': 'Otros Ingresos',
       'personnel-costs': 'Costes de Personal',
         'other-costs': 'Otros Costes Operativos',
         'owner-salary': 'Sueldo Propiedad',
