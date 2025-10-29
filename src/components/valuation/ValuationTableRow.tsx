@@ -31,10 +31,9 @@ export function ValuationTableRow({
   onDelete,
   isGeneratingPDF,
 }: ValuationTableRowProps) {
-  // Calcular métricas usando año 2 (proyectado)
-  const totalRevenue = (valuation.revenue_2 || 0) + (valuation.other_revenue_2 || 0);
-  const totalCosts = (valuation.personnel_costs_2 || 0) + (valuation.other_costs_2 || 0);
-  const ebitda = totalRevenue - totalCosts;
+  // Usar métricas precalculadas del repository
+  const totalRevenue = valuation.computed_revenue ?? 0;
+  const ebitda = valuation.computed_ebitda ?? 0;
 
   // Nombre de cliente/empresa
   const clientName =

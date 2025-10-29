@@ -68,6 +68,10 @@ export interface Valuation {
   
   // Metadata para labels personalizados y otros datos
   metadata?: any;
+  
+  // Campos calculados para la vista de lista
+  computed_revenue?: number;
+  computed_ebitda?: number;
 }
 
 export function useValuations() {

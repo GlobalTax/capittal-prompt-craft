@@ -58,10 +58,7 @@ export function ValuationList() {
     const inProgress = filteredValuations.filter(v => v.status === 'in_progress').length;
     const completed = filteredValuations.filter(v => v.status === 'completed').length;
     const totalEBITDA = filteredValuations.reduce((sum, v) => {
-      // Usar año 2 (proyectado) para EBITDA
-      const revenue = (v.revenue_2 || 0) + (v.other_revenue_2 || 0);
-      const costs = (v.personnel_costs_2 || 0) + (v.other_costs_2 || 0);
-      return sum + (revenue - costs);
+      return sum + (v.computed_ebitda ?? 0);
     }, 0);
     return { total, inProgress, completed, totalEBITDA };
   }, [filteredValuations]);
