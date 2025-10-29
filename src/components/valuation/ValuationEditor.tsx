@@ -229,7 +229,7 @@ export function ValuationEditor() {
               variant={valuation.completed ? "default" : "outline"}
               size="sm"
               onClick={handleToggleComplete}
-              className="gap-2"
+              className={`gap-2 ${valuation.completed ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
             >
               {valuation.completed ? (
                 <>
