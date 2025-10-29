@@ -46,6 +46,7 @@ const AlertSettings = lazy(() => import("./pages/admin/AlertSettings"));
 const FunnelAnalytics = lazy(() => import("./pages/admin/FunnelAnalytics"));
 const CommissionSettings = lazy(() => import("./pages/admin/CommissionSettings"));
 const OrganizationManagement = lazy(() => import("./pages/admin/OrganizationManagement"));
+const SectorMultiplesManagement = lazy(() => import("./pages/admin/SectorMultiplesManagement"));
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const App = () => {
                     <Route path="/admin/funnel-analytics" element={<LazyRoute component={FunnelAnalytics} />} />
                     <Route path="/admin/commissions" element={<LazyRoute component={CommissionSettings} />} />
                     <Route path="/admin/organizations" element={<LazyRoute component={OrganizationManagement} />} />
+                    <Route path="/admin/sector-multiples" element={<LazyRoute component={SectorMultiplesManagement} />} />
                   </Route>
                   
                   <Route path="/my-referrals" element={<LazyRoute component={MyCollaborationRequests} />} />

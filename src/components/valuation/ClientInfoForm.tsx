@@ -1,6 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Valuation, ValuationType } from '@/hooks/useValuations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSectorMultiples } from '@/hooks/useSectorMultiples';
+import { Building2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClientInfoFormProps {
   valuation: Valuation;
@@ -8,9 +12,34 @@ interface ClientInfoFormProps {
 }
 
 export function ClientInfoForm({ valuation, onUpdate }: ClientInfoFormProps) {
+  const { sectorMultiples, loading: loadingSectors } = useSectorMultiples();
+  const { toast } = useToast();
+
   if (valuation.valuation_type === 'own_business') {
     return null;
   }
+
+  const handleSectorChange = (sectorCode: string) => {
+    const sector = sectorMultiples.find(s => s.sector_code === sectorCode);
+    if (!sector) return;
+
+    // Guardar el código del sector
+    const currentMetadata = valuation.metadata || {};
+    onUpdate('metadata', {
+      ...currentMetadata,
+      sectorCode: sectorCode,
+      valuationMethods: {
+        ebitda: { enabled: true, multiplier: sector.ebitda_multiple_avg },
+        revenue: { enabled: true, multiplier: sector.revenue_multiple_avg },
+        netProfit: { enabled: false, multiplier: sector.pe_ratio_avg }
+      }
+    });
+
+    toast({
+      title: 'Múltiplos aplicados',
+      description: `Se han aplicado los múltiplos promedio del sector ${sector.sector_name}`,
+    });
+  };
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card">
@@ -71,6 +100,37 @@ export function ClientInfoForm({ valuation, onUpdate }: ClientInfoFormProps) {
               onChange={(e) => onUpdate('cnae_code', e.target.value)}
               placeholder="Ej: 6920 - Actividades de contabilidad, teneduría de libros..."
             />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="sector">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Sector de Actividad
+              </div>
+            </Label>
+            <Select 
+              value={valuation.metadata?.sectorCode || ''} 
+              onValueChange={handleSectorChange}
+              disabled={loadingSectors}
+            >
+              <SelectTrigger id="sector">
+                <SelectValue placeholder="Selecciona el sector para aplicar múltiplos automáticamente..." />
+              </SelectTrigger>
+              <SelectContent>
+                {sectorMultiples.map(sector => (
+                  <SelectItem key={sector.sector_code} value={sector.sector_code}>
+                    {sector.sector_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {valuation.metadata?.sectorCode && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-green-600">✓</span>
+                Múltiplos aplicados automáticamente del sector seleccionado
+              </p>
+            )}
           </div>
           
           <div className="space-y-2 md:col-span-2">
@@ -133,6 +193,37 @@ export function ClientInfoForm({ valuation, onUpdate }: ClientInfoFormProps) {
               onChange={(e) => onUpdate('cnae_code', e.target.value)}
               placeholder="Ej: 6920 - Actividades de contabilidad"
             />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="sector">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Sector de Actividad
+              </div>
+            </Label>
+            <Select 
+              value={valuation.metadata?.sectorCode || ''} 
+              onValueChange={handleSectorChange}
+              disabled={loadingSectors}
+            >
+              <SelectTrigger id="sector">
+                <SelectValue placeholder="Selecciona el sector para aplicar múltiplos automáticamente..." />
+              </SelectTrigger>
+              <SelectContent>
+                {sectorMultiples.map(sector => (
+                  <SelectItem key={sector.sector_code} value={sector.sector_code}>
+                    {sector.sector_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {valuation.metadata?.sectorCode && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-green-600">✓</span>
+                Múltiplos aplicados automáticamente del sector seleccionado
+              </p>
+            )}
           </div>
           
           <div className="space-y-2 md:col-span-2">

@@ -107,3 +107,23 @@ export function validateValuation(data: unknown): string[] {
   const result = validateData(valuationSchema, data);
   return result.success ? [] : (result as { success: false; errors: string[] }).errors;
 }
+
+/**
+ * Valida los rangos de múltiplos de sector
+ */
+export function validateSectorMultiples(data: {
+  min: number;
+  avg: number;
+  max: number;
+}): string | null {
+  if (data.min < 0 || data.avg < 0 || data.max < 0) {
+    return "Todos los valores deben ser positivos";
+  }
+  if (data.min > data.avg) {
+    return "El mínimo no puede ser mayor que el promedio";
+  }
+  if (data.avg > data.max) {
+    return "El promedio no puede ser mayor que el máximo";
+  }
+  return null;
+}

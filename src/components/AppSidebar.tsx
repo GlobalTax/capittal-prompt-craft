@@ -133,6 +133,12 @@ export function AppSidebar() {
       url: "/admin/alert-settings",
       icon: Settings2,
       description: "Personalizar notificaciones"
+    },
+    {
+      title: "Múltiplos de Sector",
+      url: "/admin/sector-multiples",
+      icon: TrendingUp,
+      description: "Gestionar múltiplos de valoración"
     }
   ];
 
