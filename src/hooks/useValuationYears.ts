@@ -54,6 +54,7 @@ export function useValuationYears(valuationId: string) {
         personnel_costs: 0,
         other_costs: 0,
         owner_salary: 0,
+        depreciation: 0,
         employees: 0,
       });
       

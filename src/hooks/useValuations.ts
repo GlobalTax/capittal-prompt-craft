@@ -131,6 +131,7 @@ export function useValuations() {
           personnel_costs: 0,
           other_costs: 0,
           owner_salary: 0,
+          depreciation: 0,
           employees: 0,
         });
 
@@ -146,6 +147,7 @@ export function useValuations() {
           personnel_costs: 0,
           other_costs: 0,
           owner_salary: 0,
+          depreciation: 0,
           employees: 0,
         });
       } catch (yearError: any) {

@@ -33,6 +33,7 @@ interface YearData {
   personnelCosts: number;
   otherCosts: number;
   ownerSalary: number;
+  depreciation: number;
   numberOfEmployees: number;
 }
 
@@ -90,6 +91,7 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
         personnelCosts: val.personnel_costs_1 || 0,
         otherCosts: val.other_costs_1 || 0,
         ownerSalary: val.owner_salary_1 || 0,
+        depreciation: 0,
         numberOfEmployees: val.employees_1 || 0,
       },
       {
@@ -103,6 +105,7 @@ const mapValuationToFinancialData = (val: Valuation): FinancialData => {
         personnelCosts: val.personnel_costs_2 || 0,
         otherCosts: val.other_costs_2 || 0,
         ownerSalary: val.owner_salary_2 || 0,
+        depreciation: 0,
         numberOfEmployees: val.employees_2 || 0,
       },
     ],
@@ -151,6 +154,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         personnelCosts: vy.personnel_costs,
         otherCosts: vy.other_costs,
         ownerSalary: vy.owner_salary,
+        depreciation: vy.depreciation || 0,
         numberOfEmployees: vy.employees,
       }))
     };
@@ -177,6 +181,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             personnelCosts: vy.personnel_costs,
             otherCosts: vy.other_costs,
             ownerSalary: vy.owner_salary,
+            depreciation: vy.depreciation || 0,
             numberOfEmployees: vy.employees,
           }))
         });
@@ -202,6 +207,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           personnelCosts: vy.personnel_costs,
           otherCosts: vy.other_costs,
           ownerSalary: vy.owner_salary,
+          depreciation: vy.depreciation || 0,
           numberOfEmployees: vy.employees,
         }))
       });
@@ -344,14 +350,26 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
             type: 'percentage' as const,
             category: 'cost' as const,
             indented: true,
-            percentageOf: 'total-revenue',
-            values: viewData.years.reduce((acc, y) => {
-              const percentage = y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0;
-              return { ...acc, [y.year]: percentage };
-            }, {})
-          }
-        ]
-      },
+          percentageOf: 'total-revenue',
+          values: viewData.years.reduce((acc, y) => {
+            const percentage = y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0;
+            return { ...acc, [y.year]: percentage };
+          }, {})
+        },
+        {
+          id: 'depreciation',
+          label: customLabels['depreciation'] || 'Amortización',
+          type: 'percentage' as const,
+          category: 'cost' as const,
+          indented: true,
+          percentageOf: 'total-revenue',
+          values: viewData.years.reduce((acc, y) => {
+            const percentage = y.totalRevenue ? (y.depreciation / y.totalRevenue) * 100 : 0;
+            return { ...acc, [y.year]: percentage };
+          }, {})
+        }
+      ]
+    },
       {
         id: 'results-section',
         title: 'RESULTADOS',
@@ -809,6 +827,9 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         const otherCosts = totalRevenue * ((otherCostsPerc ?? (y.totalRevenue ? (y.otherCosts / y.totalRevenue) * 100 : 0)) / 100);
         const ownerSalary = totalRevenue * ((ownerSalaryPerc ?? (y.totalRevenue ? (y.ownerSalary / y.totalRevenue) * 100 : 0)) / 100);
 
+        const depreciationPerc = get('depreciation')?.values[yr];
+        const depreciation = totalRevenue * ((depreciationPerc ?? (y.totalRevenue ? (y.depreciation / y.totalRevenue) * 100 : 0)) / 100);
+
         const employees = get('employees')?.values[yr] ?? y.numberOfEmployees;
 
         return {
@@ -822,6 +843,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
           personnelCosts,
           otherCosts,
           ownerSalary,
+          depreciation,
           numberOfEmployees: employees,
         };
       })
@@ -838,9 +860,10 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       'labor-recurring': 'Servicios Laborales',
       'other-revenue': 'Otros Servicios',
       'personnel-costs': 'Costes de Personal',
-      'other-costs': 'Otros Costes Operativos',
-      'owner-salary': 'Sueldo Propiedad',
-      'employees': 'Nº Trabajadores',
+        'other-costs': 'Otros Costes Operativos',
+        'owner-salary': 'Sueldo Propiedad',
+        'depreciation': 'Amortización',
+        'employees': 'Nº Trabajadores',
     };
     
     sections.forEach(section => {

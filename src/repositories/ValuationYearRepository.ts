@@ -13,6 +13,7 @@ export interface ValuationYear {
   personnel_costs: number;
   other_costs: number;
   owner_salary: number;
+  depreciation: number;
   employees: number;
   created_at: string;
 }

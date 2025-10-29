@@ -14422,6 +14422,7 @@ export type Database = {
         Row: {
           accounting_recurring: number | null
           created_at: string | null
+          depreciation: number | null
           employees: number | null
           fiscal_recurring: number | null
           id: string
@@ -14438,6 +14439,7 @@ export type Database = {
         Insert: {
           accounting_recurring?: number | null
           created_at?: string | null
+          depreciation?: number | null
           employees?: number | null
           fiscal_recurring?: number | null
           id?: string
@@ -14454,6 +14456,7 @@ export type Database = {
         Update: {
           accounting_recurring?: number | null
           created_at?: string | null
+          depreciation?: number | null
           employees?: number | null
           fiscal_recurring?: number | null
           id?: string
