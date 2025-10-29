@@ -14504,6 +14504,7 @@ export type Database = {
           labor_recurring_2: number | null
           last_dcf_calculation: string | null
           last_multiples_calculation: string | null
+          metadata: Json | null
           organization_id: string | null
           other_costs_1: number | null
           other_costs_2: number | null
@@ -14551,6 +14552,7 @@ export type Database = {
           labor_recurring_2?: number | null
           last_dcf_calculation?: string | null
           last_multiples_calculation?: string | null
+          metadata?: Json | null
           organization_id?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null
@@ -14598,6 +14600,7 @@ export type Database = {
           labor_recurring_2?: number | null
           last_dcf_calculation?: string | null
           last_multiples_calculation?: string | null
+          metadata?: Json | null
           organization_id?: string | null
           other_costs_1?: number | null
           other_costs_2?: number | null

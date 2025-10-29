@@ -22,8 +22,17 @@ export function useAutoSave<T>(
       try {
         await onSave(debouncedValue);
         setLastSaved(new Date());
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auto-save error:', error);
+        // Show error toast to user
+        if (typeof window !== 'undefined') {
+          const { toast } = await import('@/components/ui/use-toast');
+          toast({
+            title: 'Error al guardar',
+            description: error.message || 'No se pudieron guardar los cambios',
+            variant: 'destructive'
+          });
+        }
       } finally {
         setIsSaving(false);
       }

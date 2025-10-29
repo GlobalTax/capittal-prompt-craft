@@ -72,12 +72,19 @@ export function ValuationEditor() {
 
   const saveValuation = async (data: Valuation | null) => {
     if (!data) return;
+    
+    // Extract only fields that exist in the table (exclude read-only fields)
+    const { id, user_id, created_at, ...updateData } = data;
+    
     const { error } = await supabase
       .from('valuations')
-      .update(data)
+      .update(updateData)
       .eq('id', data.id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error saving valuation:', error);
+      throw error;
+    }
   };
 
   const { isSaving, lastSaved } = useAutoSave(valuation, saveValuation);
