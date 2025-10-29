@@ -15258,20 +15258,20 @@ export type Database = {
       enhanced_log_security_event:
         | {
             Args: {
-              p_description?: string
+              p_description: string
               p_event_type: string
-              p_metadata?: Json
-              p_severity?: string
+              p_metadata: Json
+              p_severity: string
+              p_user_id: string
             }
             Returns: string
           }
         | {
             Args: {
-              p_description?: string
+              p_description: string
               p_event_type: string
               p_metadata?: Json
-              p_severity?: string
-              p_user_email?: string
+              p_severity: string
             }
             Returns: string
           }

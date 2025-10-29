@@ -145,6 +145,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **Impact**: 13 previously blocked tables now have proper RLS policies, achieving 100% RLS coverage
 
+### Fixed - Day 4.5: Function Ambiguity Blocking Auth Signup
+
+**Migration**: `20251029_fix_enhanced_log_ambiguity.sql`  
+**Status**: ✅ COMPLETED  
+**Impact**: Fixed 500 Internal Server Error on `/auth/v1/signup`
+
+#### Problem Identified
+- **Error**: `function public.enhanced_log_security_event(unknown, unknown, text, jsonb) is not unique (SQLSTATE 42725)`
+- **Root Cause**: Multiple overloaded versions of `enhanced_log_security_event` with ambiguous signatures
+- **Impact**: Auth signup completely broken - all user registrations failing with 500 error
+- **Severity**: CRITICAL - blocking all new user onboarding
+
+#### Solution Implemented
+1. **Dropped all ambiguous function versions** - Removed all existing `enhanced_log_security_event` overloads
+2. **Created canonical 4-arg function** - `(event_type TEXT, severity TEXT, description TEXT, metadata JSONB)`
+   - Uses `SECURITY DEFINER` for privileged logging
+   - Explicit `SET search_path = public` for security
+   - **Never throws errors** - wraps all operations in EXCEPTION block to prevent blocking auth
+3. **Created 5-arg backward-compatible version** - `(event_type TEXT, severity TEXT, description TEXT, metadata JSONB, user_id UUID)`
+   - For explicit user_id overrides
+   - Same error handling guarantees
+4. **Added smoke test** - Verifies function works post-migration
+
+#### Key Design Decision
+- **Error Handling Philosophy**: Logging failures should NEVER block critical auth flows
+- All exceptions caught and logged as warnings, returning NULL instead of blocking
+- This ensures signup/login always works even if security logging temporarily fails
+
+**Result**: Signup endpoint functional, user registration unblocked
+
 ### Added - Day 6-7: Advanced Hardening & Monitoring
 
 #### ✅ MFA Rate Limiting (Brute Force Prevention)
