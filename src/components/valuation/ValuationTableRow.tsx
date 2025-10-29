@@ -1,6 +1,5 @@
 import { Valuation } from '@/hooks/useValuations';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Edit, FileText, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, FileText, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { StatusBadge } from './StatusBadge';
@@ -50,16 +49,6 @@ export function ValuationTableRow({
       className="cursor-pointer hover:bg-gray-50 transition-colors"
       onClick={() => onEdit(valuation.id)}
     >
-      {/* Checkbox */}
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <Checkbox
-          checked={valuation.completed}
-          onCheckedChange={(checked) =>
-            onToggleComplete(valuation.id, checked as boolean)
-          }
-        />
-      </TableCell>
-
       {/* Tipo */}
       <TableCell>
         <ValuationTypeBadge type={valuation.valuation_type || 'own_business'} />
@@ -129,6 +118,21 @@ export function ValuationTableRow({
             <DropdownMenuItem onClick={() => onEdit(valuation.id)}>
               <Edit className="h-4 w-4 mr-2" />
               Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onToggleComplete(valuation.id, valuation.status !== 'completed')}
+            >
+              {valuation.status === 'completed' ? (
+                <>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Marcar En Progreso
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Marcar como Completada
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => onGeneratePDF(valuation)}

@@ -30,7 +30,6 @@ export function ValuationTable({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[50px]"></TableHead>
             <TableHead className="w-[140px]">Tipo</TableHead>
             <TableHead className="min-w-[200px]">Título</TableHead>
             <TableHead className="min-w-[180px]">Cliente/Empresa</TableHead>
@@ -44,7 +43,7 @@ export function ValuationTable({
         <TableBody>
           {valuations.length === 0 ? (
             <TableRow>
-              <td colSpan={9} className="text-center py-12 text-muted-foreground">
+              <td colSpan={8} className="text-center py-12 text-muted-foreground">
                 No hay valoraciones que mostrar
               </td>
             </TableRow>
