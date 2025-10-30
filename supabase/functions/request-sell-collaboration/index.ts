@@ -4,6 +4,9 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// UUID del equipo Capittal (Samuel) para asignar solicitudes de colaboración
+const CAPITTAL_TEAM_USER_ID = "22873c0f-61da-4cd9-94d9-bcde55bc7ca8";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -149,7 +152,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from("advisor_collaboration_requests")
       .insert({
         requesting_advisor_id: advisorUserId,
-        target_advisor_id: null, // For Capittal team
+        target_advisor_id: CAPITTAL_TEAM_USER_ID, // Asignado al equipo Capittal
         lead_id: leadData.id,
         collaboration_type: "expertise_needed",
         status: "pending",
