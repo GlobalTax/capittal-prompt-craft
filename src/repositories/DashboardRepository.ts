@@ -261,7 +261,7 @@ export class DashboardRepository {
       .from('valuations')
       .select('id, metadata, target_industry')
       .eq('user_id', userId)
-      .eq('status', 'completed');
+      .in('status', ['in_progress', 'completed']);
     
     if (valuationsError) throw new Error(valuationsError.message);
 
@@ -326,6 +326,17 @@ export class DashboardRepository {
         values.push(enterpriseValue);
       }
     }
+
+    console.log('Financial Summary Debug:', {
+      valuationCount: valuationsList.length,
+      ebitdasCount: ebitdas.length,
+      valuesCount: values.length,
+      ebitdas: ebitdas,
+      values: values,
+      multiples: multiples,
+      avgEbitda: ebitdas.length > 0 ? ebitdas.reduce((a, b) => a + b, 0) / ebitdas.length : 0,
+      avgValue: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0
+    });
 
     return {
       avgEbitda: ebitdas.length > 0 ? ebitdas.reduce((a, b) => a + b, 0) / ebitdas.length : 0,
