@@ -7,6 +7,7 @@ import { Users, FileCheck, Download, Activity, AlertCircle, ShieldAlert } from "
 import { useCountUp } from "@/hooks/useCountUp";
 import { usePendingAlerts } from "@/hooks/usePendingAlerts";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -70,9 +71,44 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Gestión y estadísticas del sistema</p>
       </div>
 
+      {/* Loading State */}
+      {!stats && !alerts && (
+        <div className="space-y-6">
+          <Card className="border-2 bg-muted/50 mb-8">
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-24 mb-2" />
+                  <Skeleton className="h-3 w-40" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Alertas Pendientes */}
       {alerts && alerts.total > 0 && (
-        <Card className="col-span-full border-red-500 border-2 bg-red-50 dark:bg-red-950">
+        <Card className="col-span-full border-red-500 border-2 bg-red-50 dark:bg-red-950 mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -83,24 +119,24 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Usuarios Pendientes</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Usuarios Pendientes</p>
                 <p className="text-2xl font-bold text-red-600">{alerts.pendingUsers}</p>
                 <Button size="sm" variant="outline" onClick={() => navigate('/admin/users?filter=pending')}>
                   Revisar →
                 </Button>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Colaboradores Nuevos</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Colaboradores Nuevos</p>
                 <p className="text-2xl font-bold text-orange-600">{alerts.recentCollaborators}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Leads Sospechosos</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Leads Sospechosos</p>
                 <p className="text-2xl font-bold text-yellow-600">{alerts.suspiciousLeads}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Leads Sin Asignar</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Leads Sin Asignar</p>
                 <p className="text-2xl font-bold text-blue-600">{alerts.unassignedLeads}</p>
                 <Button size="sm" variant="outline" onClick={() => navigate('/admin/sell-leads')}>
                   Ver →
@@ -111,7 +147,7 @@ export default function AdminDashboard() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
         {kpis.map((kpi) => (
           <Card 
             key={kpi.title}
