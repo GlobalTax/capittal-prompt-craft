@@ -100,10 +100,9 @@ const AdvancedSettings = () => {
       </div>
 
       <Tabs defaultValue={defaultTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="multiples">Múltiplos</TabsTrigger>
-          <TabsTrigger value="users">Usuarios</TabsTrigger>
           <TabsTrigger value="integrations">Integraciones</TabsTrigger>
           <TabsTrigger value="backup">Backup</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
@@ -295,82 +294,6 @@ const AdvancedSettings = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Usuarios</CardTitle>
-                <CardDescription>
-                  Administrar accesos y permisos del equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {userRoles.map(user => (
-                    <div key={user.id} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                        <p className="text-xs text-muted-foreground">Último acceso: {user.lastActive}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
-                        <Select defaultValue={user.role}>
-                          <SelectTrigger className="w-24">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="editor">Editor</SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Invitar Usuario</CardTitle>
-                <CardDescription>
-                  Añadir nuevo miembro al equipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input placeholder="nuevo@usuario.com" type="email" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Rol</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="editor">Editor</SelectItem>
-                      <SelectItem value="viewer">Solo lectura</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Mensaje de bienvenida (opcional)</Label>
-                  <Textarea placeholder="Mensaje personalizado..." rows={3} />
-                </div>
-                <Button className="w-full">
-                  <Users className="h-4 w-4 mr-2" />
-                  Enviar Invitación
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         <TabsContent value="integrations" className="space-y-4">
           <Card>
