@@ -74,7 +74,10 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
       <Card className="w-full max-w-md shadow-lg border-border/50">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold tracking-tight">Capittal</CardTitle>
+          <div className="space-y-1">
+            <CardTitle className="text-3xl font-bold tracking-tight">MiValoracion</CardTitle>
+            <p className="text-xs text-muted-foreground">un producto de Capittal Suites</p>
+          </div>
           <CardDescription>{t('auth.loginSubtitle')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

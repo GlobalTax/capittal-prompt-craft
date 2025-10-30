@@ -20,7 +20,7 @@ export function ProtectedLayout() {
               <div className="container mx-auto max-w-7xl px-4">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <p className="text-xs text-muted-foreground">
-                    © {new Date().getFullYear()} Capittal
+                    © {new Date().getFullYear()} MiValoracion - Capittal Suites
                   </p>
                   <div className="flex items-center gap-4">
                     <Link to="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors">

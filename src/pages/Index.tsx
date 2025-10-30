@@ -116,10 +116,13 @@ const Index = () => {
         {/* Hero welcome */}
         <div className="text-center space-y-4 py-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Bienvenido a Capittal
+            Bienvenido a MiValoracion
           </h1>
           <p className="text-muted-foreground text-lg">
             Tu plataforma profesional de valoración de empresas
+          </p>
+          <p className="text-sm text-muted-foreground">
+            un producto de Capittal Suites
           </p>
         </div>
 
