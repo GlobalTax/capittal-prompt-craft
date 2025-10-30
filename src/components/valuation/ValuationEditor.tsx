@@ -117,8 +117,8 @@ export function ValuationEditor() {
     // Verificar perfil del asesor
     if (!advisorProfile?.business_name) {
       toast({
-        title: 'Perfil incompleto',
-        description: 'Configura tu perfil en Ajustes > Branding antes de generar PDFs',
+        title: 'Configuración de branding requerida',
+        description: 'Para generar PDFs, configura tu información de negocio en Ajustes > Branding. Solo toma un minuto.',
         variant: 'destructive',
       });
       navigate('/settings?tab=branding');

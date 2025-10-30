@@ -49,19 +49,7 @@ export function AdvisorProfileSettings() {
     );
   }
 
-  // Access control: only advisors can access
-  if (!isAdvisor) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Acceso Denegado</AlertTitle>
-        <AlertDescription>
-          Solo los usuarios con rol de <strong>Asesor</strong> pueden acceder a esta configuración.
-          Si crees que deberías tener acceso, contacta con un administrador.
-        </AlertDescription>
-      </Alert>
-    );
-  }
+  // Access control removed: all authenticated users can configure branding for PDF generation
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
