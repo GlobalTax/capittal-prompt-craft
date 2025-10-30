@@ -116,6 +116,30 @@
       "dcf": "DCF",
       "multiples": "Multiples",
       "mixed": "Mixed"
+    },
+    "acquisition": {
+      "title": "Do You Want to Buy This Company?",
+      "subtitle": "Capittal helps you negotiate and close the acquisition",
+      "summary": "Valuation Summary:",
+      "targetCompany": "Target Company:",
+      "sector": "Sector:",
+      "location": "Location:",
+      "notSpecified": "Not specified",
+      "notSpecifiedFeminine": "Not specified",
+      "averageValuation": "Average Valuation:",
+      "range": "Range:",
+      "notCalculated": "Not calculated",
+      "benefit1Title": "Negotiation advisory",
+      "benefit1Desc": "Strategy and support throughout the purchase process",
+      "benefit2Title": "Professional due diligence",
+      "benefit2Desc": "Detailed analysis of risks and opportunities",
+      "benefit3Title": "Deal structuring",
+      "benefit3Desc": "Optimal design of terms and conditions",
+      "benefit4Title": "Financing if needed",
+      "benefit4Desc": "Connection with appropriate financing sources",
+      "buttonText": "I Want Help to Buy This Company",
+      "dialogTitle": "Request Acquisition Assistance",
+      "dialogDescription": "We will send your request to Samuel and Lluis at Capittal along with the details of this purchase opportunity"
     }
   },
   "collaboration": {

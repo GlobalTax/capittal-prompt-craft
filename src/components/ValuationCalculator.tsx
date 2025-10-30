@@ -1413,6 +1413,104 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                     </CardContent>
                   </Card>
                 )}
+
+                {valuation.valuation_type === 'potential_acquisition' && (
+                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-lg bg-primary/10">
+                          <Handshake className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle>¿Quieres Comprar Esta Empresa?</CardTitle>
+                          <CardDescription>
+                            Capittal te ayuda a negociar y cerrar la adquisición
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Resumen de la valoración */}
+                      <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                        <div className="text-sm font-medium">Resumen de Valoración:</div>
+                        <div className="grid gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Empresa Objetivo:</span>
+                            <span className="font-medium">
+                              {valuation.target_company_name || valuation.title}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Sector:</span>
+                            <span className="font-medium">{valuation.target_industry || 'No especificado'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Ubicación:</span>
+                            <span className="font-medium">{valuation.target_location || 'No especificada'}</span>
+                          </div>
+                          <Separator className="my-2" />
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Valoración Media:</span>
+                            <span className="text-lg font-bold text-primary">
+                              {valuations.length > 0 
+                                ? formatCurrency(valuations.reduce((sum, v) => sum + v.valuationAmount, 0) / valuations.length)
+                                : 'No calculada'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Rango:</span>
+                            <span className="font-medium">
+                              {valuations.length > 0 
+                                ? `${formatCurrency(Math.min(...valuations.map(v => v.valuationAmount)))} - ${formatCurrency(Math.max(...valuations.map(v => v.valuationAmount)))}`
+                                : '-'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Beneficios */}
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Asesoramiento en negociación</p>
+                            <p className="text-muted-foreground">Estrategia y apoyo durante el proceso de compra</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Due diligence profesional</p>
+                            <p className="text-muted-foreground">Análisis detallado de riesgos y oportunidades</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Estructuración de la operación</p>
+                            <p className="text-muted-foreground">Diseño óptimo de términos y condiciones</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Financiación si es necesaria</p>
+                            <p className="text-muted-foreground">Conexión con fuentes de financiación apropiadas</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        size="lg" 
+                        className="w-full"
+                        onClick={() => setShowCollaborationDialog(true)}
+                      >
+                        <Handshake className="mr-2 h-5 w-5" />
+                        Quiero Ayuda para Comprar Esta Empresa
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
         </div>
@@ -1424,11 +1522,15 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
               <DialogTitle>
                 {valuation.valuation_type === 'own_business' 
                   ? 'Solicitar Ayuda para Vender Mi Despacho'
+                  : valuation.valuation_type === 'potential_acquisition'
+                  ? 'Solicitar Ayuda para Adquisición'
                   : 'Solicitar Ayuda para Vender'}
               </DialogTitle>
               <DialogDescription>
                 {valuation.valuation_type === 'own_business'
                   ? 'Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de tu despacho'
+                  : valuation.valuation_type === 'potential_acquisition'
+                  ? 'Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta oportunidad de compra'
                   : 'Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta valoración'}
               </DialogDescription>
             </DialogHeader>

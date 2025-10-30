@@ -116,6 +116,30 @@
       "dcf": "DCF",
       "multiples": "Múltiplos",
       "mixed": "Mixta"
+    },
+    "acquisition": {
+      "title": "¿Quieres Comprar Esta Empresa?",
+      "subtitle": "Capittal te ayuda a negociar y cerrar la adquisición",
+      "summary": "Resumen de Valoración:",
+      "targetCompany": "Empresa Objetivo:",
+      "sector": "Sector:",
+      "location": "Ubicación:",
+      "notSpecified": "No especificado",
+      "notSpecifiedFeminine": "No especificada",
+      "averageValuation": "Valoración Media:",
+      "range": "Rango:",
+      "notCalculated": "No calculada",
+      "benefit1Title": "Asesoramiento en negociación",
+      "benefit1Desc": "Estrategia y apoyo durante el proceso de compra",
+      "benefit2Title": "Due diligence profesional",
+      "benefit2Desc": "Análisis detallado de riesgos y oportunidades",
+      "benefit3Title": "Estructuración de la operación",
+      "benefit3Desc": "Diseño óptimo de términos y condiciones",
+      "benefit4Title": "Financiación si es necesaria",
+      "benefit4Desc": "Conexión con fuentes de financiación apropiadas",
+      "buttonText": "Quiero Ayuda para Comprar Esta Empresa",
+      "dialogTitle": "Solicitar Ayuda para Adquisición",
+      "dialogDescription": "Enviaremos tu solicitud a Samuel y Lluis de Capittal junto con los datos de esta oportunidad de compra"
     }
   },
   "collaboration": {
