@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "clickToChange": "Click to change status"
+  },
   "header": {
     "language": "Language"
   },
@@ -14,13 +20,33 @@
     "resources": "Resources",
     "documentTemplates": "Document Templates",
     "sellBusiness": "Sell my Business",
-    "feeCalculator": "Fee Calculator"
+    "feeCalculator": "Fee Calculator",
+    "collaborationRequests": "Collaboration Requests",
+    "advisorProfile": "My Advisor Profile",
+    "administration": "Administration",
+    "adminPanel": "Admin Panel",
+    "securityAlerts": "Security Alerts",
+    "userManagement": "User Management",
+    "documentManagement": "Document Management",
+    "leadManagement": "Lead Management",
+    "funnelAnalytics": "Funnel Analytics",
+    "commissions": "Commissions",
+    "auditLogs": "Audit Logs",
+    "alertSettings": "Alert Settings",
+    "sectorMultiples": "Sector Multiples"
   },
   "dashboard": {
-    "title": "Executive Dashboard",
-    "subtitle": "Performance analysis and key metrics",
+    "title": "Control Panel",
+    "subtitle": "Summary of your valuations and activity",
+    "loading": "Loading Dashboard...",
+    "realtimeData": "Real-Time Data",
     "totalValuations": "Total Valuations",
     "totalValuationsDesc": "Total number of completed valuations",
+    "totalValued": "Total Valued Amount",
+    "totalValuedDesc": "Sum of all valuations",
+    "myReferences": "My References",
+    "myReferencesDesc": "Quick access to your references",
+    "viewLeads": "View Leads",
     "averageValue": "Average Value",
     "averageValueDesc": "Average value of valuations",
     "activeClients": "Active Clients",
@@ -30,11 +56,101 @@
     "analyticsTab": "Analytics",
     "trendsTab": "Trends",
     "alertsTab": "Alerts",
+    "activityTab": "Activity",
+    "financialTab": "Financial Summary",
+    "monthlyActivity": "Monthly Activity",
+    "monthlyActivityDesc": "Valuations created in the last 6 months",
+    "recentActivity": "Recent Activity",
+    "recentActivityDesc": "Latest modified valuations",
+    "typeDistribution": "Distribution by Type",
+    "typeDistributionDesc": "Valuations by applied methodology",
+    "statusDistribution": "Distribution by Status",
+    "statusDistributionDesc": "Valuations by current status",
+    "financialSummary": "Financial Summary",
+    "financialSummaryDesc": "Metrics from completed valuations",
+    "valueTrend": "Value Trend",
+    "valueTrendDesc": "Evolution of total valued amount",
+    "noActivityData": "No activity data yet",
+    "noRecentValuations": "No recent valuations",
+    "noTypeData": "No distribution data yet",
+    "noStatusData": "No status data yet",
+    "noFinancialData": "No financial data yet",
+    "avgEbitda": "Average EBITDA",
+    "avgMultiple": "Average Multiple",
+    "avgValue": "Average Value",
+    "valueRange": "Value Range",
+    "numValuations": "# Valuations",
+    "totalAmount": "Total Amount",
     "monthlyPerformance": "Monthly Performance",
     "sectorDistribution": "Sector Distribution",
     "temporalTrend": "Temporal Trend of Valuations",
-    "avgValue": "Avg Value",
-    "recentAlerts": "Recent Alerts"
+    "recentAlerts": "Recent Alerts",
+    "status": {
+      "draft": "Draft",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "statusPlural": {
+      "draft": "Drafts",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "valuationUpdated": "Status updated successfully",
+    "valuationCompleted": "✅ Valuation completed",
+    "valuationInProgress": "🔄 Valuation in progress",
+    "updateError": "Could not update status"
+  },
+  "valuations": {
+    "title": "Valuations",
+    "new": "New Valuation",
+    "edit": "Edit Valuation",
+    "delete": "Delete Valuation",
+    "list": "Valuation List",
+    "empty": "No valuations",
+    "type": {
+      "ownBusiness": "OWN BUSINESS",
+      "clientBusiness": "CLIENT BUSINESS",
+      "potentialAcquisition": "POTENTIAL ACQUISITION"
+    },
+    "method": {
+      "dcf": "DCF",
+      "multiples": "Multiples",
+      "mixed": "Mixed"
+    }
+  },
+  "collaboration": {
+    "title": "My Sales Requests",
+    "subtitle": "Companies you've referred to the Capittal team",
+    "sent": "Sent Requests",
+    "sentDescription": "Status of companies referred to Capittal",
+    "empty": "You haven't sent any requests yet",
+    "emptyDescription": "Help your clients sell their businesses and earn commissions with Capittal",
+    "totalRequests": "Total Requests",
+    "pending": "Pending",
+    "pendingDescription": "Require response",
+    "accepted": "Accepted",
+    "acceptedDescription": "Active collaborations",
+    "estimatedCommission": "Estimated Commission",
+    "pendingCommission": "pending",
+    "company": "Company",
+    "type": "Type",
+    "status": "Status",
+    "estimatedCommissionShort": "Est. Commission",
+    "date": "Date",
+    "actions": "Actions",
+    "viewMessage": "View message",
+    "viewValuation": "View valuation",
+    "typeLabels": {
+      "referral": "Referral",
+      "coWorking": "Co-working",
+      "expertiseNeeded": "Expertise Needed"
+    },
+    "statusLabels": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    }
   },
   "auth": {
     "login": "Sign In",

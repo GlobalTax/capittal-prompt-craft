@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "clickToChange": "Clic para cambiar estado"
+  },
   "header": {
     "language": "Idioma"
   },
@@ -14,13 +20,33 @@
     "resources": "Recursos",
     "documentTemplates": "Modelos de Documentos",
     "sellBusiness": "Vender mi Empresa",
-    "feeCalculator": "Calculadora de Honorarios"
+    "feeCalculator": "Calculadora de Honorarios",
+    "collaborationRequests": "Solicitudes de Colaboración",
+    "advisorProfile": "Mi Perfil de Asesor",
+    "administration": "Administración",
+    "adminPanel": "Panel de Administración",
+    "securityAlerts": "Alertas de Seguridad",
+    "userManagement": "Gestión de Usuarios",
+    "documentManagement": "Gestión de Documentos",
+    "leadManagement": "Gestión de Leads",
+    "funnelAnalytics": "Analytics de Funnel",
+    "commissions": "Comisiones",
+    "auditLogs": "Logs de Auditoría",
+    "alertSettings": "Configuración de Alertas",
+    "sectorMultiples": "Múltiplos de Sector"
   },
   "dashboard": {
-    "title": "Dashboard Ejecutivo",
-    "subtitle": "Análisis de rendimiento y métricas clave",
-    "totalValuations": "Valoraciones Totales",
+    "title": "Panel de Control",
+    "subtitle": "Resumen de tus valoraciones y actividad",
+    "loading": "Cargando Dashboard...",
+    "realtimeData": "Datos en Tiempo Real",
+    "totalValuations": "Total Valoraciones",
     "totalValuationsDesc": "Número total de valoraciones completadas",
+    "totalValued": "Valor Total Valorado",
+    "totalValuedDesc": "Suma de todas las valoraciones",
+    "myReferences": "Mis Referencias",
+    "myReferencesDesc": "Acceso rápido a tus referencias",
+    "viewLeads": "Ver Leads",
     "averageValue": "Valor Medio",
     "averageValueDesc": "Valor promedio de las valoraciones",
     "activeClients": "Clientes Activos",
@@ -30,11 +56,101 @@
     "analyticsTab": "Analíticas",
     "trendsTab": "Tendencias",
     "alertsTab": "Alertas",
+    "activityTab": "Actividad",
+    "financialTab": "Resumen Financiero",
+    "monthlyActivity": "Actividad Mensual",
+    "monthlyActivityDesc": "Valoraciones creadas en los últimos 6 meses",
+    "recentActivity": "Actividad Reciente",
+    "recentActivityDesc": "Últimas valoraciones modificadas",
+    "typeDistribution": "Distribución por Tipo",
+    "typeDistributionDesc": "Valoraciones según metodología aplicada",
+    "statusDistribution": "Distribución por Estado",
+    "statusDistributionDesc": "Valoraciones según su estado actual",
+    "financialSummary": "Resumen Financiero",
+    "financialSummaryDesc": "Métricas de valoraciones completadas",
+    "valueTrend": "Tendencia de Valor",
+    "valueTrendDesc": "Evolución del valor total valorado",
+    "noActivityData": "No hay datos de actividad aún",
+    "noRecentValuations": "No hay valoraciones recientes",
+    "noTypeData": "No hay datos de distribución aún",
+    "noStatusData": "No hay datos de estado aún",
+    "noFinancialData": "No hay datos financieros aún",
+    "avgEbitda": "EBITDA Promedio",
+    "avgMultiple": "Múltiplo Promedio",
+    "avgValue": "Valor Promedio",
+    "valueRange": "Rango de Valores",
+    "numValuations": "Nº Valoraciones",
+    "totalAmount": "Valor Total",
     "monthlyPerformance": "Rendimiento Mensual",
     "sectorDistribution": "Distribución por Sector",
     "temporalTrend": "Tendencia Temporal de Valoraciones",
-    "avgValue": "Valor Medio",
-    "recentAlerts": "Alertas Recientes"
+    "recentAlerts": "Alertas Recientes",
+    "status": {
+      "draft": "Borrador",
+      "inProgress": "En Progreso",
+      "completed": "Completada"
+    },
+    "statusPlural": {
+      "draft": "Borradores",
+      "inProgress": "En Progreso",
+      "completed": "Completadas"
+    },
+    "valuationUpdated": "Estado actualizado correctamente",
+    "valuationCompleted": "✅ Valoración completada",
+    "valuationInProgress": "🔄 Valoración en progreso",
+    "updateError": "No se pudo actualizar el estado"
+  },
+  "valuations": {
+    "title": "Valoraciones",
+    "new": "Nueva Valoración",
+    "edit": "Editar Valoración",
+    "delete": "Eliminar Valoración",
+    "list": "Lista de Valoraciones",
+    "empty": "No hay valoraciones",
+    "type": {
+      "ownBusiness": "NEGOCIO PROPIO",
+      "clientBusiness": "NEGOCIO CLIENTE",
+      "potentialAcquisition": "ADQUISICIÓN POTENCIAL"
+    },
+    "method": {
+      "dcf": "DCF",
+      "multiples": "Múltiplos",
+      "mixed": "Mixta"
+    }
+  },
+  "collaboration": {
+    "title": "Mis Solicitudes de Venta",
+    "subtitle": "Empresas que has referido al equipo Capittal",
+    "sent": "Solicitudes Enviadas",
+    "sentDescription": "Estado de las empresas referidas a Capittal",
+    "empty": "Aún no has enviado solicitudes",
+    "emptyDescription": "Ayuda a tus clientes a vender sus empresas y genera comisiones con Capittal",
+    "totalRequests": "Solicitudes Totales",
+    "pending": "Pendientes",
+    "pendingDescription": "Requieren respuesta",
+    "accepted": "Aceptadas",
+    "acceptedDescription": "Colaboraciones activas",
+    "estimatedCommission": "Comisión Estimada",
+    "pendingCommission": "pendientes",
+    "company": "Empresa",
+    "type": "Tipo",
+    "status": "Estado",
+    "estimatedCommissionShort": "Comisión Est.",
+    "date": "Fecha",
+    "actions": "Acciones",
+    "viewMessage": "Ver mensaje",
+    "viewValuation": "Ver valoración",
+    "typeLabels": {
+      "referral": "Referido",
+      "coWorking": "Co-trabajo",
+      "expertiseNeeded": "Experiencia Requerida"
+    },
+    "statusLabels": {
+      "pending": "Pendiente",
+      "accepted": "Aceptada",
+      "rejected": "Rechazada",
+      "expired": "Expirada"
+    }
   },
   "auth": {
     "login": "Iniciar Sesión",

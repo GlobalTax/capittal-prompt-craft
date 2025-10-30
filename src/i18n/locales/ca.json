@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "Carregant...",
+    "error": "Error",
+    "success": "Èxit",
+    "clickToChange": "Clic per canviar estat"
+  },
   "header": {
     "language": "Idioma"
   },
@@ -14,13 +20,33 @@
     "resources": "Recursos",
     "documentTemplates": "Models de Documents",
     "sellBusiness": "Vendre la meva Empresa",
-    "feeCalculator": "Calculadora d'Honoraris"
+    "feeCalculator": "Calculadora d'Honoraris",
+    "collaborationRequests": "Sol·licituds de Col·laboració",
+    "advisorProfile": "El meu Perfil d'Assessor",
+    "administration": "Administració",
+    "adminPanel": "Panell d'Administració",
+    "securityAlerts": "Alertes de Seguretat",
+    "userManagement": "Gestió d'Usuaris",
+    "documentManagement": "Gestió de Documents",
+    "leadManagement": "Gestió de Leads",
+    "funnelAnalytics": "Analytics de Funnel",
+    "commissions": "Comissions",
+    "auditLogs": "Logs d'Auditoria",
+    "alertSettings": "Configuració d'Alertes",
+    "sectorMultiples": "Múltiples de Sector"
   },
   "dashboard": {
-    "title": "Dashboard Executiu",
-    "subtitle": "Anàlisi de rendiment i mètriques clau",
-    "totalValuations": "Valoracions Totals",
+    "title": "Panell de Control",
+    "subtitle": "Resum de les teves valoracions i activitat",
+    "loading": "Carregant Dashboard...",
+    "realtimeData": "Dades en Temps Real",
+    "totalValuations": "Total Valoracions",
     "totalValuationsDesc": "Nombre total de valoracions completades",
+    "totalValued": "Valor Total Valorat",
+    "totalValuedDesc": "Suma de totes les valoracions",
+    "myReferences": "Les meves Referències",
+    "myReferencesDesc": "Accés ràpid a les teves referències",
+    "viewLeads": "Veure Leads",
     "averageValue": "Valor Mitjà",
     "averageValueDesc": "Valor promig de les valoracions",
     "activeClients": "Clients Actius",
@@ -30,11 +56,101 @@
     "analyticsTab": "Analítiques",
     "trendsTab": "Tendències",
     "alertsTab": "Alertes",
+    "activityTab": "Activitat",
+    "financialTab": "Resum Financer",
+    "monthlyActivity": "Activitat Mensual",
+    "monthlyActivityDesc": "Valoracions creades els últims 6 mesos",
+    "recentActivity": "Activitat Recent",
+    "recentActivityDesc": "Últimes valoracions modificades",
+    "typeDistribution": "Distribució per Tipus",
+    "typeDistributionDesc": "Valoracions segons metodologia aplicada",
+    "statusDistribution": "Distribució per Estat",
+    "statusDistributionDesc": "Valoracions segons el seu estat actual",
+    "financialSummary": "Resum Financer",
+    "financialSummaryDesc": "Mètriques de valoracions completades",
+    "valueTrend": "Tendència de Valor",
+    "valueTrendDesc": "Evolució del valor total valorat",
+    "noActivityData": "No hi ha dades d'activitat encara",
+    "noRecentValuations": "No hi ha valoracions recents",
+    "noTypeData": "No hi ha dades de distribució encara",
+    "noStatusData": "No hi ha dades d'estat encara",
+    "noFinancialData": "No hi ha dades financeres encara",
+    "avgEbitda": "EBITDA Promig",
+    "avgMultiple": "Múltiple Promig",
+    "avgValue": "Valor Promig",
+    "valueRange": "Rang de Valors",
+    "numValuations": "Nº Valoracions",
+    "totalAmount": "Valor Total",
     "monthlyPerformance": "Rendiment Mensual",
     "sectorDistribution": "Distribució per Sector",
     "temporalTrend": "Tendència Temporal de Valoracions",
-    "avgValue": "Valor Mitjà",
-    "recentAlerts": "Alertes Recents"
+    "recentAlerts": "Alertes Recents",
+    "status": {
+      "draft": "Esborrany",
+      "inProgress": "En Progrés",
+      "completed": "Completada"
+    },
+    "statusPlural": {
+      "draft": "Esborranys",
+      "inProgress": "En Progrés",
+      "completed": "Completades"
+    },
+    "valuationUpdated": "Estat actualitzat correctament",
+    "valuationCompleted": "✅ Valoració completada",
+    "valuationInProgress": "🔄 Valoració en progrés",
+    "updateError": "No s'ha pogut actualitzar l'estat"
+  },
+  "valuations": {
+    "title": "Valoracions",
+    "new": "Nova Valoració",
+    "edit": "Editar Valoració",
+    "delete": "Eliminar Valoració",
+    "list": "Llista de Valoracions",
+    "empty": "No hi ha valoracions",
+    "type": {
+      "ownBusiness": "NEGOCI PROPI",
+      "clientBusiness": "NEGOCI CLIENT",
+      "potentialAcquisition": "ADQUISICIÓ POTENCIAL"
+    },
+    "method": {
+      "dcf": "DCF",
+      "multiples": "Múltiples",
+      "mixed": "Mixta"
+    }
+  },
+  "collaboration": {
+    "title": "Les meves Sol·licituds de Venda",
+    "subtitle": "Empreses que has referit a l'equip Capittal",
+    "sent": "Sol·licituds Enviades",
+    "sentDescription": "Estat de les empreses referides a Capittal",
+    "empty": "Encara no has enviat sol·licituds",
+    "emptyDescription": "Ajuda els teus clients a vendre les seves empreses i genera comissions amb Capittal",
+    "totalRequests": "Sol·licituds Totals",
+    "pending": "Pendents",
+    "pendingDescription": "Requereixen resposta",
+    "accepted": "Acceptades",
+    "acceptedDescription": "Col·laboracions actives",
+    "estimatedCommission": "Comissió Estimada",
+    "pendingCommission": "pendents",
+    "company": "Empresa",
+    "type": "Tipus",
+    "status": "Estat",
+    "estimatedCommissionShort": "Comissió Est.",
+    "date": "Data",
+    "actions": "Accions",
+    "viewMessage": "Veure missatge",
+    "viewValuation": "Veure valoració",
+    "typeLabels": {
+      "referral": "Referit",
+      "coWorking": "Co-treball",
+      "expertiseNeeded": "Experiència Requerida"
+    },
+    "statusLabels": {
+      "pending": "Pendent",
+      "accepted": "Acceptada",
+      "rejected": "Rebutjada",
+      "expired": "Expirada"
+    }
   },
   "auth": {
     "login": "Iniciar Sessió",

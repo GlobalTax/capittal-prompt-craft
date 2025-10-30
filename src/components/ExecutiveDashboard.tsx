@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { getDateLocale } from "@/i18n/config";
 
 const ExecutiveDashboard = () => {
   const { t } = useTranslation();
@@ -31,16 +31,16 @@ const ExecutiveDashboard = () => {
       });
       
       toast({
-        title: completed ? '✅ Valoración completada' : '🔄 Valoración en progreso',
-        description: 'Estado actualizado correctamente',
+        title: completed ? t('dashboard.valuationCompleted') : t('dashboard.valuationInProgress'),
+        description: t('dashboard.valuationUpdated'),
       });
       
       // Refrescar datos del dashboard
       refetch();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'No se pudo actualizar el estado',
+        title: t('common.error'),
+        description: t('dashboard.updateError'),
         variant: 'destructive',
       });
     }
@@ -48,23 +48,23 @@ const ExecutiveDashboard = () => {
 
   // Type labels
   const typeLabels: Record<string, string> = {
-    dcf: 'DCF',
-    multiples: 'Múltiplos',
-    mixed: 'Mixta'
+    dcf: t('valuations.method.dcf'),
+    multiples: t('valuations.method.multiples'),
+    mixed: t('valuations.method.mixed')
   };
 
   // Valuation type labels for recent valuations
   const valuationTypeLabels: Record<string, string> = {
-    own_business: 'NEGOCIO PROPIO',
-    client_business: 'NEGOCIO CLIENTE',
-    potential_acquisition: 'ADQUISICIÓN POTENCIAL',
+    own_business: t('valuations.type.ownBusiness'),
+    client_business: t('valuations.type.clientBusiness'),
+    potential_acquisition: t('valuations.type.potentialAcquisition'),
   };
 
   // Status labels and colors
   const statusLabels: Record<string, string> = {
-    draft: 'Borrador',
-    in_progress: 'En Progreso',
-    completed: 'Completada'
+    draft: t('dashboard.status.draft'),
+    in_progress: t('dashboard.status.inProgress'),
+    completed: t('dashboard.status.completed')
   };
 
   const statusColors: Record<string, string> = {
@@ -87,7 +87,7 @@ const ExecutiveDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Loader2 className="h-8 w-8 animate-spin" />
-              Cargando Dashboard...
+              {t('dashboard.loading')}
             </h1>
           </div>
         </div>
@@ -103,9 +103,9 @@ const ExecutiveDashboard = () => {
 
   // Prepare data for charts
   const statusData = [
-    { name: 'Borradores', value: stats?.draft || 0, color: chartColors[0] },
-    { name: 'En Progreso', value: stats?.in_progress || 0, color: chartColors[1] },
-    { name: 'Completadas', value: stats?.completed || 0, color: chartColors[2] },
+    { name: t('dashboard.statusPlural.draft'), value: stats?.draft || 0, color: chartColors[0] },
+    { name: t('dashboard.statusPlural.inProgress'), value: stats?.in_progress || 0, color: chartColors[1] },
+    { name: t('dashboard.statusPlural.completed'), value: stats?.completed || 0, color: chartColors[2] },
   ].filter(item => item.value > 0);
 
   const typeData = (typeDistribution || []).map((item, index) => ({
@@ -120,14 +120,14 @@ const ExecutiveDashboard = () => {
         {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">
-            Resumen de tus valoraciones y actividad
+            {t('dashboard.subtitle')}
           </p>
         </div>
         <Badge variant="outline" className="px-3 py-1">
           <Zap className="h-3 w-3 mr-1" />
-          Datos en Tiempo Real
+          {t('dashboard.realtimeData')}
         </Badge>
       </div>
 
@@ -135,20 +135,20 @@ const ExecutiveDashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Valoraciones</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.totalValuations')}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.total || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats?.completed || 0} completadas, {stats?.in_progress || 0} en progreso
+              {stats?.completed || 0} {t('dashboard.statusPlural.completed').toLowerCase()}, {stats?.in_progress || 0} {t('dashboard.statusPlural.inProgress').toLowerCase()}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Total Valorado</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.totalValued')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -156,7 +156,7 @@ const ExecutiveDashboard = () => {
               €{((stats?.totalValue || 0) / 1000000).toFixed(1)}M
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Suma de todas las valoraciones
+              {t('dashboard.totalValuedDesc')}
             </p>
           </CardContent>
         </Card>
@@ -166,13 +166,13 @@ const ExecutiveDashboard = () => {
           onClick={() => navigate('/my-referrals')}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mis Referencias</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.myReferences')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Ver Leads</div>
+            <div className="text-2xl font-bold">{t('dashboard.viewLeads')}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Acceso rápido a tus referencias
+              {t('dashboard.myReferencesDesc')}
             </p>
           </CardContent>
         </Card>
@@ -182,9 +182,9 @@ const ExecutiveDashboard = () => {
       {/* Main Content Tabs */}
       <Tabs defaultValue="activity" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="activity">Actividad</TabsTrigger>
-          <TabsTrigger value="analytics">Analíticas</TabsTrigger>
-          <TabsTrigger value="financial">Resumen Financiero</TabsTrigger>
+          <TabsTrigger value="activity">{t('dashboard.activityTab')}</TabsTrigger>
+          <TabsTrigger value="analytics">{t('dashboard.analyticsTab')}</TabsTrigger>
+          <TabsTrigger value="financial">{t('dashboard.financialTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activity" className="space-y-4">
@@ -192,9 +192,9 @@ const ExecutiveDashboard = () => {
             {/* Monthly Activity */}
             <Card>
               <CardHeader>
-                <CardTitle>Actividad Mensual</CardTitle>
+                <CardTitle>{t('dashboard.monthlyActivity')}</CardTitle>
                 <CardDescription>
-                  Valoraciones creadas en los últimos 6 meses
+                  {t('dashboard.monthlyActivityDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -206,13 +206,13 @@ const ExecutiveDashboard = () => {
                         <XAxis dataKey="month" />
                         <YAxis />
                         <Tooltip />
-                        <Bar dataKey="count" fill="hsl(var(--primary))" name="Nº Valoraciones" />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" name={t('dashboard.numValuations')} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                    No hay datos de actividad aún
+                    {t('dashboard.noActivityData')}
                   </div>
                 )}
               </CardContent>
@@ -221,9 +221,9 @@ const ExecutiveDashboard = () => {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle>Actividad Reciente</CardTitle>
+                <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
                 <CardDescription>
-                  Últimas valoraciones modificadas
+                  {t('dashboard.recentActivityDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -255,7 +255,7 @@ const ExecutiveDashboard = () => {
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Clic para cambiar estado</p>
+                                <p>{t('common.clickToChange')}</p>
                               </TooltipContent>
                             </UITooltip>
                           </div>
@@ -272,7 +272,7 @@ const ExecutiveDashboard = () => {
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(valuation.updated_at), { 
                               addSuffix: true, 
-                              locale: es 
+                              locale: getDateLocale()
                             })}
                           </p>
                         </div>
@@ -281,7 +281,7 @@ const ExecutiveDashboard = () => {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                    No hay valoraciones recientes
+                    {t('dashboard.noRecentValuations')}
                   </div>
                 )}
               </CardContent>
@@ -383,33 +383,33 @@ const ExecutiveDashboard = () => {
             {/* Financial Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Resumen Financiero</CardTitle>
+                <CardTitle>{t('dashboard.financialSummary')}</CardTitle>
                 <CardDescription>
-                  Métricas de valoraciones completadas
+                  {t('dashboard.financialSummaryDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">EBITDA Promedio</span>
+                    <span className="text-sm text-muted-foreground">{t('dashboard.avgEbitda')}</span>
                     <span className="font-medium">
                       €{((financialSummary?.avgEbitda || 0) / 1000).toFixed(0)}K
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Múltiplo Promedio</span>
+                    <span className="text-sm text-muted-foreground">{t('dashboard.avgMultiple')}</span>
                     <span className="font-medium">
                       {(financialSummary?.avgMultiple || 0).toFixed(1)}x
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Valor Promedio</span>
+                    <span className="text-sm text-muted-foreground">{t('dashboard.avgValue')}</span>
                     <span className="font-medium">
                       €{((financialSummary?.avgEnterpriseValue || 0) / 1000000).toFixed(2)}M
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-sm text-muted-foreground">Rango de Valores</span>
+                    <span className="text-sm text-muted-foreground">{t('dashboard.valueRange')}</span>
                     <span className="font-medium">
                       €{((financialSummary?.minValue || 0) / 1000000).toFixed(1)}M - 
                       €{((financialSummary?.maxValue || 0) / 1000000).toFixed(1)}M
@@ -422,9 +422,9 @@ const ExecutiveDashboard = () => {
             {/* Trends Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Tendencia de Valor</CardTitle>
+                <CardTitle>{t('dashboard.valueTrend')}</CardTitle>
                 <CardDescription>
-                  Evolución del valor total valorado por mes
+                  {t('dashboard.valueTrendDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -441,14 +441,14 @@ const ExecutiveDashboard = () => {
                           dataKey="value" 
                           stroke="hsl(var(--primary))" 
                           strokeWidth={2}
-                          name="Valor (€K)"
+                          name={t('dashboard.totalAmount') + ' (€K)'}
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                    No hay datos de tendencia aún
+                    {t('dashboard.noFinancialData')}
                   </div>
                 )}
               </CardContent>

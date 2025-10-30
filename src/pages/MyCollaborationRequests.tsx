@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { Handshake, Clock, CheckCircle2, XCircle, Euro, Building2, Calendar, User, Mail, ExternalLink, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/config';
 import { useCollaborationRequests } from '@/hooks/useCollaborationRequests';
+import { useTranslation } from 'react-i18next';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
@@ -32,6 +33,7 @@ const collaborationTypeLabels: Record<string, string> = {
 };
 
 export default function MyCollaborationRequests() {
+  const { t } = useTranslation();
   const { requests, loading, acceptRequest, rejectRequest } = useCollaborationRequests();
   const navigate = useNavigate();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -69,8 +71,8 @@ export default function MyCollaborationRequests() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Mis Solicitudes de Venta</h1>
-          <p className="text-muted-foreground">Empresas que has referido al equipo Capittal</p>
+          <h1 className="text-3xl font-bold">{t('collaboration.title')}</h1>
+          <p className="text-muted-foreground">{t('collaboration.subtitle')}</p>
         </div>
       </div>
 
@@ -80,7 +82,7 @@ export default function MyCollaborationRequests() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Handshake className="h-4 w-4 text-primary" />
-              Solicitudes Totales
+              {t('collaboration.totalRequests')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -92,12 +94,12 @@ export default function MyCollaborationRequests() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-yellow-600" />
-              Pendientes
+              {t('collaboration.pending')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingRequests.length}</div>
-            <p className="text-xs text-muted-foreground">Requieren respuesta</p>
+            <p className="text-xs text-muted-foreground">{t('collaboration.pendingDescription')}</p>
           </CardContent>
         </Card>
 
@@ -105,12 +107,12 @@ export default function MyCollaborationRequests() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              Aceptadas
+              {t('collaboration.accepted')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{acceptedRequests.length}</div>
-            <p className="text-xs text-muted-foreground">Colaboraciones activas</p>
+            <p className="text-xs text-muted-foreground">{t('collaboration.acceptedDescription')}</p>
           </CardContent>
         </Card>
 
@@ -118,13 +120,13 @@ export default function MyCollaborationRequests() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Euro className="h-4 w-4 text-success" />
-              Comisión Estimada
+              {t('collaboration.estimatedCommission')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">{totalEstimatedCommission.toLocaleString()}€</div>
             <p className="text-xs text-muted-foreground">
-              {pendingCommission.toLocaleString()}€ pendientes
+              {pendingCommission.toLocaleString()}€ {t('collaboration.pendingCommission')}
             </p>
           </CardContent>
         </Card>
@@ -133,18 +135,18 @@ export default function MyCollaborationRequests() {
       {/* Tabla de solicitudes */}
       <Card>
         <CardHeader>
-          <CardTitle>Solicitudes Enviadas</CardTitle>
-          <CardDescription>Estado de las empresas referidas a Capittal</CardDescription>
+          <CardTitle>{t('collaboration.sent')}</CardTitle>
+          <CardDescription>{t('collaboration.sentDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p>Cargando...</p>
+            <p>{t('common.loading')}</p>
           ) : requests.length === 0 ? (
             <div className="text-center py-8">
               <Handshake className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">Aún no has enviado solicitudes</p>
+              <p className="text-muted-foreground">{t('collaboration.empty')}</p>
               <p className="text-sm text-muted-foreground">
-                Ayuda a tus clientes a vender sus empresas y genera comisiones con Capittal
+                {t('collaboration.emptyDescription')}
               </p>
             </div>
           ) : (
@@ -152,12 +154,12 @@ export default function MyCollaborationRequests() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Comisión Est.</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>{t('collaboration.company')}</TableHead>
+                    <TableHead>{t('collaboration.type')}</TableHead>
+                    <TableHead>{t('collaboration.status')}</TableHead>
+                    <TableHead>{t('collaboration.estimatedCommissionShort')}</TableHead>
+                    <TableHead>{t('collaboration.date')}</TableHead>
+                    <TableHead>{t('collaboration.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -200,7 +202,7 @@ export default function MyCollaborationRequests() {
                             <Calendar className="h-3 w-3" />
                             {formatDistanceToNow(new Date(request.created_at), { 
                               addSuffix: true, 
-                              locale: es 
+                              locale: getDateLocale()
                             })}
                           </div>
                         </TableCell>
@@ -214,7 +216,7 @@ export default function MyCollaborationRequests() {
                                   setSelectedRequest(request);
                                   setActionType(null);
                                 }}
-                                title="Ver mensaje"
+                                title={t('collaboration.viewMessage')}
                               >
                                 <MessageSquare className="h-4 w-4" />
                               </Button>
@@ -224,7 +226,7 @@ export default function MyCollaborationRequests() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => navigate(`/valuation/${request.lead.valuation_id}`)}
-                                title="Ver valoración"
+                                title={t('collaboration.viewValuation')}
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </Button>

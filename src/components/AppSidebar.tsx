@@ -50,7 +50,7 @@ export function AppSidebar() {
       description: "Resumen ejecutivo"
     },
     {
-      title: "Valoraciones",
+      title: t('sidebar.valuations'),
       url: "/valuations",
       icon: Calculator,
       description: "Todas tus valoraciones"
@@ -66,7 +66,7 @@ export function AppSidebar() {
 
   const resourceItems = [
     {
-      title: "Solicitudes de Colaboración",
+      title: t('sidebar.collaborationRequests'),
       url: "/my-referrals",
       icon: TrendingUp,
       description: "Empresas donde te solicitan colaborar"
@@ -81,62 +81,62 @@ export function AppSidebar() {
 
   const adminItems = [
     {
-      title: "Panel de Administración",
+      title: t('sidebar.adminPanel'),
       url: "/admin",
       icon: ShieldCheck,
       description: "Dashboard administrativo"
     },
     {
-      title: "Alertas de Seguridad",
+      title: t('sidebar.securityAlerts'),
       url: "/admin/security",
       icon: ShieldAlert,
       description: "Monitoreo y control",
       badge: alerts?.total || 0
     },
     {
-      title: "Gestión de Usuarios",
+      title: t('sidebar.userManagement'),
       url: "/admin/users",
       icon: Users,
       description: "Verificar y gestionar usuarios"
     },
     {
-      title: "Gestión de Documentos",
+      title: t('sidebar.documentManagement'),
       url: "/admin/templates",
       icon: FolderOpen,
       description: "Administrar recursos"
     },
     {
-      title: "Gestión de Leads",
+      title: t('sidebar.leadManagement'),
       url: "/admin/sell-leads",
       icon: Users,
       description: "Gestionar leads de venta"
     },
     {
-      title: "Analytics de Funnel",
+      title: t('sidebar.funnelAnalytics'),
       url: "/admin/funnel-analytics",
       icon: TrendingUp,
       description: "Métricas de conversión"
     },
     {
-      title: "Comisiones",
+      title: t('sidebar.commissions'),
       url: "/admin/commissions",
       icon: DollarSign,
       description: "Gestionar comisiones"
     },
     {
-      title: "Logs de Auditoría",
+      title: t('sidebar.auditLogs'),
       url: "/admin/audit-logs",
       icon: FileSearch,
       description: "Trazabilidad del sistema"
     },
     {
-      title: "Configuración de Alertas",
+      title: t('sidebar.alertSettings'),
       url: "/admin/alert-settings",
       icon: Settings2,
       description: "Personalizar notificaciones"
     },
     {
-      title: "Múltiplos de Sector",
+      title: t('sidebar.sectorMultiples'),
       url: "/admin/sector-multiples",
       icon: TrendingUp,
       description: "Gestionar múltiplos de valoración"
@@ -145,7 +145,7 @@ export function AppSidebar() {
 
   const advisorItems = [
     {
-      title: "Mi Perfil de Asesor",
+      title: t('sidebar.advisorProfile'),
       url: "/settings?tab=branding",
       icon: Settings,
       description: "Configurar perfil y branding"
@@ -207,7 +207,7 @@ export function AppSidebar() {
         {!loading && isAdvisor && (
           <SidebarGroup>
             <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-              Perfil de Asesor
+              {t('sidebar.advisorProfile')}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               {renderMenuItems(advisorItems)}
@@ -219,7 +219,7 @@ export function AppSidebar() {
         {!loading && isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className={collapsed ? "sr-only" : "px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider"}>
-              Administración
+              {t('sidebar.administration')}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               {renderMenuItems(adminItems)}
