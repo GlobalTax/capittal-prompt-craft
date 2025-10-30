@@ -366,6 +366,7 @@ export function DynamicBudgetTable({
                         <Input
                           value={row.label}
                           onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                         />
                         <Button

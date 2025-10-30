@@ -480,6 +480,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                       <Input
                         value={row.label}
                         onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm w-full"
                       />
                     </td>
