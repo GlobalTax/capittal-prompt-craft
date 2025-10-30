@@ -477,12 +477,23 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                   <tr key={row.id} className="border-t hover:bg-transparent">
                     {/* Row Label */}
                     <td className={`p-3 text-sm border-r min-w-[300px] w-[300px] sticky left-0 bg-card z-10 ${row.indented ? 'pl-8' : 'pl-3'}`}>
-                      <Input
-                        value={row.label}
-                        onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
-                        onFocus={(e) => e.target.select()}
-                        className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm w-full"
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={row.label}
+                          onChange={(e) => updateRowLabel(section.id, row.id, e.target.value)}
+                          onFocus={(e) => e.target.select()}
+                          className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeRow(section.id, row.id)}
+                          className="h-6 w-6 p-0 opacity-60 hover:opacity-100 flex-shrink-0"
+                          title="Eliminar fila"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </td>
 
                     {/* Year Values */}
