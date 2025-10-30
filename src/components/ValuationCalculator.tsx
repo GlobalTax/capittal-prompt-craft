@@ -771,36 +771,11 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
   };
 
 
-  const addFutureYear = async () => {
-    const latestYear = data.years[data.years.length - 1];
-    const newYear = (parseInt(latestYear.year) + 1).toString();
-    await addYear(newYear, 'projected');
-    // Sync from DB after structural change
-    setTimeout(syncFromDB, 100);
-  };
-
-  const addPastYear = async () => {
-    const firstYear = data.years[0];
-    const newYear = (parseInt(firstYear.year) - 1).toString();
-    await addYear(newYear, 'closed');
-    // Sync from DB after structural change
-    setTimeout(syncFromDB, 100);
-  };
-  
   const toggleYearStatus = async (yearIndex: number) => {
     const yearToToggle = valuationYears[yearIndex];
     if (yearToToggle) {
       const newStatus = yearToToggle.year_status === 'closed' ? 'projected' : 'closed';
       await updateYear(yearToToggle.id, { year_status: newStatus });
-      // Sync from DB after structural change
-      setTimeout(syncFromDB, 100);
-    }
-  };
-
-  const removeYear = async (yearIndex: number) => {
-    const yearToRemove = valuationYears[yearIndex];
-    if (yearToRemove && data.years.length > 2) {
-      await deleteYear(yearToRemove.id);
       // Sync from DB after structural change
       setTimeout(syncFromDB, 100);
     }
@@ -973,17 +948,6 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
     }, 500);
   };
 
-  const handleYearAdd = (type: 'past' | 'future') => {
-    if (type === 'future') {
-      addFutureYear();
-    } else {
-      addPastYear();
-    }
-  };
-
-  const handleYearRemove = (yearIndex: number) => {
-    removeYear(yearIndex);
-  };
 
   const validateData = () => {
     const issues: string[] = [];
@@ -1086,8 +1050,6 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                     yearStatuses={viewData.years.map(y => y.yearStatus)}
                     sections={dynamicSections}
                     onDataChange={handleDynamicDataChange}
-                    onYearAdd={handleYearAdd}
-                    onYearRemove={handleYearRemove}
                     onYearStatusToggle={toggleYearStatus}
                   />
                 </div>

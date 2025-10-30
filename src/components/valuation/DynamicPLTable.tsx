@@ -29,12 +29,10 @@ interface DynamicPLTableProps {
   yearStatuses: ('closed' | 'projected')[];
   sections: TableSection[];
   onDataChange: (sections: TableSection[]) => void;
-  onYearAdd: (type: 'past' | 'future') => void;
-  onYearRemove: (yearIndex: number) => void;
   onYearStatusToggle: (yearIndex: number) => void;
 }
 
-export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearAdd, onYearRemove, onYearStatusToggle }: DynamicPLTableProps) {
+export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearStatuses, sections, onDataChange, onYearStatusToggle }: DynamicPLTableProps) {
   const [editingValues, setEditingValues] = React.useState<Record<string, string>>({});
   const editingCellsRef = React.useRef<Set<string>>(new Set());
 
@@ -357,26 +355,14 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
   return (
     <div className="w-full space-y-4">
       {/* Header flotante con título y botones */}
-      <div className="flex items-center justify-between px-1">
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Euro className="h-5 w-5" />
-            P&L Comparativo Multi-año
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Análisis comparativo de ingresos, costes y márgenes por año (editable)
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => onYearAdd('past')} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Año Anterior
-          </Button>
-          <Button onClick={() => onYearAdd('future')} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Año Posterior
-          </Button>
-        </div>
+      <div className="px-1">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Euro className="h-5 w-5" />
+          P&L Comparativo 2024-2025
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Análisis comparativo de ingresos, costes y márgenes (editable)
+        </p>
       </div>
 
       {/* Tabla sin Card */}
@@ -395,19 +381,7 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
               {years.map((year, index) => (
               <th key={year} className="text-right p-3 font-medium text-sm border-r w-[250px]">
                 <div className="flex flex-col items-end justify-end gap-1.5">
-                  <div className="flex items-center justify-end gap-2">
-                    {years.length > 2 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onYearRemove(index)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                    )}
-                    <span>{year}</span>
-                  </div>
+                  <span>{year}</span>
                   <Badge 
                     variant={yearStatuses[index] === 'closed' ? 'default' : 'secondary'}
                     className="cursor-pointer text-xs"
