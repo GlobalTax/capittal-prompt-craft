@@ -65,7 +65,7 @@ serve(async (req) => {
       type: 'signup',
       email: email.toLowerCase().trim(),
       options: {
-        emailRedirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}/auth/callback`
+        emailRedirectTo: `https://mivaloracion.es/auth/callback`
       }
     });
 

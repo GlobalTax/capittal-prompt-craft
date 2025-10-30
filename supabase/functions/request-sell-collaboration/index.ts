@@ -270,10 +270,10 @@ const handler = async (req: Request): Promise<Response> => {
               ` : ''}
 
               <div style="text-align: center; margin-top: 30px;">
-                <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app')}/valuation/${valuationId}" class="button">
+                <a href="https://mivaloracion.es/valuation/${valuationId}" class="button">
                   📊 Ver Valoración Completa
                 </a>
-                <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app')}/admin/sell-business-leads" class="button">
+                <a href="https://mivaloracion.es/admin/sell-business-leads" class="button">
                   🎯 Gestionar Lead
                 </a>
               </div>

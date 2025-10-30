@@ -166,7 +166,7 @@ serve(async (req) => {
           });
         }
         
-        const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'http://localhost:5173';
+        const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'https://mivaloracion.es';
         const invitationUrl = `${frontendUrl}/invite?token=${existing.token}`;
         console.log(`[${requestId}] Existing invitation returned for ${cleanEmail}`);
         
@@ -194,7 +194,7 @@ serve(async (req) => {
     }
 
     // Use frontend URL for invitation links
-    const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'http://localhost:5173';
+    const frontendUrl = Deno.env.get('FRONTEND_URL') || app_url || req.headers.get('origin') || 'https://mivaloracion.es';
     const invitationUrl = `${frontendUrl}/invite?token=${data}`;
     console.log(`[${requestId}] Success: invitation created by ${user.email} for ${cleanEmail}`);
     
@@ -224,7 +224,7 @@ serve(async (req) => {
       const { error: resendError } = await resend.emails.send({
         from: fromEmail,
         to: [cleanEmail],
-        subject: 'Invitación a Algopasa',
+        subject: 'Invitación a MiValoracion',
         html: `
           <!DOCTYPE html>
           <html lang="es">
