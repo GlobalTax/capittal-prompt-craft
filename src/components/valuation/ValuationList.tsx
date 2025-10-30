@@ -82,6 +82,10 @@ export function ValuationList() {
     });
     
     if (newValuation) {
+      // Track valuation creation in funnel analytics
+      const { trackFunnelEvent } = await import('@/lib/analytics');
+      await trackFunnelEvent('valuation_created', { valuationId: newValuation.id });
+      
       setShowNewDialog(false);
       setNewTitle('');
       setNewType('own_business');

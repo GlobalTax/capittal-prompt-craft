@@ -133,7 +133,16 @@ export default function FunnelAnalytics() {
       // Calcular conversión y agregar emails
       const performanceData: AdvisorPerformance[] = Object.values(advisorStats).map((stat: any) => {
         const profile = profiles?.find(p => p.id === stat.advisor_id);
-        const fullName = profile ? `${profile.first_name} ${profile.last_name}` : 'Usuario';
+        
+        // Mejorar fallback de nombres
+        let fullName = 'Usuario';
+        if (profile) {
+          const firstName = profile.first_name?.trim() || '';
+          const lastName = profile.last_name?.trim() || '';
+          if (firstName || lastName) {
+            fullName = `${firstName} ${lastName}`.trim();
+          }
+        }
         
         return {
           ...stat,
