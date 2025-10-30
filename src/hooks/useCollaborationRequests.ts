@@ -52,7 +52,7 @@ export const useCollaborationRequests = () => {
       const { data, error } = await supabase
         .from('advisor_collaboration_requests')
         .select('*')
-        .eq('target_advisor_id', user.id)
+        .eq('requesting_advisor_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -69,8 +69,8 @@ export default function MyCollaborationRequests() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Solicitudes de Colaboración</h1>
-          <p className="text-muted-foreground">Empresas donde otros asesores te solicitan colaborar</p>
+          <h1 className="text-3xl font-bold">Mis Solicitudes de Venta</h1>
+          <p className="text-muted-foreground">Empresas que has referido al equipo Capittal</p>
         </div>
       </div>
 
@@ -133,8 +133,8 @@ export default function MyCollaborationRequests() {
       {/* Tabla de solicitudes */}
       <Card>
         <CardHeader>
-          <CardTitle>Solicitudes Recibidas</CardTitle>
-          <CardDescription>Gestiona las solicitudes de colaboración de otros asesores</CardDescription>
+          <CardTitle>Solicitudes Enviadas</CardTitle>
+          <CardDescription>Estado de las empresas referidas a Capittal</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -142,9 +142,9 @@ export default function MyCollaborationRequests() {
           ) : requests.length === 0 ? (
             <div className="text-center py-8">
               <Handshake className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">Aún no has recibido solicitudes</p>
+              <p className="text-muted-foreground">Aún no has enviado solicitudes</p>
               <p className="text-sm text-muted-foreground">
-                Otros asesores podrán solicitarte colaboración en sus proyectos
+                Ayuda a tus clientes a vender sus empresas y genera comisiones con Capittal
               </p>
             </div>
           ) : (
@@ -153,7 +153,6 @@ export default function MyCollaborationRequests() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empresa</TableHead>
-                    <TableHead>Asesor Solicitante</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Comisión Est.</TableHead>
@@ -173,17 +172,6 @@ export default function MyCollaborationRequests() {
                               {request.company_sector && (
                                 <div className="text-xs text-muted-foreground">{request.company_sector}</div>
                               )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              Asesor {request.requesting_advisor_id.slice(0, 8)}
-                              <div className="text-xs text-muted-foreground">
-                                ID: {request.requesting_advisor_id.slice(0, 13)}...
-                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -218,26 +206,6 @@ export default function MyCollaborationRequests() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {request.status === 'pending' && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openActionDialog(request, 'accept')}
-                                  className="text-green-600 hover:text-green-700"
-                                >
-                                  <CheckCircle2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openActionDialog(request, 'reject')}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
                             {request.message && (
                               <Button
                                 variant="ghost"
