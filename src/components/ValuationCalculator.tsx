@@ -602,7 +602,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
 
   useEffect(() => {
     calculateValuations();
-  }, [viewData, valuationConfig]);
+  }, [viewData, valuationConfig, valuation.metadata?.valuationMethods]);
 
   // Debounce chart data updates to prevent jumping
   useEffect(() => {
