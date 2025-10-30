@@ -15573,6 +15573,8 @@ export type Database = {
       }
       get_quantum_config: { Args: never; Returns: Json }
       get_quantum_token: { Args: never; Returns: string }
+      get_security_dashboard_metrics: { Args: never; Returns: Json }
+      get_security_events_timeline: { Args: { p_days?: number }; Returns: Json }
       get_security_setting: { Args: { p_key: string }; Returns: string }
       get_teams_with_member_count: {
         Args: never
