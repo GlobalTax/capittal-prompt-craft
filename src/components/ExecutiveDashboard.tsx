@@ -55,9 +55,9 @@ const ExecutiveDashboard = () => {
 
   // Valuation type labels for recent valuations
   const valuationTypeLabels: Record<string, string> = {
-    own_business: 'Propia',
-    client_business: 'Cliente',
-    potential_acquisition: 'Adquisición',
+    own_business: 'NEGOCIO PROPIO',
+    client_business: 'NEGOCIO CLIENTE',
+    potential_acquisition: 'ADQUISICIÓN POTENCIAL',
   };
 
   // Status labels and colors
@@ -109,7 +109,7 @@ const ExecutiveDashboard = () => {
   ].filter(item => item.value > 0);
 
   const typeData = (typeDistribution || []).map((item, index) => ({
-    name: typeLabels[item.type] || item.type,
+    name: valuationTypeLabels[item.type] || typeLabels[item.type] || item.type,
     value: item.count,
     color: chartColors[index % chartColors.length]
   }));
@@ -308,8 +308,21 @@ const ExecutiveDashboard = () => {
                           data={typeData}
                           cx="50%"
                           cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          labelLine={true}
+                          label={({ name, percent, x, y, cx }) => {
+                            return (
+                              <text 
+                                x={x} 
+                                y={y} 
+                                fill="hsl(var(--foreground))"
+                                textAnchor={x > cx ? 'start' : 'end'}
+                                dominantBaseline="central"
+                                className="text-sm font-semibold"
+                              >
+                                {name} {(percent * 100).toFixed(0)}%
+                              </text>
+                            );
+                          }}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
