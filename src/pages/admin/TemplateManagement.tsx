@@ -102,12 +102,19 @@ function TemplateManagementContent() {
 
   const deleteTemplate = useMutation({
     mutationFn: async ({ id, filePath }: { id: string; filePath: string }) => {
-      const { error: storageError } = await supabase.storage
-        .from('templates')
-        .remove([filePath]);
-      
-      if (storageError) throw storageError;
+      // Only attempt storage deletion if there's a valid file path
+      if (filePath && filePath.trim() !== '') {
+        const { error: storageError } = await supabase.storage
+          .from('templates')
+          .remove([filePath]);
+        
+        if (storageError) {
+          console.warn('Storage deletion failed:', storageError);
+          // Don't throw error, continue with DB deletion
+        }
+      }
 
+      // Always delete from database
       const { error: dbError } = await supabase
         .from('document_templates')
         .delete()
@@ -119,7 +126,8 @@ function TemplateManagementContent() {
       queryClient.invalidateQueries({ queryKey: ['admin-templates'] });
       toast.success('Documento eliminado');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Delete error:', error);
       toast.error('Error al eliminar documento');
     }
   });
@@ -182,9 +190,24 @@ function TemplateManagementContent() {
                 <Label>Archivo</Label>
                 <Input
                   type="file"
-                  onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // Validate file size (max 20MB)
+                      if (file.size > 20 * 1024 * 1024) {
+                        toast.error('El archivo es demasiado grande (máx 20MB)');
+                        return;
+                      }
+                      setFormData({ ...formData, file });
+                    }
+                  }}
                   accept=".xlsx,.xls,.pdf,.docx,.doc"
                 />
+                {formData.file && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {formData.file.name} ({(formData.file.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
               </div>
               <Button 
                 onClick={() => uploadTemplate.mutate()}
