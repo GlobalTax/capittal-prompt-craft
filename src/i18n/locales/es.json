@@ -203,7 +203,16 @@
     "acceptanceRate": "Tasa de Aceptación",
     "totalCommissions": "Comisiones Totales",
     "expired": "Expiradas",
-    "intervene": "Intervenir"
+    "intervene": "Intervenir",
+    "topAdvisors": "Top Asesores Más Activos",
+    "suspiciousCommission": "Comisión sospechosa",
+    "noOldPending": "Sin solicitudes antiguas",
+    "reviewRequired": "Revisar"
+  },
+  "notifications": {
+    "collaborationRequest": "Nueva solicitud de colaboración",
+    "pending": "pendientes",
+    "viewAll": "Ver todas"
   },
   "auth": {
     "login": "Iniciar Sesión",

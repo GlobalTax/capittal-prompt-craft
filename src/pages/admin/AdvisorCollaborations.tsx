@@ -12,6 +12,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { getDateLocale } from '@/i18n/config';
 import { useTranslation } from 'react-i18next';
 
+// Helper para detectar comisiones sospechosas
+const isSuspiciousCommission = (request: any) => {
+  if (!request.estimated_commission || !request.annual_revenue) return false;
+  
+  const commissionPercentage = (request.estimated_commission / request.annual_revenue) * 100;
+  
+  // Alertar si comisión es > 20% de facturación anual (poco realista)
+  return commissionPercentage > 20;
+};
+
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
   accepted: 'bg-green-500/10 text-green-700 dark:text-green-400',
@@ -74,6 +84,54 @@ export default function AdvisorCollaborations() {
     const daysDiff = Math.floor((Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24));
     return daysDiff > 7;
   }).length || 0;
+
+  // Query para obtener top asesores
+  const { data: topAdvisors } = useQuery({
+    queryKey: ['admin-top-advisors'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('advisor_collaboration_requests')
+        .select('requesting_advisor_id')
+        .eq('status', 'accepted');
+
+      if (!data) return [];
+
+      // Contar colaboraciones por asesor
+      const counts = data.reduce((acc: any, curr) => {
+        const id = curr.requesting_advisor_id;
+        if (!acc[id]) {
+          acc[id] = {
+            id,
+            count: 0,
+          };
+        }
+        acc[id].count++;
+        return acc;
+      }, {});
+
+      // Obtener nombres de los top 5 asesores
+      const topIds = Object.values(counts as any)
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 5)
+        .map((a: any) => a.id);
+
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('user_id, first_name, last_name')
+        .in('user_id', topIds);
+
+      return Object.values(counts as any)
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 5)
+        .map((advisor: any) => {
+          const profile = profiles?.find((p: any) => p.user_id === advisor.id);
+          return {
+            ...advisor,
+            name: profile ? `${profile.first_name} ${profile.last_name}` : 'Desconocido',
+          };
+        });
+    },
+  });
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -162,6 +220,34 @@ export default function AdvisorCollaborations() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Top Advisors */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            Top 5 Asesores Más Activos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {topAdvisors?.map((advisor: any, index: number) => (
+              <div key={advisor.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{index + 1}</Badge>
+                  <span className="font-medium text-sm">{advisor.name}</span>
+                </div>
+                <Badge className="bg-primary">{advisor.count} aceptadas</Badge>
+              </div>
+            ))}
+            {(!topAdvisors || topAdvisors.length === 0) && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No hay datos todavía
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filtros */}
       <Card>
@@ -279,16 +365,25 @@ export default function AdvisorCollaborations() {
                             <div className="text-xs text-destructive mt-1">+{daysSinceCreation} días</div>
                           )}
                         </TableCell>
-                        <TableCell className="text-success font-medium">
-                          {request.estimated_commission 
-                            ? `${request.estimated_commission.toLocaleString()}€` 
-                            : '-'}
-                          {request.commission_percentage && (
-                            <div className="text-xs text-muted-foreground">
-                              {request.commission_percentage}%
-                            </div>
+                      <TableCell className="text-success font-medium">
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {request.estimated_commission 
+                              ? `${request.estimated_commission.toLocaleString()}€` 
+                              : '-'}
+                          </span>
+                          {isSuspiciousCommission(request) && (
+                            <Badge className="bg-orange-500 text-white text-xs">
+                              Revisar
+                            </Badge>
                           )}
-                        </TableCell>
+                        </div>
+                        {request.commission_percentage && (
+                          <div className="text-xs text-muted-foreground">
+                            {request.commission_percentage}%
+                          </div>
+                        )}
+                      </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 text-sm">
                             <Calendar className="h-3 w-3" />

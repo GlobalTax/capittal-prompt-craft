@@ -34,6 +34,8 @@ import {
 import { usePendingAlerts } from "@/hooks/usePendingAlerts";
 import { useTranslation } from "react-i18next";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export function AppSidebar() {
@@ -44,6 +46,24 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { isAdmin, isAdvisor, loading } = useUserRole();
   const { data: alerts } = usePendingAlerts();
+
+  // Query para contar colaboraciones pendientes
+  const { data: pendingCount } = useQuery({
+    queryKey: ['sidebar-pending-collaborations'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+
+      const { count } = await supabase
+        .from('advisor_collaboration_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('target_advisor_id', user.id)
+        .eq('status', 'pending');
+      
+      return count || 0;
+    },
+    refetchInterval: 30000,
+  });
 
   const menuItems = [
     {
@@ -78,7 +98,8 @@ export function AppSidebar() {
       title: t('sidebar.collaborationReceived'),
       url: "/my-received-collaborations",
       icon: Inbox,
-      description: "Solicitudes recibidas de otros asesores"
+      description: "Solicitudes recibidas de otros asesores",
+      badge: pendingCount && pendingCount > 0 ? pendingCount : undefined
     },
     {
       title: t('sidebar.myReferences'),

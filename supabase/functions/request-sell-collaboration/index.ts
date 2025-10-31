@@ -168,6 +168,96 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Created collaboration request:", collabData.id);
 
+    // Helper function for currency formatting
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    };
+
+    // Send notification email to target advisor
+    const { data: targetAdvisorProfile } = await supabaseClient
+      .from("user_profiles")
+      .select("email, first_name, last_name")
+      .eq("user_id", CAPITTAL_TEAM_USER_ID)
+      .maybeSingle();
+
+    if (targetAdvisorProfile?.email) {
+      const targetEmailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+              .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+              .highlight { background: #d1fae5; padding: 15px; border-left: 4px solid #10b981; margin: 15px 0; }
+              .button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1 style="margin: 0;">🤝 Nueva Solicitud de Colaboración</h1>
+                <p style="margin: 10px 0 0 0; opacity: 0.9;">Un asesor quiere colaborar contigo</p>
+              </div>
+              
+              <div class="content">
+                <div class="highlight">
+                  <strong>Hola ${targetAdvisorProfile.first_name || 'Asesor'},</strong><br><br>
+                  ${advisorName} te ha enviado una solicitud de colaboración para ayudar con la venta de una empresa.
+                </div>
+
+                <div class="section">
+                  <h2 style="color: #10b981; margin-top: 0;">📊 Detalles de la Oportunidad</h2>
+                  <p><strong>Empresa:</strong> ${companyName}</p>
+                  <p><strong>Sector:</strong> ${sector}</p>
+                  <p><strong>Facturación Anual:</strong> ${formatCurrency(annualRevenue)}</p>
+                  <p><strong>Valoración:</strong> ${formatCurrency(valuationAmount)}</p>
+                </div>
+
+                ${notes ? `
+                <div class="section">
+                  <p><strong>Mensaje del asesor:</strong></p>
+                  <p style="font-style: italic; color: #555;">"${notes}"</p>
+                </div>
+                ` : ''}
+
+                <div style="text-align: center; margin-top: 30px;">
+                  <a href="https://mivaloracion.es/my-received-collaborations" class="button">
+                    👀 Ver Solicitud y Responder
+                  </a>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+                  <p>Si no quieres participar, simplemente ignora este mensaje.</p>
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      try {
+        await resend.emails.send({
+          from: "Capittal Platform <onboarding@resend.dev>",
+          to: [targetAdvisorProfile.email],
+          subject: `🤝 ${advisorName} quiere colaborar contigo - ${companyName}`,
+          html: targetEmailHtml,
+        });
+        console.log("Notification email sent to target advisor:", targetAdvisorProfile.email);
+      } catch (emailError) {
+        console.error("Error sending notification email to target advisor:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
     // Log funnel event
     try {
       await supabaseClient.rpc("log_funnel_event", {
@@ -185,16 +275,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error logging funnel event:", analyticsError);
     }
 
-    // Prepare email content
-    const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(amount);
-    };
-
+    // Prepare email content for admins
     const emailHtml = `
       <!DOCTYPE html>
       <html>
