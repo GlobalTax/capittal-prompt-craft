@@ -21,7 +21,9 @@
     "documentTemplates": "Modelos de Documentos",
     "sellBusiness": "Vender mi Empresa",
     "feeCalculator": "Calculadora de Honorarios",
-    "collaborationRequests": "Solicitudes de Colaboración",
+    "collaborationSent": "Colaboraciones Enviadas",
+    "collaborationReceived": "Colaboraciones Recibidas",
+    "myReferences": "Mis Referencias",
     "advisorProfile": "Mi Perfil de Asesor",
     "administration": "Administración",
     "adminPanel": "Panel de Administración",
@@ -33,7 +35,8 @@
     "commissions": "Comisiones",
     "auditLogs": "Logs de Auditoría",
     "alertSettings": "Configuración de Alertas",
-    "sectorMultiples": "Múltiplos de Sector"
+    "sectorMultiples": "Múltiplos de Sector",
+    "advisorCollaborations": "Colaboraciones de Asesores"
   },
   "dashboard": {
     "title": "Panel de Control",
@@ -175,6 +178,32 @@
       "rejected": "Rechazada",
       "expired": "Expirada"
     }
+  },
+  "receivedCollaborations": {
+    "title": "Colaboraciones Recibidas",
+    "subtitle": "Solicitudes de otros asesores para colaborar",
+    "totalReceived": "Recibidas",
+    "pending": "Pendientes",
+    "awaitingResponse": "Esperan tu respuesta",
+    "accepted": "Aceptadas",
+    "activeCollaborations": "Colaboraciones activas",
+    "estimatedEarnings": "Ingresos Estimados",
+    "ifAcceptAll": "Si aceptas las pendientes",
+    "received": "Solicitudes Recibidas",
+    "receivedDescription": "Otras asesoras/os quieren colaborar contigo",
+    "empty": "No tienes solicitudes pendientes",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "advisor": "Asesor"
+  },
+  "adminCollaborations": {
+    "title": "Gestión de Colaboraciones",
+    "subtitle": "Supervisa todas las colaboraciones entre asesores",
+    "totalRequests": "Total Solicitudes",
+    "acceptanceRate": "Tasa de Aceptación",
+    "totalCommissions": "Comisiones Totales",
+    "expired": "Expiradas",
+    "intervene": "Intervenir"
   },
   "auth": {
     "login": "Iniciar Sesión",

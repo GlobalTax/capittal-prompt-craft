@@ -33,6 +33,8 @@ const FeeCalculator = lazy(() => import("./pages/FeeCalculator"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const AdvancedSettings = lazy(() => import("@/components/AdvancedSettings"));
 const MyCollaborationRequests = lazy(() => import("./pages/MyCollaborationRequests"));
+const MyReceivedCollaborations = lazy(() => import("./pages/MyReceivedCollaborations"));
+const MyReferredLeads = lazy(() => import("./pages/MyReferredLeads"));
 const ClientLanding = lazy(() => import("./pages/ClientLanding"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
@@ -49,6 +51,7 @@ const FunnelAnalytics = lazy(() => import("./pages/admin/FunnelAnalytics"));
 const CommissionSettings = lazy(() => import("./pages/admin/CommissionSettings"));
 const OrganizationManagement = lazy(() => import("./pages/admin/OrganizationManagement"));
 const SectorMultiplesManagement = lazy(() => import("./pages/admin/SectorMultiplesManagement"));
+const AdvisorCollaborations = lazy(() => import("./pages/admin/AdvisorCollaborations"));
 
 const queryClient = new QueryClient();
 
@@ -109,9 +112,12 @@ const App = () => {
                     <Route path="/admin/commissions" element={<LazyRoute component={CommissionSettings} />} />
                     <Route path="/admin/organizations" element={<LazyRoute component={OrganizationManagement} />} />
                     <Route path="/admin/sector-multiples" element={<LazyRoute component={SectorMultiplesManagement} />} />
+                    <Route path="/admin/advisor-collaborations" element={<LazyRoute component={AdvisorCollaborations} />} />
                   </Route>
                   
-                  <Route path="/my-referrals" element={<LazyRoute component={MyCollaborationRequests} />} />
+                  <Route path="/my-collaboration-requests" element={<LazyRoute component={MyCollaborationRequests} />} />
+                  <Route path="/my-received-collaborations" element={<LazyRoute component={MyReceivedCollaborations} />} />
+                  <Route path="/my-referrals" element={<LazyRoute component={MyReferredLeads} />} />
                 </Route>
               </Route>
               

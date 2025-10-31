@@ -26,7 +26,10 @@ import {
   TrendingUp,
   ShieldAlert,
   FileSearch,
-  Settings2
+  Settings2,
+  Send,
+  Inbox,
+  Handshake
 } from "lucide-react";
 import { usePendingAlerts } from "@/hooks/usePendingAlerts";
 import { useTranslation } from "react-i18next";
@@ -66,10 +69,22 @@ export function AppSidebar() {
 
   const resourceItems = [
     {
-      title: t('sidebar.collaborationRequests'),
+      title: t('sidebar.collaborationSent'),
+      url: "/my-collaboration-requests",
+      icon: Send,
+      description: "Solicitudes que he enviado"
+    },
+    {
+      title: t('sidebar.collaborationReceived'),
+      url: "/my-received-collaborations",
+      icon: Inbox,
+      description: "Solicitudes recibidas de otros asesores"
+    },
+    {
+      title: t('sidebar.myReferences'),
       url: "/my-referrals",
       icon: TrendingUp,
-      description: "Empresas donde te solicitan colaborar"
+      description: "Mis leads referidos"
     },
     {
       title: t('sidebar.documentTemplates'),
@@ -140,6 +155,12 @@ export function AppSidebar() {
       url: "/admin/sector-multiples",
       icon: TrendingUp,
       description: "Gestionar múltiplos de valoración"
+    },
+    {
+      title: t('sidebar.advisorCollaborations'),
+      url: "/admin/advisor-collaborations",
+      icon: Handshake,
+      description: "Supervisar colaboraciones entre asesores"
     }
   ];
 
