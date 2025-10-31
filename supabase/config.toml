@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.report-issue]
 verify_jwt = true
+
+[functions.expire-collaboration-requests]
+verify_jwt = false
