@@ -101,6 +101,18 @@ export const useAuth = () => {
         throw new Error('Error al crear el perfil de usuario');
       }
       
+      // Ensure user has advisor role (immediate UX, also handled by trigger)
+      try {
+        await supabase
+          .from('user_roles')
+          .insert({ user_id: data.user.id, role: 'advisor' })
+          .select()
+          .single();
+      } catch (roleError: any) {
+        // Ignore if role already exists or other errors - trigger will handle it
+        console.log('Role assignment info:', roleError?.message);
+      }
+      
       // Create organization for new user (only if company provided)
       if (company) {
         try {

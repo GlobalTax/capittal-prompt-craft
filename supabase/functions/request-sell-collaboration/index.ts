@@ -29,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Authenticated client for user validation and rate limiting only
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -37,6 +38,12 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { Authorization: req.headers.get("Authorization")! },
         },
       }
+    );
+
+    // Admin client with SERVICE_ROLE for database operations (bypasses RLS)
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     // Get authenticated user
@@ -85,8 +92,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get advisor profile details
-    const { data: advisorProfile, error: advisorError } = await supabaseClient
+    // Get advisor profile details using admin client
+    const { data: advisorProfile, error: advisorError } = await adminSupabase
       .from("advisor_profiles")
       .select("user_id, business_name, contact_phone, website")
       .eq("user_id", advisorUserId)
@@ -99,8 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Get email from authenticated user
     const advisorEmail = user.email || "No disponible";
 
-    // Get additional user details
-    const { data: advisorUserProfile, error: profileError } = await supabaseClient
+    // Get additional user details using admin client
+    const { data: advisorUserProfile, error: profileError } = await adminSupabase
       .from("user_profiles")
       .select("first_name, last_name, company")
       .eq("user_id", advisorUserId)
@@ -116,8 +123,9 @@ const handler = async (req: Request): Promise<Response> => {
     const advisorPhone = advisorProfile?.contact_phone || "No disponible";
     const advisorBusiness = advisorProfile?.business_name || "No especificado";
 
-    // Create sell_business_lead
-    const { data: leadData, error: leadError } = await supabaseClient
+    // Create sell_business_lead using admin client (bypasses RLS)
+    console.log("[DEBUG] Creating sell_business_lead...");
+    const { data: leadData, error: leadError } = await adminSupabase
       .from("sell_business_leads")
       .insert({
         company_name: companyName,
@@ -135,9 +143,10 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (leadError) {
-      console.error("Error creating sell business lead:", leadError);
+      console.error("[ERROR] Creating sell business lead:", leadError);
       throw new Error("No se pudo crear el lead de venta");
     }
+    console.log("[SUCCESS] sell_business_lead created:", leadData.id);
 
     console.log("Created sell business lead successfully:", {
       leadId: leadData.id,
@@ -147,8 +156,9 @@ const handler = async (req: Request): Promise<Response> => {
       companyName,
     });
 
-    // Create collaboration request
-    const { data: collabData, error: collabError } = await supabaseClient
+    // Create collaboration request using admin client (bypasses RLS)
+    console.log("[DEBUG] Creating collaboration request...");
+    const { data: collabData, error: collabError } = await adminSupabase
       .from("advisor_collaboration_requests")
       .insert({
         requesting_advisor_id: advisorUserId,
@@ -162,11 +172,24 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (collabError) {
-      console.error("Error creating collaboration request:", collabError);
+      console.error("[ERROR] Creating collaboration request:", collabError);
+      console.error("[ERROR] Full error details:", JSON.stringify(collabError, null, 2));
+      
+      // Check for RLS policy violation (PostgreSQL error code 42501)
+      if (collabError.code === '42501') {
+        return new Response(
+          JSON.stringify({ 
+            error: "Error de permisos. Contacta al administrador.",
+            details: "RLS policy violation - SERVICE_ROLE should bypass this"
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       throw new Error("No se pudo crear la solicitud de colaboración");
     }
 
-    console.log("Created collaboration request:", collabData.id);
+    console.log("[SUCCESS] Collaboration request created:", collabData.id);
 
     // Helper function for currency formatting
     const formatCurrency = (amount: number) => {
@@ -178,8 +201,8 @@ const handler = async (req: Request): Promise<Response> => {
       }).format(amount);
     };
 
-    // Send notification email to target advisor
-    const { data: targetAdvisorProfile } = await supabaseClient
+    // Send notification email to target advisor using admin client
+    const { data: targetAdvisorProfile } = await adminSupabase
       .from("user_profiles")
       .select("email, first_name, last_name")
       .eq("user_id", CAPITTAL_TEAM_USER_ID)
@@ -258,9 +281,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Log funnel event
+    // Log funnel event using admin client
     try {
-      await supabaseClient.rpc("log_funnel_event", {
+      await adminSupabase.rpc("log_funnel_event", {
         p_event_type: "sell_collaboration_requested",
         p_advisor_user_id: advisorUserId,
         p_valuation_id: valuationId,
