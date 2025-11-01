@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { validateInput, MFAVerifySchema, sanitizeError } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -182,7 +183,23 @@ serve(async (req) => {
   }
 
   try {
-    const { token, factor_id } = await req.json();
+    const body = await req.json();
+    
+    // Validate input with Zod schema
+    const validation = validateInput(MFAVerifySchema, body);
+    if (!validation.success) {
+      console.warn('[mfa-verify] Validation failed:', validation.errors);
+      return new Response(
+        JSON.stringify({ 
+          valid: false, 
+          error: 'Datos de entrada inválidos',
+          details: validation.errors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { token, factor_id } = validation.data;
     
     // Get client IP for rate limiting
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
@@ -190,22 +207,6 @@ serve(async (req) => {
                'unknown';
 
     console.log(`[mfa-verify] Verifying token for factor: ${factor_id}`);
-
-    if (!token || !factor_id) {
-      return new Response(
-        JSON.stringify({ valid: false, error: 'Token y factor_id requeridos' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validar formato del token (6 dígitos)
-    if (!/^\d{6}$/.test(token)) {
-      console.warn('[mfa-verify] Invalid token format');
-      return new Response(
-        JSON.stringify({ valid: false, error: 'Token debe ser 6 dígitos' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
