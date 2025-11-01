@@ -39,9 +39,6 @@ verify_jwt = true
 [functions.resend-verification-email]
 verify_jwt = false
 
-[functions.request-sell-collaboration]
-verify_jwt = true
-
 [functions.report-issue]
 verify_jwt = true
 

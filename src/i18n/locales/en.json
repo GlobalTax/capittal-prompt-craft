@@ -21,7 +21,7 @@
     "documentTemplates": "Document Templates",
     "sellBusiness": "Sell my Business",
     "feeCalculator": "Fee Calculator",
-    "collaborationRequests": "Collaboration Requests",
+    "myReferences": "My References",
     "advisorProfile": "My Advisor Profile",
     "administration": "Administration",
     "adminPanel": "Admin Panel",
@@ -143,11 +143,11 @@
     }
   },
   "collaboration": {
-    "title": "My Sales Requests",
+    "title": "My Capittal Referrals",
     "subtitle": "Companies you've referred to the Capittal team",
-    "sent": "Sent Requests",
+    "sent": "Sent Referrals",
     "sentDescription": "Status of companies referred to Capittal",
-    "empty": "You haven't sent any requests yet",
+    "empty": "You haven't sent any referrals yet",
     "emptyDescription": "Help your clients sell their businesses and earn commissions with Capittal",
     "totalRequests": "Total Requests",
     "pending": "Pending",

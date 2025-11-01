@@ -47,24 +47,6 @@ export function AppSidebar() {
   const { isAdmin, isAdvisor, loading } = useUserRole();
   const { data: alerts } = usePendingAlerts();
 
-  // Query para contar colaboraciones pendientes
-  const { data: pendingCount } = useQuery({
-    queryKey: ['sidebar-pending-collaborations'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return 0;
-
-      const { count } = await supabase
-        .from('advisor_collaboration_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('target_advisor_id', user.id)
-        .eq('status', 'pending');
-      
-      return count || 0;
-    },
-    refetchInterval: 30000,
-  });
-
   const menuItems = [
     {
       title: t('sidebar.dashboard'),
@@ -88,19 +70,6 @@ export function AppSidebar() {
   ];
 
   const resourceItems = [
-    {
-      title: t('sidebar.collaborationSent'),
-      url: "/my-collaboration-requests",
-      icon: Send,
-      description: "Solicitudes que he enviado"
-    },
-    {
-      title: t('sidebar.collaborationReceived'),
-      url: "/my-received-collaborations",
-      icon: Inbox,
-      description: "Solicitudes recibidas de otros asesores",
-      badge: pendingCount && pendingCount > 0 ? pendingCount : undefined
-    },
     {
       title: t('sidebar.myReferences'),
       url: "/my-referrals",

@@ -21,7 +21,7 @@
     "documentTemplates": "Models de Documents",
     "sellBusiness": "Vendre la meva Empresa",
     "feeCalculator": "Calculadora d'Honoraris",
-    "collaborationRequests": "Sol·licituds de Col·laboració",
+    "myReferences": "Les Meves Referències",
     "advisorProfile": "El meu Perfil d'Assessor",
     "administration": "Administració",
     "adminPanel": "Panell d'Administració",
@@ -143,11 +143,11 @@
     }
   },
   "collaboration": {
-    "title": "Les meves Sol·licituds de Venda",
+    "title": "Les Meves Referències a Capittal",
     "subtitle": "Empreses que has referit a l'equip Capittal",
-    "sent": "Sol·licituds Enviades",
+    "sent": "Referències Enviades",
     "sentDescription": "Estat de les empreses referides a Capittal",
-    "empty": "Encara no has enviat sol·licituds",
+    "empty": "Encara no has enviat referències",
     "emptyDescription": "Ajuda els teus clients a vendre les seves empreses i genera comissions amb Capittal",
     "totalRequests": "Sol·licituds Totals",
     "pending": "Pendents",

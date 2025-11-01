@@ -731,15 +731,17 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
         valuationAmount,
       });
       
-      const { data, error } = await supabase.functions.invoke('request-sell-collaboration', {
+      const { data, error } = await supabase.functions.invoke('send-sell-business-lead', {
         body: {
-          valuationId: valuation.id,
-          advisorUserId: user.id,
           companyName,
+          contactName: user.email?.split('@')[0] || 'Asesor',
+          contactEmail: user.email || '',
+          contactPhone: '',
           sector,
           annualRevenue,
-          valuationAmount,
-          notes: collaborationNotes
+          additionalInfo: collaborationNotes,
+          advisorUserId: user.id,
+          valuationId: valuation.id
         }
       });
       
@@ -749,8 +751,8 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
       }
       
       toast({
-        title: '✅ Solicitud Enviada',
-        description: 'Samuel y Lluis han recibido tu solicitud. Te contactarán pronto.',
+        title: '✅ Lead Referido a Capittal',
+        description: 'Tu lead ha sido enviado al equipo Capittal. Te contactarán pronto.',
       });
       
       setShowCollaborationDialog(false);
@@ -1318,7 +1320,7 @@ const ValuationCalculator = ({ valuation, onUpdate }: ValuationCalculatorProps) 
                         onClick={() => setShowCollaborationDialog(true)}
                       >
                         <Handshake className="mr-2 h-5 w-5" />
-                        Ayudar a Vender Esta Empresa
+                        Referir Lead a Capittal
                       </Button>
                     </CardContent>
                   </Card>

@@ -20,10 +20,9 @@
     "resources": "Recursos",
     "documentTemplates": "Modelos de Documentos",
     "sellBusiness": "Vender mi Empresa",
-    "feeCalculator": "Calculadora de Honorarios",
-    "collaborationSent": "Colaboraciones Enviadas",
-    "collaborationReceived": "Colaboraciones Recibidas",
+    "alerts": "Alertas",
     "myReferences": "Mis Referencias",
+    "documentTemplates": "Modelos de Documentos",
     "advisorProfile": "Mi Perfil de Asesor",
     "administration": "Administración",
     "adminPanel": "Panel de Administración",
@@ -146,11 +145,11 @@
     }
   },
   "collaboration": {
-    "title": "Mis Solicitudes de Venta",
+    "title": "Mis Referencias a Capittal",
     "subtitle": "Empresas que has referido al equipo Capittal",
-    "sent": "Solicitudes Enviadas",
+    "sent": "Referencias Enviadas",
     "sentDescription": "Estado de las empresas referidas a Capittal",
-    "empty": "Aún no has enviado solicitudes",
+    "empty": "Aún no has enviado referencias",
     "emptyDescription": "Ayuda a tus clientes a vender sus empresas y genera comisiones con Capittal",
     "totalRequests": "Solicitudes Totales",
     "pending": "Pendientes",
@@ -178,41 +177,6 @@
       "rejected": "Rechazada",
       "expired": "Expirada"
     }
-  },
-  "receivedCollaborations": {
-    "title": "Colaboraciones Recibidas",
-    "subtitle": "Solicitudes de otros asesores para colaborar",
-    "totalReceived": "Recibidas",
-    "pending": "Pendientes",
-    "awaitingResponse": "Esperan tu respuesta",
-    "accepted": "Aceptadas",
-    "activeCollaborations": "Colaboraciones activas",
-    "estimatedEarnings": "Ingresos Estimados",
-    "ifAcceptAll": "Si aceptas las pendientes",
-    "received": "Solicitudes Recibidas",
-    "receivedDescription": "Otras asesoras/os quieren colaborar contigo",
-    "empty": "No tienes solicitudes pendientes",
-    "accept": "Aceptar",
-    "reject": "Rechazar",
-    "advisor": "Asesor"
-  },
-  "adminCollaborations": {
-    "title": "Gestión de Colaboraciones",
-    "subtitle": "Supervisa todas las colaboraciones entre asesores",
-    "totalRequests": "Total Solicitudes",
-    "acceptanceRate": "Tasa de Aceptación",
-    "totalCommissions": "Comisiones Totales",
-    "expired": "Expiradas",
-    "intervene": "Intervenir",
-    "topAdvisors": "Top Asesores Más Activos",
-    "suspiciousCommission": "Comisión sospechosa",
-    "noOldPending": "Sin solicitudes antiguas",
-    "reviewRequired": "Revisar"
-  },
-  "notifications": {
-    "collaborationRequest": "Nueva solicitud de colaboración",
-    "pending": "pendientes",
-    "viewAll": "Ver todas"
   },
   "auth": {
     "login": "Iniciar Sesión",
