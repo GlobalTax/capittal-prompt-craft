@@ -15,6 +15,7 @@ export interface RowData {
   values: { [year: string]: number };
   percentageOf?: string;
   formula?: (yearData: { [key: string]: number }) => number;
+  deletable?: boolean;
 }
 
 export interface TableSection {
@@ -141,7 +142,8 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
       type: 'input',
       category: 'custom',
       indented: true,
-      values: years.reduce((acc, year) => ({ ...acc, [year]: 0 }), {})
+      values: years.reduce((acc, year) => ({ ...acc, [year]: 0 }), {}),
+      deletable: true
     };
 
     const updatedSections = sections.map(section =>
@@ -484,15 +486,17 @@ export const DynamicPLTable = React.memo(function DynamicPLTable({ years, yearSt
                           onFocus={(e) => e.target.select()}
                           className="bg-transparent border-b border-dotted border-muted-foreground/30 focus:border-primary rounded-none p-1 h-auto text-sm flex-1 min-w-0"
                         />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeRow(section.id, row.id)}
-                          className="h-6 w-6 p-0 opacity-60 hover:opacity-100 flex-shrink-0"
-                          title="Eliminar fila"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        {(row.deletable === true || row.category === 'custom') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRow(section.id, row.id)}
+                            className="h-6 w-6 p-0 opacity-60 hover:opacity-100 flex-shrink-0"
+                            title="Eliminar fila"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </td>
 
